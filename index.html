@@ -293,7 +293,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v22";
+const VERSION="v23";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -889,24 +889,23 @@ async function initSamples(){
 function cutLoop(buf,off,dur){const sr=buf.sampleRate,a=Math.round(off*sr),n=Math.round(dur*sr),out=ctx.createBuffer(buf.numberOfChannels,n,sr);
   for(let c=0;c<buf.numberOfChannels;c++){const src=buf.getChannelData(c),dst=out.getChannelData(c);for(let i=0;i<n;i++)dst[i]=src[a+i]||0;}return out;}
 /* WSOLA : change la durée sans changer la hauteur. ratio = durée finale / durée d'origine */
-function* wsola(buf,ratio){   /* générateur : rend la main régulièrement pour ne pas faire hoqueter la musique */
+function* wsola(buf,ratio){   /* WSOLA circulaire : la fin de la boucle s'enchaîne sans coupure sur son début. Générateur pour ne pas bloquer la musique. */
   const sr=buf.sampleRate,C=buf.numberOfChannels,inL=buf.length,outL=Math.round(inL*ratio);
-  const N=1024*Math.max(1,Math.round(sr/44100)),Hs=N>>1,tol=Math.round(sr*.01),Ha=Hs/ratio;
+  const N=1024*Math.max(1,Math.round(sr/44100)),K=Math.ceil(outL/(N>>1)),Hs=outL/K,Ha=inL/K,tol=Math.round(sr*.01);
   const ch=[];for(let c=0;c<C;c++)ch.push(buf.getChannelData(c));
   const mono=new Float32Array(inL);for(let c=0;c<C;c++)for(let i=0;i<inL;i++)mono[i]+=ch[c][i]/C;
   const win=new Float32Array(N);for(let i=0;i<N;i++)win[i]=.5-.5*Math.cos(2*Math.PI*i/N);
-  const out=[],norm=new Float32Array(outL+N);for(let c=0;c<C;c++)out.push(new Float32Array(outL+N));
-  let prev=0;
-  for(let k=0;k*Hs<outL;k++){
+  const out=[],norm=new Float32Array(outL);for(let c=0;c<C;c++)out.push(new Float32Array(outL));
+  const M=(i,n)=>((i%n)+n)%n;let prev=0;
+  for(let k=0;k<K;k++){
     const nom=Math.round(k*Ha);let best=nom;
-    if(k>0){let bv=-Infinity;const ref=prev+Hs;
-      for(let d=-tol;d<=tol;d+=2){const p=nom+d;if(p<0||p+N>=inL)continue;let v=0;for(let j=0;j<Hs;j+=4)v+=mono[ref+j]*mono[p+j];if(v>bv){bv=v;best=p;}}}
-    best=Math.max(0,Math.min(inL-1,best));const o=k*Hs;
-    for(let j=0;j<N;j++){const sIdx=best+j,w=win[j];norm[o+j]+=w;if(sIdx>=inL)continue;for(let c=0;c<C;c++)out[c][o+j]+=ch[c][sIdx]*w;}
+    if(k>0){let bv=-Infinity;const ref=prev+Math.round(Hs);
+      for(let d=-tol;d<=tol;d+=2){const p=nom+d;let v=0;for(let j=0;j<N/2;j+=4)v+=mono[M(ref+j,inL)]*mono[M(p+j,inL)];if(v>bv){bv=v;best=p;}}}
+    const o=Math.round(k*Hs);
+    for(let j=0;j<N;j++){const oi=M(o+j,outL),si=M(best+j,inL),w=win[j];norm[oi]+=w;for(let c=0;c<C;c++)out[c][oi]+=ch[c][si]*w;}
     prev=best;if(k%6===5)yield;}
   const res=ctx.createBuffer(C,outL,sr);
-  for(let c=0;c<C;c++){const d=res.getChannelData(c),o=out[c];for(let i=0;i<outL;i++)d[i]=norm[i]>1e-3?o[i]/norm[i]:0;
-    const f=Math.min(256,outL);for(let i=0;i<f;i++){d[i]*=i/f;d[outL-1-i]*=i/f;}}
+  for(let c=0;c<C;c++){const d=res.getChannelData(c),o=out[c];for(let i=0;i<outL;i++)d[i]=o[i]/(norm[i]||1);}
   return res;}
 function runGen(g){let r;do{r=g.next();}while(!r.done);return r.value;}
 /* prépare en tâche de fond les boucles au tempo demandé */
@@ -923,15 +922,17 @@ const smpOn=id=>SMP[id]&&SMP[id].ready;
 /* beat = temps de la boucle (0 à 15) où la lecture démarre */
 function startSample(id,t,beat){const s=SMP[id],D=s.D,bpm=Math.round(curBpm),pp=s.at||D.piste;
   if(s.bus!==pp){try{s.g.disconnect();}catch(e){}s.g.connect(buses[pp]);s.bus=pp;}
-  stopSample(id);
+  if(s.src){try{s.src.stop(t+.003);}catch(e){}}   /* pas de coupure : la boucle précédente s'arrête exactement au départ de la suivante */
   let buf=s.cache[bpm],rate=1;
   if(!buf){/* tempo pas encore préparé : on prend le plus proche, en corrigeant légèrement la vitesse */
     let bestB=D.bpm;for(const k in s.cache)if(Math.abs(k-bpm)<Math.abs(bestB-bpm))bestB=+k;buf=s.cache[bestB];rate=bpm/bestB;prepTempo(bpm);}
   const loopDur=buf.duration,off=beat/D.beats*loopDur;
   const src=ctx.createBufferSource();src.buffer=buf;src.playbackRate.value=rate;src.connect(s.g);
-  src.start(t,off);src.stop(t+(loopDur-off)/rate+.005);
+  src.start(t,off);src.stop(t+(loopDur-off)/rate+.003);
+  (s.srcs=s.srcs||[]).push(src);src.onended=()=>{s.srcs=s.srcs.filter(x=>x!==src);};
   s.src=src;s.bpm=bpm;s.playing=true;}
-function stopSample(id){const s=SMP[id];if(!s||!s.playing)return;if(s.src){try{s.src.stop();}catch(e){}s.src=null;}s.playing=false;}
+/* arrêt immédiat (carte retirée, recouverte, mutée, fin de partie) */
+function stopSample(id){const s=SMP[id];if(!s||!s.playing)return;(s.srcs||[]).forEach(x=>{try{x.stop();}catch(e){}});s.srcs=[];s.src=null;s.playing=false;}
 function stopAllSamples(){for(const id in SMP)stopSample(id);}
 /* indicateur de position dans le cycle : 4 mesures × 4 temps */
 let curBeat=0;
