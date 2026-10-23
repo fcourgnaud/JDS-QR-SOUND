@@ -41,6 +41,7 @@ h1 span{color:var(--spot)}
 .mesure b{font-family:var(--mono);font-size:18px;display:block;white-space:nowrap}
 .chip{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:7px 11px;font-size:13px}
 .cam{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.ver{font-family:var(--mono);font-size:10px;color:var(--muted)}
 .cam.on{color:var(--good)}.cam.off{color:var(--bad)}
 .camfeed{position:fixed;left:0;bottom:0;width:4px;height:4px;opacity:.01;pointer-events:none}
 body{transition:box-shadow .15s}
@@ -54,6 +55,14 @@ body.fx .piste{animation:fxpiste .9s ease-out}
 @keyframes fxpiste{0%{box-shadow:0 0 0 0 var(--spot)}25%{box-shadow:0 0 0 5px var(--spot)}100%{box-shadow:0 0 0 0 transparent}}
 .chip.on{background:var(--classic);color:#14121f;border-color:var(--classic)}
 
+/* Cycle de 16 temps */
+.cycle{display:flex;align-items:center;gap:8px}
+.cycle b{flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
+.cycle i{height:10px;border-radius:3px;background:var(--panel-2)}
+.cycle i.bar{box-shadow:inset 3px 0 0 var(--muted)}
+.cycle i.done{background:color-mix(in srgb,var(--spot) 35%,var(--panel-2))}
+.cycle i.now{background:var(--spot)}
+.waitTag{color:var(--spot)}
 /* Mode test solo */
 .solotempo{display:none;flex-wrap:wrap;gap:6px}
 body.solo .solotempo{display:flex}
@@ -196,7 +205,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 
 <div class="wrap">
   <div class="top">
-    <div class="brand"><h1>La <span>Boucle</span></h1><span class="cam" id="camChip" title="">● Caméra</span></div>
+    <div class="brand"><h1>La <span>Boucle</span></h1><span class="cam" id="camChip" title="">● Caméra</span><span class="ver">v20</span></div>
     <div class="top-r"><button class="chip" id="newBtn">Nouvelle partie</button><div class="mesure"><span class="label">Mesure</span><b id="mesure">1 / 8</b></div></div>
   </div>
 
@@ -209,6 +218,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
     </div>
     <div class="tbar" id="tbar"></div>
     <div class="tscale" id="tscale"></div>
+    <div class="cycle" id="cycle"><span class="label">Cycle</span><b></b></div>
     <div class="tleg" id="tleg"></div>
     <div class="solotempo" id="soloTempo"></div>
   </div>
@@ -360,7 +370,8 @@ function render(){
       if(!t.hidden){cls=c.deck;ac=DECKS[c.deck].color;const z=S.solo?"in":zoneState(c.deck,S.bpm);zb=z==="out"?'<span class="badge red">½ hors tempo</span>':z==="ideal"?'<span class="badge gold">+1 tempo idéal</span>':"";}else ac="var(--muted)";}
     const isLast=S.last===p&&t,lc=isLast?S.players[t.owner].color:"transparent";
     const badges=[isLast&&'<span class="lastTag">Dernière posée</span>',zb,t&&t.hidden&&'<span class="badge">Cachée</span>',t&&!t.hidden&&CARDS[t.id].joker&&'<span class="badge">Joker</span>',
-      S.muted[p]&&'<span class="badge red">Mute</span>',S.boost[p]&&'<span class="badge gold">+2</span>'].filter(Boolean).join("");
+      S.muted[p]&&'<span class="badge red">Mute</span>',S.boost[p]&&'<span class="badge gold">+2</span>',
+      t&&!t.hidden&&SAMPLES[t.id]&&SMP[t.id]&&!SMP[t.id].playing&&`<span class="badge waitTag">▶ démarre dans ${16-curBeat} temps</span>`].filter(Boolean).join("");
     return `<div class="piste ${cls}${isSilent(p)?" silent":""}${isLast?" last":""}${picking?" pickable":""}" data-p="${p}" style="--ac:${ac};--lc:${lc}"><div class="head"><b>${PISTES[p]}</b><span class="label">${S.stacks[p].length}</span></div><div class="body">${body}</div><div class="badges">${badges}</div><i class="meter"></i></div>`;
   }).join("");
   $("turn").querySelector(".label").textContent=S.solo?"Solo":"À toi";
@@ -601,7 +612,8 @@ function startAudio(){
   if(!schedTimer){nextT=ctx.currentTime+.1;step=0;
     schedTimer=setInterval(()=>{
       const tgt=targetBpm();
-      while(nextT<ctx.currentTime+.15){curBpm+=(tgt-curBpm)*.12;if(Math.abs(tgt-curBpm)<.05)curBpm=tgt;SPB=60/curBpm/4;
+      if(tgt!==targetBpm.last){targetBpm.last=tgt;if(window.prepTempo)prepTempo(tgt);}
+      while(nextT<ctx.currentTime+.25){if(step%4===0)curBpm=tgt;SPB=60/curBpm/4;
         try{playStep(step,nextT);}catch(e){console.error(e);}nextT+=SPB;step=(step+1)%LOOP;}
       delNode.delayTime.setTargetAtTime(SPB*3,ctx.currentTime,.05);
     },25);}
@@ -805,39 +817,87 @@ const VOICE={
   JE2:(i)=>{if(i.st===0){riser(i.t,SPB*44,i.p,.5);}if(i.st===48){hit("eKick",i.t,1,i.p,.2);hit("cCym",i.t,.5,i.p,.3);}}
 };
 /* ---------- boucles enregistrées (MP3) ----------
-   Chaque boucle fait 4 mesures à 100 BPM (9,6 s), comme la boucle du jeu.
-   - Batterie : lue comme un tampon audio, calée à l'échantillon près ; sa vitesse suit le tempo.
-   - Basse et voix : lues par un lecteur audio qui change la vitesse SANS changer la hauteur,
-     pour rester justes quel que soit le tempo. Elles sont en ré mineur sur la grille Ré–La–Si♭–Sol :
-     quand l'une d'elles joue, tout le groupe se transpose en ré mineur et suit cette grille. */
+   Chaque boucle fait 16 temps (4 mesures de 4 temps) à 100 BPM, soit 9,6 s, comme la boucle du jeu.
+   Synchronisation :
+   - les 3 boucles sont décodées en tampons audio et programmées sur la même horloge que le reste
+     du morceau, à l'échantillon près (plus de lecteur audio séparé qui démarre en retard) ;
+   - le début réel du son est détecté dans la batterie (le MP3 ajoute un petit silence au début),
+     et le même décalage est appliqué aux 3 boucles, exportées ensemble ;
+   - pour suivre le tempo sans changer la hauteur, chaque boucle est étirée ou compressée
+     (algorithme WSOLA) une fois par tempo, puis gardée en cache ;
+   - une carte posée attend le début du prochain cycle (4 mesures de 4 temps) et démarre au début de sa boucle.
+   Basse et voix sont en ré mineur (grille Ré m – La – Si♭ – Sol m) : quand l'une d'elles joue,
+   tout le groupe synthétisé se transpose en ré mineur et suit cette grille. */
 const SAMPLES={
-  RF2:{file:"drum1",piste:"R",bpm:100,offset:.0255,tonal:false,gain:.7},
-  BF4:{file:"bass1",piste:"B",bpm:100,offset:.0255,tonal:true,gain:.3},
-  MF4:{file:"vois1",piste:"M",bpm:100,offset:.0255,tonal:true,gain:.5}};
+  RF2:{file:"drum1",piste:"R",bpm:100,beats:16,tonal:false,gain:.7},
+  BF4:{file:"bass1",piste:"B",bpm:100,beats:16,tonal:true,gain:.3},
+  MF4:{file:"vois1",piste:"M",bpm:100,beats:16,tonal:true,gain:.5}};
 const SAMPLE_KEY=5,SAMPLE_PROG="Am E F Dm";   /* = Ré m – La – Si♭ – Sol m une fois transposé */
-const SMP={};
+const SMP={};let smpOffset=null;
 function b64buf(b64){const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u.buffer;}
-function initSamples(){
-  for(const id in SAMPLES){const D=SAMPLES[id],g=ctx.createGain();g.gain.value=D.gain;g.connect(buses[D.piste]);
-    if(D.tonal){const el=new Audio();el.src="data:audio/mpeg;base64,"+SAMPLE_DATA[D.file];el.preload="auto";el.loop=false;
-      el.preservesPitch=true;el.mozPreservesPitch=true;el.webkitPreservesPitch=true;el.setAttribute("playsinline","");
-      try{ctx.createMediaElementSource(el).connect(g);}catch(e){console.error(e);}
-      const p=el.play();if(p&&p.then)p.then(()=>el.pause()).catch(()=>{});   /* débloque la lecture sur iPhone */
-      SMP[id]={D,g,el,ready:true,playing:false};}
-    else{SMP[id]={D,g,ready:false,playing:false};
-      const done=buf=>{SMP[id].buf=buf;SMP[id].ready=true;};
-      try{const pr=ctx.decodeAudioData(b64buf(SAMPLE_DATA[D.file]),done,e=>console.error(e));if(pr&&pr.then)pr.then(done).catch(()=>{});}catch(e){console.error(e);}}
-  }
+function decode(ab){return new Promise((res,rej)=>{const p=ctx.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);});}
+async function initSamples(){
+  for(const id in SAMPLES){const D=SAMPLES[id],g=ctx.createGain();g.gain.value=D.gain;g.connect(buses[D.piste]);SMP[id]={D,g,ready:false,playing:false,cache:{}};}
+  for(const id in SAMPLES){try{SMP[id].raw=await decode(b64buf(SAMPLE_DATA[SAMPLES[id].file]));}catch(e){console.error(id,e);}}
+  /* début réel du son : première attaque de la batterie */
+  const dr=SMP.RF2&&SMP.RF2.raw;smpOffset=0;
+  if(dr){const d=dr.getChannelData(0),lim=Math.min(d.length,dr.sampleRate*.2);for(let i=0;i<lim;i++)if(Math.abs(d[i])>.02){smpOffset=Math.max(0,i-Math.round(dr.sampleRate*.002))/dr.sampleRate;break;}}
+  for(const id in SMP){const s=SMP[id];if(!s.raw)continue;s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm);s.cache[s.D.bpm]=s.base;s.ready=true;}
+  prepTempo(targetBpm());
 }
+/* extrait exactement les 16 temps de la boucle */
+function cutLoop(buf,off,dur){const sr=buf.sampleRate,a=Math.round(off*sr),n=Math.round(dur*sr),out=ctx.createBuffer(buf.numberOfChannels,n,sr);
+  for(let c=0;c<buf.numberOfChannels;c++){const src=buf.getChannelData(c),dst=out.getChannelData(c);for(let i=0;i<n;i++)dst[i]=src[a+i]||0;}return out;}
+/* WSOLA : change la durée sans changer la hauteur. ratio = durée finale / durée d'origine */
+function* wsola(buf,ratio){   /* générateur : rend la main régulièrement pour ne pas faire hoqueter la musique */
+  const sr=buf.sampleRate,C=buf.numberOfChannels,inL=buf.length,outL=Math.round(inL*ratio);
+  const N=1024*Math.max(1,Math.round(sr/44100)),Hs=N>>1,tol=Math.round(sr*.01),Ha=Hs/ratio;
+  const ch=[];for(let c=0;c<C;c++)ch.push(buf.getChannelData(c));
+  const mono=new Float32Array(inL);for(let c=0;c<C;c++)for(let i=0;i<inL;i++)mono[i]+=ch[c][i]/C;
+  const win=new Float32Array(N);for(let i=0;i<N;i++)win[i]=.5-.5*Math.cos(2*Math.PI*i/N);
+  const out=[],norm=new Float32Array(outL+N);for(let c=0;c<C;c++)out.push(new Float32Array(outL+N));
+  let prev=0;
+  for(let k=0;k*Hs<outL;k++){
+    const nom=Math.round(k*Ha);let best=nom;
+    if(k>0){let bv=-Infinity;const ref=prev+Hs;
+      for(let d=-tol;d<=tol;d+=2){const p=nom+d;if(p<0||p+N>=inL)continue;let v=0;for(let j=0;j<Hs;j+=4)v+=mono[ref+j]*mono[p+j];if(v>bv){bv=v;best=p;}}}
+    best=Math.max(0,Math.min(inL-1,best));const o=k*Hs;
+    for(let j=0;j<N;j++){const sIdx=best+j,w=win[j];norm[o+j]+=w;if(sIdx>=inL)continue;for(let c=0;c<C;c++)out[c][o+j]+=ch[c][sIdx]*w;}
+    prev=best;if(k%6===5)yield;}
+  const res=ctx.createBuffer(C,outL,sr);
+  for(let c=0;c<C;c++){const d=res.getChannelData(c),o=out[c];for(let i=0;i<outL;i++)d[i]=norm[i]>1e-3?o[i]/norm[i]:0;
+    const f=Math.min(256,outL);for(let i=0;i<f;i++){d[i]*=i/f;d[outL-1-i]*=i/f;}}
+  return res;}
+function runGen(g){let r;do{r=g.next();}while(!r.done);return r.value;}
+/* prépare en tâche de fond les boucles au tempo demandé */
+let prepQueue=[];
+function prepTempo(bpm){bpm=Math.round(bpm);for(const id in SMP){const s=SMP[id];if(s.ready&&!s.cache[bpm]&&!prepQueue.some(q=>q[0]===id&&q[1]===bpm))prepQueue.push([id,bpm]);}
+  if(prepQueue.length&&!prepTempo.busy){prepTempo.busy=true;let job=null;
+    setTimeout(function run(){const t0=performance.now();
+      while(performance.now()-t0<8){
+        if(!job){const q=prepQueue.shift();if(!q)break;const s=SMP[q[0]];if(s.cache[q[1]])continue;job={q,s,g:wsola(s.base,s.D.bpm/q[1])};}
+        const r=job.g.next();if(r.done){const c=job.s.cache;c[job.q[1]]=r.value;const ks=Object.keys(c).map(Number).filter(k=>k!==job.s.D.bpm);
+          if(ks.length>4){ks.sort((a,b)=>Math.abs(a-curBpm)-Math.abs(b-curBpm));ks.slice(4).forEach(k=>delete c[k]);}job=null;}}
+      if(job||prepQueue.length)setTimeout(run,4);else prepTempo.busy=false;},4);}}
 const smpOn=id=>SMP[id]&&SMP[id].ready;
-function startSample(id,t,bar){const s=SMP[id],D=s.D,rate=curBpm/D.bpm,off=D.offset+bar*240/D.bpm;
+/* beat = temps de la boucle (0 à 15) où la lecture démarre */
+function startSample(id,t,beat){const s=SMP[id],D=s.D,bpm=Math.round(curBpm);
   stopSample(id);
-  if(D.tonal){const el=s.el;s.timer=setTimeout(()=>{try{el.playbackRate=rate;el.currentTime=off;el.play().catch(()=>{});}catch(e){}},Math.max(0,(t-ctx.currentTime)*1000));}
-  else{const src=ctx.createBufferSource();src.buffer=s.buf;src.playbackRate.value=rate;src.connect(s.g);src.start(t,off);src.stop(t+(D.offset+4*240/D.bpm-off)/rate);s.src=src;}
-  s.playing=true;}
-function stopSample(id){const s=SMP[id];if(!s||!s.playing)return;clearTimeout(s.timer);
-  if(s.el){try{s.el.pause();}catch(e){}}if(s.src){try{s.src.stop();}catch(e){}s.src=null;}s.playing=false;}
+  let buf=s.cache[bpm],rate=1;
+  if(!buf){/* tempo pas encore préparé : on prend le plus proche, en corrigeant légèrement la vitesse */
+    let bestB=D.bpm;for(const k in s.cache)if(Math.abs(k-bpm)<Math.abs(bestB-bpm))bestB=+k;buf=s.cache[bestB];rate=bpm/bestB;prepTempo(bpm);}
+  const loopDur=buf.duration,off=beat/D.beats*loopDur;
+  const src=ctx.createBufferSource();src.buffer=buf;src.playbackRate.value=rate;src.connect(s.g);
+  src.start(t,off);src.stop(t+(loopDur-off)/rate+.005);
+  s.src=src;s.bpm=bpm;s.playing=true;}
+function stopSample(id){const s=SMP[id];if(!s||!s.playing)return;if(s.src){try{s.src.stop();}catch(e){}s.src=null;}s.playing=false;}
 function stopAllSamples(){for(const id in SMP)stopSample(id);}
+/* indicateur de position dans le cycle : 4 mesures × 4 temps */
+let curBeat=0;
+function showBeat(b){curBeat=b;const el=$("cycle");if(!el)return;
+  el.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar":"");});
+  if(b===0&&document.querySelector(".waitTag")&&S)render();
+  const left=16-b;document.querySelectorAll(".waitTag").forEach(w=>w.textContent="▶ démarre dans "+left+" temps");}
 /* appelé à chaque double-croche : décide quelles boucles jouent, et la tonalité */
 function sampleStep(st,t){
   const want=[];
@@ -845,13 +905,16 @@ function sampleStep(st,t){
   else if(S&&!S.ended&&soundOn)for(const p of PORDER){const tp=topOf(p);if(tp&&!tp.hidden&&!isSilent(p)&&SAMPLES[tp.id]&&smpOn(tp.id))want.push(tp.id);}
   for(const id in SMP)if(SMP[id].playing&&!want.includes(id))stopSample(id);
   KEY=want.some(id=>SAMPLES[id].tonal)?SAMPLE_KEY:0;
-  const bar=(st>>4)%4;
-  for(const id of want){const s=SMP[id];
-    if(st%16===0&&(st===0||!s.playing))startSample(id,t,bar);
-    else if(s.playing&&s.el)s.el.playbackRate=curBpm/s.D.bpm;}
+  if(st%4===0){const beat=st/4;
+    for(const id of want){const s=SMP[id];
+      /* (re)démarrage : début de cycle, carte qui vient d'être posée, ou changement de tempo */
+      if(st===0)startSample(id,t,0);                                   /* début de cycle : toutes les boucles repartent ensemble */
+      else if(s.playing&&s.bpm!==Math.round(curBpm))startSample(id,t,beat);   /* changement de tempo : on garde la position */
+      /* une boucle qui vient d'être posée attend le début du prochain cycle (4 mesures de 4 temps) */
+    }
+    const b=beat;setTimeout(()=>showBeat(b),Math.max(0,(t-ctx.currentTime)*1000));}
   return want;
 }
-
 /* ---------- séquenceur ---------- */
 function progNow(){
   if(KEY===SAMPLE_KEY)return prog(SAMPLE_PROG);
@@ -962,6 +1025,7 @@ $("scene").onclick=e=>{const el=e.target.closest(".piste");if(!el)return;if(S.so
 $("mesureBtn").onclick=playMesure;
 $("undoBtn").onclick=()=>{if(!undoStack.length)return;stopLarsen();clearTimeout(mesureTimer);S=JSON.parse(undoStack.pop());pending=null;picking=null;$("layer").innerHTML="";render();toast("Dernière action annulée");};
 $("soloTempo").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.a)soloTempo(+b.dataset.a,true);else soloTempo(+b.dataset.v);};
+$("cycle").querySelector("b").innerHTML="<i></i>".repeat(16);
 $("soundBtn").onclick=()=>{soundOn=!soundOn;$("soundBtn").textContent="Son : "+(soundOn?"oui":"non");if(soundOn)startAudio();};
 $("passBtn").onclick=()=>{if(S&&S.solo){document.body.classList.remove("solo");return setup();}if(!S||S.ended||pending)return;snap();nextTurn();};
 $("newBtn").onclick=()=>{
