@@ -393,7 +393,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
     <h3>Actions</h3>
     <ul><li><b>Mute</b> : la piste touchée ne marque pas à la prochaine mesure.</li><li><b>Drop</b> : la prochaine mesure compte double, puis les cartes recouvertes sont défaussées.</li><li><b>Tonalité</b> : la carte de la piste touchée vaut +2 à la prochaine mesure.</li></ul>
     <h3>La musique</h3>
-    <p>Une seule boucle joue à la fois. Quand une carte est posée, l'app finit la boucle en cours puis lance la nouvelle. Ensuite elle joue l'une après l'autre les cartes visibles sur le dessus des pistes, dans l'ordre où elles ont été posées, et reprend la liste là où elle en était, jusqu'à la prochaine carte posée. La pile qui joue s'illumine.</p>
+    <p>Une seule boucle joue à la fois. Quand une carte est posée, l'app finit la boucle en cours puis lance la nouvelle. Ensuite elle joue les pistes l'une après l'autre, toujours dans l'ordre A, B, C, D (Rythme, Basse, Harmonie, Mélodie), en repartant de la piste qui suit : une carte posée en Basse joue, puis Harmonie, Mélodie, Rythme, Basse… jusqu'à la prochaine carte posée. Les pistes vides ou coupées par un Mute sont sautées. La pile qui joue s'illumine.</p>
     <h3>Tes propres sons (MP3)</h3>
     <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec la lettre de la piste (A Rythme, B Basse, C Harmonie, D Mélodie), puis « tribu » et le numéro de la tribu, par exemple <b>sons/Btribu1.mp3</b> pour la Basse de la Tribu 1. Les deux cartes de la même piste d'un deck jouent ce même fichier, qui remplace leur son synthétisé. Le nom est visible dans l'onglet « Sons des decks ». Le Joker n'a pas de fichier : il joue celui de sa tribu pour la piste choisie. Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées. Si un fichier n'a pas la durée prévue, l'app retrouve son tempo d'après sa durée et l'affiche sur l'écran de départ.</p>
     <h3>Fin</h3>
@@ -421,7 +421,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v39";
+const VERSION="v40";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1258,11 +1258,11 @@ function countTick(b,first){
   $("cmDots").querySelectorAll("i").forEach((d,i)=>d.className=i<pos?"on":i===pos?"now":"");}
 /* =========== Lecture à la suite : une seule boucle à la fois ===========
    - Une carte posée attend la fin de la boucle en cours, puis sa boucle joue.
-   - Ensuite l'app joue, l'une après l'autre, les cartes visibles du dessus des pistes, dans leur ordre de pose,
-     et reprend la liste là où elle en était.
+   - Ensuite l'app joue les pistes l'une après l'autre, toujours dans l'ordre A, B, C, D (Rythme, Basse, Harmonie, Mélodie),
+     en repartant de la piste qui suit celle qui vient de jouer : carte posée en B → B, puis C, D, A, B…
    - Chaque boucle dure 16 temps (ou la durée de son MP3). */
-const PL={cur:null,len:16,beat:0,ptr:0,pend:[],skip:[]};
-function plReset(){if(PL.cur&&PL.cur.ref&&SMP[PL.cur.ref])stopSample(PL.cur.ref);Object.assign(PL,{cur:null,len:16,beat:0,ptr:0,pend:[],skip:[]});}
+const PL={cur:null,len:16,beat:0,ptr:3,pend:[]};
+function plReset(){if(PL.cur&&PL.cur.ref&&SMP[PL.cur.ref])stopSample(PL.cur.ref);Object.assign(PL,{cur:null,len:16,beat:0,ptr:3,pend:[]});}
 function plAdd(e){PL.pend=PL.pend.filter(q=>q!==e.seq);PL.pend.push(e.seq);}
 const sndOf=e=>e.snd||e.id;
 function plLen(e){const r=SREF(sndOf(e));return SAMPLES[r]&&smpOn(r)?SMP[r].D.beats:16;}
@@ -1273,11 +1273,10 @@ function plFind(seq){if(!S)return null;for(const p of PORDER)for(const e of S.st
 function plWait(seq){let w=PL.cur?PL.len-PL.beat:(16-curBeat%16)%16||16;
   for(const q of PL.pend){if(q===seq)break;const f=plFind(q);if(f)w+=plLen(f.t);}return w;}
 function plNext(){const vis=plVisible();
-  while(PL.pend.length){const q=PL.pend.shift(),f=vis.find(v=>v.t.seq===q);if(f){PL.skip.push(q);return f;}}
-  if(!vis.length)return null;
-  for(let k=0;k<vis.length+1;k++){const n=vis.find(v=>v.t.seq>PL.ptr)||vis[0];PL.ptr=n.t.seq;
-    const i=PL.skip.indexOf(n.t.seq);if(i<0)return n;PL.skip.splice(i,1);}   /* déjà jouée juste avant, comme nouvelle carte */
-  return vis[0];}
+  while(PL.pend.length){const q=PL.pend.shift(),f=vis.find(v=>v.t.seq===q);if(f){PL.ptr=PORDER.indexOf(f.p);return f;}}
+  /* ensuite, toujours dans l'ordre des pistes A, B, C, D, à partir de la piste qui suit la dernière jouée */
+  for(let k=1;k<=4;k++){const p=PORDER[(PL.ptr+k)%4],f=vis.find(v=>v.p===p);if(f){PL.ptr=PORDER.indexOf(p);return f;}}
+  return null;}
 function plStopAt(t){const c=PL.cur;PL.cur=null;if(c&&c.ref&&SMP[c.ref]&&SMP[c.ref].playing){const s=SMP[c.ref];
   (s.srcs||[]).forEach(x=>{try{x.stop(t+.003);}catch(e){}});s.src=null;s.playing=false;}}
 function plStart(n,t){const id=sndOf(n.t),r=SREF(id),mp3=!!(SAMPLES[r]&&smpOn(r)),prev=PL.cur;
