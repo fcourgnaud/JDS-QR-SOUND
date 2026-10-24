@@ -391,7 +391,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
     <h3>La musique</h3>
     <p>La carte Harmonie du dessus fixe la grille d'accords pour tout le monde (sinon c'est la carte Mélodie). Les autres pistes suivent ces accords, donc tous les mélanges restent justes.</p>
     <h3>Tes propres sons (MP3)</h3>
-    <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec le code de la carte (visible dans l'onglet « Sons des decks ») : par exemple <b>sons/RF2.mp3</b> pour Rock carré. Il remplace le son synthétisé de cette carte. Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées.</p>
+    <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec la référence de son : la lettre de la piste (R, B, H, M, J pour le Joker) suivie de celle de la tribu (F Enclume, N Sylvains, E Orage), par exemple <b>sons/RF.mp3</b>. Les deux cartes de la même piste d'un deck jouent ce même fichier, qui remplace leur son synthétisé. La référence est visible dans l'onglet « Sons des decks ». Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées.</p>
     <h3>Fin</h3>
     <ul><li>Après la 8e mesure, le meilleur score gagne. La musique s'arrête.</li><li>Égalité : celui qui contrôle le plus de pistes l'emporte.</li></ul>
   </div>
@@ -417,7 +417,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v34";
+const VERSION="v35";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -530,7 +530,7 @@ function render(){
     const isLast=S.last===p&&t,lc=isLast?S.players[t.owner].color:"transparent";
     const badges=[isLast&&'<span class="lastTag">Dernière posée</span>',zb,t&&t.hidden&&'<span class="badge">Cachée</span>',t&&!t.hidden&&CARDS[t.id].joker&&'<span class="badge">Joker</span>',
       S.muted[p]&&'<span class="badge red">Mute</span>',S.boost[p]&&'<span class="badge gold">+2</span>',
-      t&&!t.hidden&&SAMPLES[t.id]&&SMP[t.id]&&!SMP[t.id].playing&&`<span class="badge waitTag">▶ démarre dans ${16-curBeat} temps</span>`].filter(Boolean).join("");
+      t&&!t.hidden&&SAMPLES[SREF(t.id)]&&SMP[SREF(t.id)]&&!SMP[SREF(t.id)].playing&&`<span class="badge waitTag">▶ démarre dans ${16-curBeat} temps</span>`].filter(Boolean).join("");
     return `<div class="piste ${cls}${isSilent(p)?" silent":""}${isLast?" last":""}${picking?" pickable":""}" data-p="${p}" style="--ac:${ac};--lc:${lc}"><div class="head"><b>${PISTES[p]}</b><span class="label">${S.stacks[p].length}</span></div><div class="body">${body}</div><div class="badges">${badges}</div><i class="meter"></i></div>`;
   }).join("");
   $("turn").querySelector(".label").textContent=S.solo?"Solo":"À toi";
@@ -688,7 +688,7 @@ function soloScan(c){
   if(c.kind==="action"){toast("Les cartes Action ne font rien en mode test");return;}
   if(c.joker){pending=c;picking={kind:"solo",c};return pickBar(`Joker ${DECKS[c.deck].glyph} : touche la piste où l'écouter`);}
   soloPlace(c,c.piste);}
-function soloPlace(c,p){snap();const was=SMP[c.id]&&SMP[c.id].playing&&topOf(p)&&topOf(p).id===c.id;S.stacks[p]=[{id:c.id,owner:ownerOf(c.deck),hidden:false,tempoDone:true}];S.last=p;render();if(!was)openCount(c.id);toast(INFO[c.id].t+" · "+PISTES[p]);}
+function soloPlace(c,p){snap();const was=SMP[SREF(c.id)]&&SMP[SREF(c.id)].playing&&topOf(p)&&SREF(topOf(p).id)===SREF(c.id);S.stacks[p]=[{id:c.id,owner:ownerOf(c.deck),hidden:false,tempoDone:true}];S.last=p;render();if(!was)openCount(c.id);toast(INFO[c.id].t+" · "+PISTES[p]);}
 function soloTempo(v,abs){S.bpm=Math.max(BPM_MIN,Math.min(BPM_MAX,abs?v:S.bpm+v));render();}
 
 /* ================= Cartes scannées ================= */
@@ -1111,7 +1111,9 @@ const VOICE={
    tout le groupe synthétisé se transpose en ré mineur et suit cette grille. */
 /* Réglages des boucles : modifiables sans toucher au code, dans le fichier sons/reglages.json */
 let SET={bpm:100,temps:16,tonalite:"Dm",grille:"Dm A Bb Gm"};
-const SAMPLES={};                  /* rempli au démarrage : une entrée par fichier sons/<CODE>.mp3 trouvé */
+const SAMPLES={};                  /* rempli au démarrage : une entrée par fichier sons/<REF>.mp3 trouvé */
+/* Référence de son : piste + tribu (RF, BF, HF, MF, JF…). Les deux cartes d'une même piste d'un deck partagent le même MP3. */
+const SREF=id=>id.slice(0,2);
 let SAMPLE_KEY=5,SAMPLE_PROG="Am E F Dm",tonalOn=false;
 const SMP={};let smpOffset=null;
 function decode(ab){return new Promise((res,rej)=>{const p=ctx.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);});}
@@ -1123,8 +1125,10 @@ function preloadSons(){
   if(location.protocol==="file:"){mp3Info="MP3 : ouvre la page depuis GitHub pour charger le dossier sons";return PRE=Promise.resolve({set:null,files:{}});}
   PRE=(async()=>{const out={set:null,files:{}};const rg=await getFile("sons/reglages.json");
     if(rg){try{out.set=await rg.json();}catch(e){out.setErr=true;}}
-    const ids=Object.keys(CARDS).filter(id=>CARDS[id].kind==="inst");
-    await Promise.all(ids.map(async id=>{const r=await getFile("sons/"+id+".mp3");if(r){try{out.files[id]=await r.arrayBuffer();}catch(e){}}}));
+    const ids=Object.keys(CARDS).filter(id=>CARDS[id].kind==="inst"),refs=[...new Set(ids.map(SREF))];
+    /* sons/RF.mp3 ; à défaut, un ancien nom de carte (sons/RF2.mp3 ou sons/RF4.mp3) */
+    await Promise.all(refs.map(async ref=>{for(const n of [ref,...ids.filter(i=>SREF(i)===ref)]){const r=await getFile("sons/"+n+".mp3");
+      if(r){try{out.files[ref]=await r.arrayBuffer();break;}catch(e){}}}}));
     const k=Object.keys(out.files);mp3Info=k.length?"🎵 "+k.length+" boucle"+(k.length>1?"s":"")+" MP3 trouvée"+(k.length>1?"s":"")+" : "+k.join(", "):"Aucune boucle MP3 trouvée dans le dossier sons";
     const el=$("mp3Status");if(el)el.textContent=mp3Info;return out;})();
   return PRE;}
@@ -1137,7 +1141,7 @@ async function initSamples(){
   SAMPLE_PROG=String(SET.grille).trim().split(/\s+/).slice(0,4).map(n=>chordShift(n,k)).join(" ");
   while(SAMPLE_PROG.split(" ").length<4)SAMPLE_PROG+=" "+SAMPLE_PROG.split(" ")[0];
   await Promise.all(Object.keys(pre.files).map(async id=>{
-    try{const raw=await decode(pre.files[id].slice(0));const c=CARDS[id];
+    try{const raw=await decode(pre.files[id].slice(0));const c=CARDS[Object.keys(CARDS).find(i=>SREF(i)===id)];
       SAMPLES[id]={piste:c.joker?"M":c.piste,bpm:+SET.bpm||100,beats:+SET.temps||16,tonal:c.piste!=="R"};
       const g=ctx.createGain();SMP[id]={D:SAMPLES[id],g,raw,ready:false,playing:false,cache:{}};}catch(e){console.error(id,e);toast("sons/"+id+".mp3 n'a pas pu être lu",true);}}));
   /* silence ajouté par l'encodeur MP3 au début : le plus petit décalage trouvé, commun à des boucles exportées ensemble */
@@ -1211,14 +1215,14 @@ function showBeat(b){curBeat=b;const el=$("cycle");if(!el)return;
   countTick(b);arcBeat(b);}
 /* fenêtre animée : décompte des temps jusqu'à la prochaine mesure, après le scan d'une carte à boucle MP3 */
 let countId=null,countClose=null;
-function openCount(id){if(!SAMPLES[id])return;countId=id;clearTimeout(countClose);
+function openCount(id){const r=SREF(id);if(!SAMPLES[r]||(SMP[r]&&SMP[r].playing))return;countId=id;clearTimeout(countClose);
   const c=CARDS[id],D=DECKS[c.deck];let el=$("countModal");
   if(!el){el=document.createElement("div");el.id="countModal";document.body.appendChild(el);}
   el.style.setProperty("--dc",D.color);
   el.innerHTML=`<div class="cm-box"><span class="cm-lab">${D.glyph} ${INFO[id].t} · ${PISTES[c.piste]}</span><b class="cm-num" id="cmNum"></b><span class="cm-sub" id="cmSub">temps avant la prochaine mesure</span><div class="cm-dots" id="cmDots">${"<i></i>".repeat(4)}</div></div>`;
   el.className="show";countTick(curBeat,true);}
 function countTick(b,first){
-  if(!countId)return;const el=$("countModal");if(!el)return;const s=SMP[countId];
+  if(!countId)return;const el=$("countModal");if(!el)return;const s=SMP[SREF(countId)];
   const pos=b%4,num=$("cmNum");
   if(!first&&s&&s.playing&&pos===0){num.textContent="▶";$("cmSub").textContent="c'est parti !";el.classList.add("go");
     $("cmDots").querySelectorAll("i").forEach(d=>d.className="on");countId=null;countClose=setTimeout(()=>{el.className="";},700);return;}
@@ -1227,8 +1231,8 @@ function countTick(b,first){
 /* appelé à chaque double-croche : décide quelles boucles jouent, et la tonalité */
 function sampleStep(st,t){
   const want=[];
-  if(preview){if(SAMPLES[preview.id]&&smpOn(preview.id)){want.push(preview.id);SMP[preview.id].at=preview.piste;}}
-  else if(S&&!S.ended&&soundOn)for(const p of PORDER){const tp=topOf(p);if(tp&&!tp.hidden&&!isSilent(p)&&SAMPLES[tp.id]&&smpOn(tp.id)){want.push(tp.id);SMP[tp.id].at=p;}}
+  if(preview){{const r=SREF(preview.id);if(SAMPLES[r]&&smpOn(r)){want.push(r);SMP[r].at=preview.piste;}}}
+  else if(S&&!S.ended&&soundOn)for(const p of PORDER){const tp=topOf(p);if(tp&&!tp.hidden&&!isSilent(p)&&SAMPLES[SREF(tp.id)]&&smpOn(SREF(tp.id))){want.push(SREF(tp.id));SMP[SREF(tp.id)].at=p;}}
   for(const id in SMP)if(SMP[id].playing&&!want.includes(id))stopSample(id);
   tonalOn=want.some(id=>SAMPLES[id].tonal);KEY=tonalOn?SAMPLE_KEY:0;
   if(st%4===0){const beat=st/4,bar=beat>>2;
@@ -1341,7 +1345,7 @@ async function decodeFrame(){
 /* ================= Listes de cartes, onglets, boutons ================= */
 function cardButtons(el){
   const deckIds=d=>Object.keys(CARDS).filter(id=>CARDS[id].deck===d).sort((a,b)=>"RBHMJ".indexOf(a[0])-"RBHMJ".indexOf(b[0]));
-  el.innerHTML=Object.keys(DECKS).map(d=>`<h4>${DECKS[d].glyph} ${DECKS[d].name} (${DECKS[d].style}) · zone ${DECKS[d].zone[0]}–${DECKS[d].zone[1]}</h4>`+deckIds(d).map(id=>`<button data-k="${id}" style="--cc:${DECKS[d].color}"><span>${SAMPLES[id]?"🎵 ":""}${cardLabel(CARDS[id])} · ${tempoTxt(id)}</span><small>${INFO[id].t} : ${SAMPLES[id]?"boucle MP3":INFO[id].d}</small><small class="fname">sons/${id}.mp3</small></button>`).join("")).join("")
+  el.innerHTML=Object.keys(DECKS).map(d=>`<h4>${DECKS[d].glyph} ${DECKS[d].name} (${DECKS[d].style}) · zone ${DECKS[d].zone[0]}–${DECKS[d].zone[1]}</h4>`+deckIds(d).map(id=>`<button data-k="${id}" style="--cc:${DECKS[d].color}"><span>${SAMPLES[SREF(id)]?"🎵 ":""}${cardLabel(CARDS[id])} · ${tempoTxt(id)}</span><small>${INFO[id].t} : ${SAMPLES[SREF(id)]?"boucle MP3":INFO[id].d}</small><small class="fname">sons/${SREF(id)}.mp3</small></button>`).join("")).join("")
     +`<h4>Actions (communes)</h4>`+Object.keys(ACTIONS).map(id=>`<button data-k="${id}" style="--cc:var(--spot)"><span>${ACTIONS[id]}</span></button>`).join("");
 }
 cardButtons($("sons"));cardButtons($("sim"));
