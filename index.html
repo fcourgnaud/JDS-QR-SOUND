@@ -326,6 +326,11 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 .lz-s{font-family:var(--mono);font-size:30px;line-height:1;min-width:1.2em;text-align:right}
 .toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--text);color:var(--stage);padding:14px 18px;border-radius:14px;font-weight:800;font-size:17px;line-height:1.3;z-index:30;max-width:calc(100% - 28px);text-align:center}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.jk-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 14px}
+.jk-grid button{font:inherit;padding:18px 8px;border-radius:16px;border:2px solid var(--dc);background:rgba(255,255,255,.06);color:inherit;display:flex;flex-direction:column;gap:4px;align-items:center;cursor:pointer}
+.jk-grid button b{font-size:20px}.jk-grid button small{opacity:.75}
+.jk-grid button[disabled]{opacity:.25;border-color:transparent;cursor:default}
+.piste.now{box-shadow:0 0 0 3px var(--ac),0 0 22px var(--ac)}
 </style>
 </head>
 <body>
@@ -366,21 +371,20 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
     <button data-tab="regles">Règles</button>
   </div>
   <div class="pane" id="pane-sons"><p class="note">Touche une carte pour l'écouter seule, à son tempo idéal, pendant 4 mesures.</p><div class="cardgrid" id="sons"></div></div>
-  <div class="pane" id="pane-sim" hidden><p class="note">Fait comme si la carte venait d'être scannée.</p><label class="simhid"><input type="checkbox" id="simHid"> Simuler le QR de la face (carte posée face cachée)</label><div class="cardgrid" id="sim"></div></div>
+  <div class="pane" id="pane-sim" hidden><p class="note">Fait comme si la carte venait d'être scannée.</p><div class="cardgrid" id="sim"></div></div>
   <div class="pane rules" id="pane-regles" hidden>
     <h3>But</h3>
     <p>Chaque joueur incarne une tribu avec son propre deck : Tribu 1, Tribu 2 ou Tribu 3. Vous partagez une boucle de 4 pistes et un seul tempo. Après 8 mesures, le plus de points gagne.</p>
     <h3>Mise en place</h3>
-    <ul><li>Téléphone à plat au centre, écran vers le haut. Les 4 pistes autour.</li><li>Chaque joueur prend un deck (9 cartes : 8 instruments et 1 Joker, de 1 à 6 points) et le mélange.</li><li>Les 5 cartes Action sont partagées : distribuez-les ou faites-en une pioche commune.</li><li>Chacun pioche 4 cartes. Le tempo démarre à 103.</li></ul>
+    <ul><li>Téléphone à plat au centre, écran vers le haut. Les 4 pistes autour.</li><li>Chaque joueur prend un deck (9 cartes : 8 instruments et 1 Joker, de 1 à 6 points) et le mélange.</li><li>Les 5 cartes Action sont partagées : distribuez-les ou faites-en une pioche commune.</li><li>Chacun pioche 4 cartes. L'app tire au sort le premier joueur et le tempo de départ.</li></ul>
     <h3>La guerre du tempo</h3>
     <ul><li>Les zones de tempo et les tempos idéaux sont <b>tirés au hasard à chaque partie</b>, entre 80 et 130 BPM. Toutes les zones ont la même largeur et se chevauchent de façon équilibrée (à 3 tribus, il existe toujours une zone commune aux trois). Le tirage de départ les affiche sur la barre de tempo, puis tire au hasard le premier joueur et le tempo de départ (entre 80 et 130 BPM).</li>
     <li>Chaque carte pousse le tempo (▲ +5, ▼ −10, = …). Le Joker ramène le tempo au tempo idéal de son deck.</li>
     <li>Au score : une carte dans sa zone vaut sa valeur. Hors zone, la moitié (arrondie en dessous). À 2 BPM ou moins de son tempo idéal : +1.</li>
-    <li>Une carte cachée ne change le tempo qu'au moment où elle est révélée.</li></ul>
+</ul>
     <h3>Ton tour : une seule action</h3>
     <ul><li><b>Poser un instrument</b> : présente le dos de la carte au-dessus de la caméra frontale (15–25 cm), pose-la sur sa piste. L'app la place toute seule. Poser sur la carte d'un autre la recouvre : la piste est à toi.</li>
-    <li>Face cachée : scanne le petit QR code de la face (en haut à droite) au lieu de celui du dos, puis pose la carte face cachée.</li>
-    <li><b>Joker</b> : scanne-le puis touche la piste où tu le poses.</li>
+    <li><b>Joker</b> : il se joue seulement sur une carte adverse. Scanne-le : un écran montre les 4 pistes, choisis celle de la carte adverse à remplacer. Le Joker ne se pose pas sur la table : l'app joue sur cette piste le son de ta tribu (ex. Joker de la Tribu 1 sur une Basse de la Tribu 2 → le son Btribu1). La piste est à toi et marque les points du Joker jusqu'à ce qu'on la recouvre. Le tempo revient au tempo idéal de ta tribu.</li>
     <li><b>Jouer une action</b> (Mute, Drop, Tonalité), ou <b>passer</b>.</li><li>Puis repioche jusqu'à 4 cartes.</li></ul>
     <h3>Larsen (réaction)</h3>
     <p>Quand on recouvre ta carte, tu as 7 secondes pour scanner un Larsen : la carte posée est retirée, la tienne revient, et le tempo reprend sa valeur d'avant.</p>
@@ -389,9 +393,9 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
     <h3>Actions</h3>
     <ul><li><b>Mute</b> : la piste touchée ne marque pas à la prochaine mesure.</li><li><b>Drop</b> : la prochaine mesure compte double, puis les cartes recouvertes sont défaussées.</li><li><b>Tonalité</b> : la carte de la piste touchée vaut +2 à la prochaine mesure.</li></ul>
     <h3>La musique</h3>
-    <p>La carte Harmonie du dessus fixe la grille d'accords pour tout le monde (sinon c'est la carte Mélodie). Les autres pistes suivent ces accords, donc tous les mélanges restent justes.</p>
+    <p>Une seule boucle joue à la fois. Quand une carte est posée, l'app finit la boucle en cours puis lance la nouvelle. Ensuite elle joue l'une après l'autre les cartes visibles sur le dessus des pistes, dans l'ordre où elles ont été posées, et reprend la liste là où elle en était, jusqu'à la prochaine carte posée. La pile qui joue s'illumine.</p>
     <h3>Tes propres sons (MP3)</h3>
-    <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec la référence de son : la lettre de la piste (R, B, H, M, J pour le Joker) suivie de celle de la tribu (F Tribu 1, N Tribu 2, E Tribu 3), par exemple <b>sons/RF.mp3</b>. Les deux cartes de la même piste d'un deck jouent ce même fichier, qui remplace leur son synthétisé. La référence est visible dans l'onglet « Sons des decks ». Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées. Si un fichier n'a pas la durée prévue, l'app retrouve son tempo d'après sa durée et l'affiche sur l'écran de départ.</p>
+    <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec la lettre de la piste (A Rythme, B Basse, C Harmonie, D Mélodie), puis « tribu » et le numéro de la tribu, par exemple <b>sons/Btribu1.mp3</b> pour la Basse de la Tribu 1. Les deux cartes de la même piste d'un deck jouent ce même fichier, qui remplace leur son synthétisé. Le nom est visible dans l'onglet « Sons des decks ». Le Joker n'a pas de fichier : il joue celui de sa tribu pour la piste choisie. Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées. Si un fichier n'a pas la durée prévue, l'app retrouve son tempo d'après sa durée et l'affiche sur l'écran de départ.</p>
     <h3>Fin</h3>
     <ul><li>Après la 8e mesure, le meilleur score gagne. La musique s'arrête.</li><li>Égalité : celui qui contrôle le plus de pistes l'emporte.</li></ul>
   </div>
@@ -417,7 +421,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v38";
+const VERSION="v39";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -489,7 +493,7 @@ function tempoTxt(id){const x=INFO[id].tempo;return x==="home"?"♩ "+DECKS[CARD
 /* ================= État ================= */
 let S=null,undoStack=[],larsen=null,pending=null,picking=null,soundOn=true,mesureTimer=null;
 function fresh(players){return{players:players.map(p=>({name:p.name,deck:p.deck,color:DECKS[p.deck].color,score:0})),
-  turn:0,played:0,mesure:1,max:8,bpm:BPM_START,stacks:{R:[],B:[],H:[],M:[]},muted:{},boost:{},drop:false,ended:false,last:null};}
+  turn:0,played:0,mesure:1,max:8,bpm:BPM_START,stacks:{R:[],B:[],H:[],M:[]},muted:{},boost:{},drop:false,ended:false,last:null,seqN:0};}
 function snap(){undoStack.push(JSON.stringify(S));if(undoStack.length>80)undoStack.shift();}
 const topOf=p=>{const s=S.stacks[p];return s.length?s[s.length-1]:null};
 const isSilent=p=>!!S.muted[p];
@@ -528,10 +532,11 @@ function render(){
         +(t.hidden?"":`<span class="ttl">${INFO[t.id].t}</span>`);
       if(!t.hidden){cls=c.deck;ac=DECKS[c.deck].color;const z=S.solo?"in":zoneState(c.deck,S.bpm);zb=z==="out"?'<span class="badge red">½ hors tempo</span>':z==="ideal"?'<span class="badge gold">+1 tempo idéal</span>':"";}else ac="var(--muted)";}
     const isLast=S.last===p&&t,lc=isLast?S.players[t.owner].color:"transparent";
-    const badges=[isLast&&'<span class="lastTag">Dernière posée</span>',zb,t&&t.hidden&&'<span class="badge">Cachée</span>',t&&!t.hidden&&CARDS[t.id].joker&&'<span class="badge">Joker</span>',
+    const badges=[isLast&&'<span class="lastTag">Dernière posée</span>',zb,t&&!t.hidden&&CARDS[t.id].joker&&'<span class="badge">Joker</span>',
       S.muted[p]&&'<span class="badge red">Mute</span>',S.boost[p]&&'<span class="badge gold">+2</span>',
-      t&&!t.hidden&&SAMPLES[SREF(t.id)]&&SMP[SREF(t.id)]&&!SMP[SREF(t.id)].playing&&`<span class="badge waitTag">▶ démarre dans ${16-curBeat} temps</span>`].filter(Boolean).join("");
-    return `<div class="piste ${cls}${isSilent(p)?" silent":""}${isLast?" last":""}${picking?" pickable":""}" data-p="${p}" style="--ac:${ac};--lc:${lc}"><div class="head"><b>${PISTES[p]}</b><span class="label">${S.stacks[p].length}</span></div><div class="body">${body}</div><div class="badges">${badges}</div><i class="meter"></i></div>`;
+      t&&PL.cur&&PL.cur.seq===t.seq&&'<span class="badge gold nowTag">♪ en lecture</span>',
+      t&&PL.pend.includes(t.seq)&&`<span class="badge waitTag" data-seq="${t.seq}">▶ dans ${plWait(t.seq)} temps</span>`].filter(Boolean).join("");
+    return `<div class="piste ${cls}${isSilent(p)?" silent":""}${isLast?" last":""}${t&&PL.cur&&PL.cur.seq===t.seq?" now":""}${picking?" pickable":""}" data-p="${p}" style="--ac:${ac};--lc:${lc}"><div class="head"><b>${PISTES[p]}</b><span class="label">${S.stacks[p].length}</span></div><div class="body">${body}</div><div class="badges">${badges}</div><i class="meter"></i></div>`;
   }).join("");
   $("turn").querySelector(".label").textContent=S.solo?"Solo":"À toi";
   if(S.solo){$("turnName").textContent="Mode test";$("turnDeck").textContent="Scanne une carte · touche une piste pour la vider";$("passBtn").textContent="Quitter";$("turn").style.setProperty("--pc","var(--spot)");$("dots").innerHTML="";
@@ -554,7 +559,7 @@ let camStream=null;
 function stopEverything(){
   clearTimeout(mesureTimer);stopLarsen();picking=null;pending=null;
   if(schedTimer){clearInterval(schedTimer);schedTimer=null;}
-  try{stopAllSamples();}catch(e){}preview=null;
+  try{plReset();stopAllSamples();}catch(e){}preview=null;
   if(ctx&&ctx.state==="running")ctx.suspend().catch(()=>{});
   scanning=false;if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}try{video.srcObject=null;}catch(e){}
   bonusOn=false;const ab=$("arcBonus");if(ab)ab.hidden=true;const an=$("arcAnn");if(an)an.hidden=true;const cm=$("countModal");if(cm)cm.className="";
@@ -612,7 +617,7 @@ function setup(){stopEverything();
       if(j>=0&&j!==i)pls[j].deck=pls[i].deck;pls[i].deck=d;draw();});
     $("goSolo").onclick=startSolo;
     $("go").onclick=()=>{save();stopLarsen();clearTimeout(mesureTimer);
-      S=fresh(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));undoStack=[];picking=null;pending=null;
+      S=fresh(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));plReset();undoStack=[];picking=null;pending=null;
       layoutZones(S.players.map(p=>p.deck));S.arcade=modeChoice==="arcade";setArcade(S.arcade);
       $("layer").innerHTML="";startAudio();startCamera();drawStart();};
   };setArcade(false);draw();
@@ -680,21 +685,22 @@ function arcFinal(){
 $("arcQuit").onclick=()=>$("newBtn").click();
 
 /* ================= Mode test solo : on scanne, ça joue, sans règles ================= */
-function startSolo(){stopLarsen();clearTimeout(mesureTimer);setArcade(false);layoutZones(["N","F","E"]);
+function startSolo(){stopLarsen();clearTimeout(mesureTimer);plReset();setArcade(false);layoutZones(["N","F","E"]);
   S=fresh(Object.keys(DECKS).map(d=>({name:DECKS[d].short,deck:d})));S.solo=true;undoStack=[];picking=null;pending=null;
   $("layer").innerHTML="";document.body.classList.add("solo");render();startAudio();startCamera();
   toast("Mode test : scanne n'importe quelle carte, elle joue tout de suite");}
 function soloScan(c){
   if(c.kind==="action"){toast("Les cartes Action ne font rien en mode test");return;}
-  if(c.joker){pending=c;picking={kind:"solo",c};return pickBar(`Joker ${DECKS[c.deck].glyph} : touche la piste où l'écouter`);}
+  if(c.joker){picking={kind:"solo",c};pending=c;return jokerScreen(c,PORDER);}
   soloPlace(c,c.piste);}
-function soloPlace(c,p){snap();const was=SMP[SREF(c.id)]&&SMP[SREF(c.id)].playing&&topOf(p)&&SREF(topOf(p).id)===SREF(c.id);S.stacks[p]=[{id:c.id,owner:ownerOf(c.deck),hidden:false,tempoDone:true}];S.last=p;render();if(!was)openCount(c.id);toast(INFO[c.id].t+" · "+PISTES[p]);}
+function soloPlace(c,p){snap();const e={id:c.id,owner:ownerOf(c.deck),hidden:false,tempoDone:true,seq:++S.seqN};if(c.joker)e.snd=p+c.deck+"2";
+  S.stacks[p].push(e);S.last=p;plAdd(e);render();openCount(e);toast((c.joker?"Joker":INFO[c.id].t)+" · "+PISTES[p]);}
 function soloTempo(v,abs){S.bpm=Math.max(BPM_MIN,Math.min(BPM_MAX,abs?v:S.bpm+v));render();}
 
 /* ================= Cartes scannées ================= */
 const seen={};let badT=0;
 function onCode(raw){
-  const now=Date.now(),m=/^BOUCLE:([A-Z0-9]+)(:C)?$/.exec(String(raw).trim());   /* :C = QR de la face, la carte se pose face cachée */
+  const now=Date.now(),m=/^BOUCLE:([A-Z0-9]+)(:C)?$/.exec(String(raw).trim());   /* :C = ancien QR de la face : la carte se joue normalement */
   if(!m||!CARDS[m[1]]){if(now-badT>2500){badT=now;toast("QR lu, mais ce n'est pas une carte de Tribes Showdown");}return;}
   const id=m[1];
   if(seen[id]&&now-seen[id]<1200){seen[id]=now;return;}
@@ -712,16 +718,27 @@ function onCode(raw){
   if(id.startsWith("XLAR"))return playLarsen();
   arcBonusScan();
   if(c.kind==="action")return openAction(c);
-  openPlace(c,!!m[2]||simHidden());
+  openPlace(c);
 }
 function flashHit(){document.body.classList.add("hit");setTimeout(()=>document.body.classList.remove("hit"),450);}
 function nextTurn(){S.turn=(S.turn+1)%S.players.length;S.played++;render();if(S.played>=S.players.length)scheduleMesure();}
 function scheduleMesure(){clearTimeout(mesureTimer);mesureTimer=setTimeout(function tryIt(){if(larsen||pending){mesureTimer=setTimeout(tryIt,400);return;}playMesure();},1500);}
-function openPlace(c,hidden){
-  if(!c.joker)return place(c,c.piste,hidden);
-  pending=c;picking={kind:"joker",c,hidden};
-  pickBar(`Joker ${DECKS[c.deck].glyph} : touche la piste où ${esc(S.players[S.turn].name)} le pose`);
+function openPlace(c){
+  if(!c.joker)return place(c,c.piste);
+  /* Joker : il ne se pose pas sur la table ; il prend une piste où se trouve une carte adverse */
+  const me=S.turn,ok=PORDER.filter(p=>{const t=topOf(p);return t&&t.owner!==me;});
+  if(!ok.length){toast("Le Joker se joue seulement sur une carte adverse : aucune pour l'instant",true);arcShake();return;}
+  jokerScreen(c,ok);
 }
+/* écran du Joker : les 4 positions, seules celles avec une carte adverse sont jouables */
+function jokerScreen(c,ok){
+  pending=c;picking={kind:"joker",c};const D=DECKS[c.deck];render();
+  $("layer").innerHTML=`<div class="overlay jk" style="align-items:center"><div class="sheet" style="--dc:${D.color}"><h2>${D.glyph} JOKER</h2>
+    <p class="note" style="margin:0 0 10px">${esc(S.players[S.turn].name)}, choisis la carte adverse à remplacer. Ta tribu y joue son son. Le Joker ne se pose pas sur la table : défausse-le.</p>
+    <div class="jk-grid">${PORDER.map(p=>{const t=topOf(p),on=ok.includes(p),o=t?S.players[t.owner]:null;
+      return `<button data-p="${p}" ${on?"":"disabled"}><b>${PISTES[p]}</b><small>${t?`${DECKS[CARDS[t.id].deck].glyph} ${esc(o.name)}`:"libre"}</small></button>`;}).join("")}</div>
+    <button class="btn" id="pickCancel">Annuler</button></div></div>`;
+  $("pickCancel").onclick=endPick;document.querySelectorAll(".jk-grid button:not([disabled])").forEach(b=>b.onclick=()=>onPisteTap(b.dataset.p));}
 function pickBar(txt){render();const arc=S&&S.arcade;
   $("layer").innerHTML=`<div class="pickbar"><span>${arc?txt.replace("touche la piste","choisis la piste"):txt}</span>${arc?`<div class="pk-pistes">${PORDER.map(p=>`<button data-p="${p}">${PISTES[p]}</button>`).join("")}</div>`:""}<button class="chip" id="pickCancel">Annuler</button></div>`;
   $("pickCancel").onclick=endPick;document.querySelectorAll(".pk-pistes button").forEach(b=>b.onclick=()=>onPisteTap(b.dataset.p));}
@@ -730,20 +747,20 @@ function onPisteTap(p){
   if(!picking)return;
   const k=picking;picking=null;pending=null;$("layer").innerHTML="";
   if(k.kind==="solo")return soloPlace(k.c,p);
-  if(k.kind==="joker")return place(k.c,p,k.hidden);
+  if(k.kind==="joker")return place(k.c,p);
   snap();
   if(k.kind==="mute"){S.muted[p]=true;sfx("XMUTE");toast(PISTES[p]+" ne marquera pas à la prochaine mesure");}
   if(k.kind==="ton"){S.boost[p]=true;sfx("XTON");toast(PISTES[p]+" vaut +2 à la prochaine mesure");}
   nextTurn();
 }
-function place(c,p,hidden){
+function place(c,p){
   snap();pending=null;
-  const prev=topOf(p),me=S.turn,entry={id:c.id,owner:me,hidden,prevBpm:S.bpm,tempoDone:!hidden};
-  S.stacks[p].push(entry);S.last=p;
-  const tmsg=hidden?"":applyTempo(c.id);
-  toast(S.players[me].name+" : "+(hidden?"carte cachée":INFO[c.id].t)+" sur "+PISTES[p]+tmsg);
-  if(hidden&&S.arcade)toast("🂠 Carte posée FACE CACHÉE (QR de la face) : elle ne jouera qu'à la révélation",true);
-  if(!hidden)openCount(c.id);
+  const prev=topOf(p),me=S.turn,entry={id:c.id,owner:me,hidden:false,prevBpm:S.bpm,tempoDone:true,seq:++S.seqN};
+  if(c.joker)entry.snd=p+c.deck+"2";          /* le Joker joue le son de sa tribu sur cette piste */
+  S.stacks[p].push(entry);S.last=p;plAdd(entry);
+  const tmsg=applyTempo(c.id);
+  toast(S.players[me].name+" : "+(c.joker?"Joker sur ":"")+PISTES[p]+tmsg);
+  openCount(entry);
   nextTurn();
   if(prev&&prev.owner!==me)startLarsen(p,me,prev.owner);
 }
@@ -895,7 +912,7 @@ function startAudio(){
       if(tgt!==targetBpm.last){targetBpm.last=tgt;if(window.prepTempo)prepTempo(tgt);}
       while(nextT<ctx.currentTime-.02){nextT+=SPB;step=(step+1)%LOOP;}
       while(nextT<ctx.currentTime+.25){if(step%4===0)curBpm=tgt;SPB=60/curBpm/4;
-        try{playStep(step,nextT);}catch(e){console.error(e);}nextT+=SPB;step=(step+1)%LOOP;}
+        try{step=plTick(step,nextT);playStep(step,nextT);}catch(e){console.error(e);}nextT+=SPB;step=(step+1)%LOOP;}
       delNode.delayTime.setTargetAtTime(SPB*3,ctx.currentTime,.05);
     },25);}
 }
@@ -1100,8 +1117,11 @@ const VOICE={
 /* Réglages des boucles : modifiables sans toucher au code, dans le fichier sons/reglages.json */
 let SET={bpm:100,temps:16,tonalite:"Dm",grille:"Dm A Bb Gm"};
 const SAMPLES={};                  /* rempli au démarrage : une entrée par fichier sons/<REF>.mp3 trouvé */
-/* Référence de son : piste + tribu (RF, BF, HF, MF, JF…). Les deux cartes d'une même piste d'un deck partagent le même MP3. */
+/* Référence de son : piste + tribu (RF, BF, HF, MF…). Les deux cartes d'une même piste d'un deck partagent le même MP3.
+   Nom du fichier : A Rythme, B Basse, C Harmonie, D Mélodie + « tribu » + numéro de la tribu (1, 2, 3), ex. sons/Btribu1.mp3 */
 const SREF=id=>id.slice(0,2);
+const FLET={R:"A",B:"B",H:"C",M:"D",J:"J"},FNUM={F:1,N:2,E:3};
+const FNAME=ref=>FLET[ref[0]]+"tribu"+FNUM[ref[1]];
 let SAMPLE_KEY=5,SAMPLE_PROG="Am E F Dm",tonalOn=false;
 const SMP={};let smpOffset=null;
 function decode(ab){return new Promise((res,rej)=>{const p=ctx.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);});}
@@ -1113,11 +1133,11 @@ function preloadSons(){
   if(location.protocol==="file:"){mp3Info="MP3 : ouvre la page depuis GitHub pour charger le dossier sons";return PRE=Promise.resolve({set:null,files:{}});}
   PRE=(async()=>{const out={set:null,files:{}};const rg=await getFile("sons/reglages.json");
     if(rg){try{out.set=await rg.json();}catch(e){out.setErr=true;}}
-    const ids=Object.keys(CARDS).filter(id=>CARDS[id].kind==="inst"),refs=[...new Set(ids.map(SREF))];
-    /* sons/RF.mp3 ; à défaut, un ancien nom de carte (sons/RF2.mp3 ou sons/RF4.mp3) */
-    await Promise.all(refs.map(async ref=>{for(const n of [ref,...ids.filter(i=>SREF(i)===ref)]){const r=await getFile("sons/"+n+".mp3");
+    const ids=Object.keys(CARDS).filter(id=>CARDS[id].kind==="inst"&&!CARDS[id].joker),refs=[...new Set(ids.map(SREF))];
+    /* sons/Atribu1.mp3 (ou Atribue1.mp3) ; à défaut, les anciens noms (RF.mp3, RF2.mp3, RF4.mp3) */
+    await Promise.all(refs.map(async ref=>{for(const n of [FNAME(ref),FNAME(ref).replace("tribu","tribue"),ref,...ids.filter(i=>SREF(i)===ref)]){const r=await getFile("sons/"+n+".mp3");
       if(r){try{out.files[ref]=await r.arrayBuffer();break;}catch(e){}}}}));
-    const k=Object.keys(out.files);mp3Info=k.length?"🎵 "+k.length+" boucle"+(k.length>1?"s":"")+" MP3 trouvée"+(k.length>1?"s":"")+" : "+k.join(", "):"Aucune boucle MP3 trouvée dans le dossier sons";
+    const k=Object.keys(out.files);mp3Info=k.length?"🎵 "+k.length+" boucle"+(k.length>1?"s":"")+" MP3 trouvée"+(k.length>1?"s":"")+" : "+k.map(FNAME).join(", "):"Aucune boucle MP3 trouvée dans le dossier sons";
     const el=$("mp3Status");if(el)el.textContent=mp3Info;return out;})();
   return PRE;}
 async function initSamples(){
@@ -1131,7 +1151,7 @@ async function initSamples(){
   await Promise.all(Object.keys(pre.files).map(async id=>{
     try{const raw=await decode(pre.files[id].slice(0));const c=CARDS[Object.keys(CARDS).find(i=>SREF(i)===id)];
       SAMPLES[id]={piste:c.joker?"M":c.piste,bpm:+SET.bpm||100,beats:+SET.temps||16,tonal:c.piste!=="R"};
-      const g=ctx.createGain();SMP[id]={D:SAMPLES[id],g,raw,ready:false,playing:false,cache:{}};}catch(e){console.error(id,e);toast("sons/"+id+".mp3 n'a pas pu être lu",true);}}));
+      const g=ctx.createGain();SMP[id]={D:SAMPLES[id],g,raw,ready:false,playing:false,cache:{}};}catch(e){console.error(id,e);toast("sons/"+FNAME(id)+".mp3 n'a pas pu être lu",true);}}));
   /* silence ajouté par l'encodeur MP3 au début : le plus petit décalage trouvé, commun à des boucles exportées ensemble */
   smpOffset=0;let best=Infinity;
   for(const id in SMP){const d=SMP[id].raw.getChannelData(0),sr=SMP[id].raw.sampleRate,lim=Math.min(d.length,sr*.08);
@@ -1146,8 +1166,8 @@ async function initSamples(){
       for(const n of [D.beats,16,32,8,64]){if(found)break;let bestB=null;
         for(let b=60;b<=200;b++)if(fits(b,n)&&(bestB===null||Math.abs(b-D.bpm)<Math.abs(bestB-D.bpm)))bestB=b;
         if(bestB)found={bpm:bestB,beats:n};}
-      if(found){s.D=SAMPLES[id]=Object.assign({},D,found);fixes.push(id+".mp3 : "+found.beats+" temps à "+found.bpm+" BPM");}
-      else fixes.push(id+".mp3 dure "+len.toFixed(2)+" s (attendu "+(D.beats*60/D.bpm).toFixed(2)+" s)");}}
+      if(found){s.D=SAMPLES[id]=Object.assign({},D,found);fixes.push(FNAME(id)+".mp3 : "+found.beats+" temps à "+found.bpm+" BPM");}
+      else fixes.push(FNAME(id)+".mp3 dure "+len.toFixed(2)+" s (attendu "+(D.beats*60/D.bpm).toFixed(2)+" s)");}}
   if(fixes.length){toast("Durée différente de reglages.json → "+fixes.join(" · "),true);console.warn("MP3",fixes);mp3Info+=" · ⚠ "+fixes.join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
   for(const id in SMP){const s=SMP[id];s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm);s.cache[s.D.bpm]=s.base;
     /* volume : chaque boucle est ramenée au niveau des autres sons */
@@ -1217,58 +1237,84 @@ function stopAllSamples(){for(const id in SMP)stopSample(id);}
 let curBeat=0;
 function showBeat(b){curBeat=b;const el=$("cycle");if(!el)return;
   el.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar":"");});
-  if(b%4===0&&document.querySelector(".waitTag")&&S)render();
-  const left=4-(b%4);document.querySelectorAll(".waitTag").forEach(w=>w.textContent="▶ démarre dans "+left+" temps");
+  document.querySelectorAll(".waitTag").forEach(w=>w.textContent="▶ dans "+plWait(+w.dataset.seq)+" temps");
   countTick(b);arcBeat(b);}
 /* fenêtre animée : décompte des temps jusqu'à la prochaine mesure, après le scan d'une carte à boucle MP3 */
 let countId=null,countClose=null;
-function openCount(id){const r=SREF(id);if(!SAMPLES[r]||(SMP[r]&&SMP[r].playing))return;countId=id;clearTimeout(countClose);
-  const c=CARDS[id],D=DECKS[c.deck];let el=$("countModal");
+function openCount(e){const sid=e.snd||e.id,c=CARDS[e.id],D=DECKS[c.deck];
+  if(PL.cur&&PL.cur.seq===e.seq)return;countId=e.seq;clearTimeout(countClose);let el=$("countModal");
   if(!el){el=document.createElement("div");el.id="countModal";document.body.appendChild(el);}
   el.style.setProperty("--dc",D.color);
-  el.innerHTML=`<div class="cm-box"><span class="cm-lab">${D.glyph} ${D.short} · ${INFO[id].t}</span><b class="cm-num" id="cmNum"></b><span class="cm-sub" id="cmSub">temps avant la prochaine mesure</span><div class="cm-dots" id="cmDots">${"<i></i>".repeat(4)}</div></div>`;
-  el.className="show";countTick(curBeat,true);}
+  el.innerHTML=`<div class="cm-box"><span class="cm-lab">${D.glyph} ${D.short} · ${c.joker?"Joker · ":""}${PISTES[sid[0]]}</span><b class="cm-num" id="cmNum"></b><span class="cm-sub" id="cmSub">temps avant ta boucle</span><div class="cm-dots" id="cmDots">${"<i></i>".repeat(4)}</div></div>`;
+  el.className="";countTick(curBeat,true);}
 function countTick(b,first){
-  if(!countId)return;const el=$("countModal");if(!el)return;const s=SMP[SREF(countId)];
-  const pos=b%4,num=$("cmNum");
-  if(!first&&s&&s.playing&&pos===0){num.textContent="▶";$("cmSub").textContent="c'est parti !";el.classList.add("go");
+  if(!countId)return;const el=$("countModal");if(!el)return;const num=$("cmNum");
+  if(PL.cur&&PL.cur.seq===countId){num.textContent="▶";$("cmSub").textContent="c'est parti !";el.classList.add("go");
     $("cmDots").querySelectorAll("i").forEach(d=>d.className="on");countId=null;countClose=setTimeout(()=>{el.className="";},700);return;}
-  const left=4-pos;num.textContent=left;num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");
+  if(!PL.pend.includes(countId)){countId=null;el.className="";return;}
+  const left=plWait(countId),pos=b%4;
+  /* la fenêtre n'apparaît que pour les 4 derniers temps d'attente (avant, l'étiquette sur la pile suffit) */
+  if(left>4){el.className="";return;}if(!el.classList.contains("show"))el.className="show";num.textContent=left;num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");
   $("cmDots").querySelectorAll("i").forEach((d,i)=>d.className=i<pos?"on":i===pos?"now":"");}
-/* appelé à chaque double-croche : décide quelles boucles jouent, et la tonalité */
+/* =========== Lecture à la suite : une seule boucle à la fois ===========
+   - Une carte posée attend la fin de la boucle en cours, puis sa boucle joue.
+   - Ensuite l'app joue, l'une après l'autre, les cartes visibles du dessus des pistes, dans leur ordre de pose,
+     et reprend la liste là où elle en était.
+   - Chaque boucle dure 16 temps (ou la durée de son MP3). */
+const PL={cur:null,len:16,beat:0,ptr:0,pend:[],skip:[]};
+function plReset(){if(PL.cur&&PL.cur.ref&&SMP[PL.cur.ref])stopSample(PL.cur.ref);Object.assign(PL,{cur:null,len:16,beat:0,ptr:0,pend:[],skip:[]});}
+function plAdd(e){PL.pend=PL.pend.filter(q=>q!==e.seq);PL.pend.push(e.seq);}
+const sndOf=e=>e.snd||e.id;
+function plLen(e){const r=SREF(sndOf(e));return SAMPLES[r]&&smpOn(r)?SMP[r].D.beats:16;}
+function plVisible(){if(!S||S.ended)return[];
+  return PORDER.map(p=>{const t=topOf(p);return t&&!t.hidden&&!isSilent(p)&&t.seq?{p,t}:null;}).filter(Boolean).sort((a,b)=>a.t.seq-b.t.seq);}
+function plFind(seq){if(!S)return null;for(const p of PORDER)for(const e of S.stacks[p])if(e.seq===seq)return{p,t:e};return null;}
+/* nombre de temps avant que la carte n° seq ne commence */
+function plWait(seq){let w=PL.cur?PL.len-PL.beat:(16-curBeat%16)%16||16;
+  for(const q of PL.pend){if(q===seq)break;const f=plFind(q);if(f)w+=plLen(f.t);}return w;}
+function plNext(){const vis=plVisible();
+  while(PL.pend.length){const q=PL.pend.shift(),f=vis.find(v=>v.t.seq===q);if(f){PL.skip.push(q);return f;}}
+  if(!vis.length)return null;
+  for(let k=0;k<vis.length+1;k++){const n=vis.find(v=>v.t.seq>PL.ptr)||vis[0];PL.ptr=n.t.seq;
+    const i=PL.skip.indexOf(n.t.seq);if(i<0)return n;PL.skip.splice(i,1);}   /* déjà jouée juste avant, comme nouvelle carte */
+  return vis[0];}
+function plStopAt(t){const c=PL.cur;PL.cur=null;if(c&&c.ref&&SMP[c.ref]&&SMP[c.ref].playing){const s=SMP[c.ref];
+  (s.srcs||[]).forEach(x=>{try{x.stop(t+.003);}catch(e){}});s.src=null;s.playing=false;}}
+function plStart(n,t){const id=sndOf(n.t),r=SREF(id),mp3=!!(SAMPLES[r]&&smpOn(r)),prev=PL.cur;
+  const same=prev&&prev.ref===r&&mp3&&SMP[r].playing;
+  if(prev&&!same)plStopAt(t);
+  PL.cur={seq:n.t.seq,id,p:n.p,ref:mp3?r:null};PL.len=mp3?SMP[r].D.beats:16;PL.beat=0;
+  if(mp3){const s=SMP[r];s.at=n.p;
+    if(same){const p=samplePos(s,t),d=Math.min(p,s.loopDur-p);if(d>.004||s.bpm!==Math.round(curBpm)||(s.rate!==1&&s.cache[s.bpm]))startSample(r,t,0);}
+    else startSample(r,t,0);}
+  const d=Math.max(0,(t-ctx.currentTime)*1000);setTimeout(()=>{if(S)render();},d);}
+/* appelé à chaque pas, avant de le jouer ; renvoie le pas (remis à 0 au début de chaque boucle) */
+function plTick(st,t){
+  if(st%4)return st;
+  if(preview||!S||S.ended||!soundOn){if(PL.cur)plStopAt(t);return st;}
+  if(PL.cur){
+    if(!plFind(PL.cur.seq)){plStopAt(t);}                          /* carte annulée (Larsen, retour arrière) */
+    else{PL.beat++;if(PL.beat<PL.len)return st;}
+  }
+  if(!PL.cur&&st%16)return st;                                     /* rien ne joue : on démarre au début d'une mesure */
+  const n=plNext();
+  if(!n){if(PL.cur)plStopAt(t);const d=Math.max(0,(t-ctx.currentTime)*1000);setTimeout(()=>{if(S)render();},d);return st;}
+  plStart(n,t);return 0;
+}
 function sampleStep(st,t){
-  const want=[];
-  if(preview){{const r=SREF(preview.id);if(SAMPLES[r]&&smpOn(r)){want.push(r);SMP[r].at=preview.piste;}}}
-  else if(S&&!S.ended&&soundOn)for(const p of PORDER){const tp=topOf(p);if(tp&&!tp.hidden&&!isSilent(p)&&SAMPLES[SREF(tp.id)]&&smpOn(SREF(tp.id))){want.push(SREF(tp.id));SMP[SREF(tp.id)].at=p;}}
-  for(const id in SMP)if(SMP[id].playing&&!want.includes(id))stopSample(id);
-  tonalOn=want.some(id=>SAMPLES[id].tonal);KEY=tonalOn?SAMPLE_KEY:0;
-  if(st%4===0){const beat=st/4,bar=beat>>2;
-    for(const id of want){const s=SMP[id];
-      if(!s.playing){
-        /* carte qui vient d'être posée : elle attend le début de la mesure suivante, puis part du début de sa boucle */
-        if(beat%4===0){s.phase=bar;startSample(id,t,0);}
-      }else{
-        const rel=((beat-s.phase*4)%16+16)%16;          /* temps écoulés dans SA boucle */
-        /* boucles de plus de 16 temps : on garde la bonne moitié (ou le bon quart) */
-        const seg=s.loopDur*Math.min(1,16/s.D.beats),half=Math.floor(samplePos(s,t)/seg+.02)%Math.max(1,s.D.beats/16);
-        if(s.bpm!==Math.round(curBpm))startSample(id,t,rel+16*half);          /* changement de tempo : on garde la position */
-        else if(rel===0){
-          /* début de son cycle : la lecture doit être pile sur un début de 16 temps ; sinon (décalage), ou si le tempo exact vient d'être préparé, on recale */
-          const p=samplePos(s,t)%seg,drift=Math.min(p,seg-p);
-          if(drift>.004||(s.rate!==1&&s.cache[s.bpm]))startSample(id,t,16*(Math.round(samplePos(s,t)/seg)%Math.max(1,s.D.beats/16)));}
-      }
-    }
-    const b=beat;setTimeout(()=>showBeat(b),Math.max(0,(t-ctx.currentTime)*1000));}
-  return want;
+  /* tonalité : si une boucle MP3 tonale est en jeu, tout le monde suit sa tonalité */
+  const vis=plVisible();tonalOn=vis.some(v=>{const r=SREF(sndOf(v.t));return SAMPLES[r]&&smpOn(r)&&SAMPLES[r].tonal;});KEY=tonalOn?SAMPLE_KEY:0;
+  if(preview){const r=SREF(preview.id);if(SAMPLES[r]&&smpOn(r)){const s=SMP[r];s.at=preview.piste;
+      if(!s.playing&&st===0)startSample(r,t,0);else if(s.playing&&st%4===0&&s.bpm!==Math.round(curBpm))startSample(r,t,(st/4)%16);return[r];}}
+  else if(PL.cur&&PL.cur.ref&&st%4===0){const s=SMP[PL.cur.ref];if(s.playing&&s.bpm!==Math.round(curBpm))startSample(PL.cur.ref,t,PL.beat);}
+  if(st%4===0){const b=st/4;setTimeout(()=>showBeat(b),Math.max(0,(t-ctx.currentTime)*1000));}
+  return PL.cur&&PL.cur.ref?[PL.cur.ref]:[];
 }
 /* ---------- séquenceur ---------- */
 function progNow(){
-  if(tonalOn){const ton=Object.keys(SMP).find(id=>SMP[id].playing&&SAMPLES[id].tonal),ph=ton?SMP[ton].phase||0:0,P=prog(SAMPLE_PROG);
-    return [0,1,2,3].map(b=>P[((b-ph)%4+4)%4]);}
-  if(preview){const p=INFO[preview.id].prog;return prog(p||DEFAULT_PROG);}
-  const h=topOf("H");if(h&&!h.hidden&&INFO[h.id].prog)return prog(INFO[h.id].prog);
-  const m=topOf("M");if(m&&!m.hidden&&INFO[m.id].prog)return prog(INFO[m.id].prog);
-  return prog(DEFAULT_PROG);
+  if(tonalOn)return prog(SAMPLE_PROG);
+  const id=preview?preview.id:PL.cur?PL.cur.id:null;
+  return prog(id&&INFO[id].prog||DEFAULT_PROG);
 }
 function playStep(st,t){
   if(!soundOn){stopAllSamples();return;}
@@ -1278,14 +1324,10 @@ function playStep(st,t){
     if(ctx.currentTime>preview.until){preview=null;markPlaying(null);return;}
     if(!smp.includes(SREF(preview.id))){curGain=CG[preview.id]||1;VOICE[preview.id]({...info,p:preview.piste});curGain=1;}return;
   }
-  if(!S||S.ended)return;
-  for(const p of PORDER){
-    const tp=topOf(p);if(!tp||isSilent(p))continue;
-    if(st%4===0)pulseLater(p,t);
-    if(tp.hidden){if(st%4===0){const s=ctx.createBufferSource();s.buffer=noiseBuf();const g=ctx.createGain();g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.0001,t+.12);chain(s,bq("lowpass",900,.7),g);out(g,p);s.start(t);s.stop(t+.15);}continue;}
-    if(smp.includes(SREF(tp.id)))continue;   /* boucle enregistrée à la place du son synthétisé */
-    curGain=CG[tp.id]||1;VOICE[tp.id]({...info,p});curGain=1;
-  }
+  if(!S||S.ended||!PL.cur)return;
+  const c=PL.cur;if(st%4===0)pulseLater(c.p,t);
+  if(c.ref)return;                       /* boucle MP3 : elle joue toute seule */
+  curGain=CG[c.id]||1;VOICE[c.id]({...info,p:c.p});curGain=1;
 }
 /* Sons des cartes Action */
 function sfx(id){
@@ -1299,6 +1341,7 @@ function sfx(id){
 function auditionCard(id){
   startAudio();const c=CARDS[id];
   if(c.kind==="action"){preview=null;sfx(id);markPlaying(id);setTimeout(()=>markPlaying(null),900);return;}
+  if(c.joker){toast("Le Joker joue le son de sa tribu sur la piste adverse choisie");return;}
   const bpm=DECKS[c.deck].ideal;curBpm=bpm;SPB=60/bpm/4;
   preview={id,piste:c.joker?"M":c.piste,bpm,until:ctx.currentTime+SPB*LOOP+.3};markPlaying(id);
   nextT=ctx.currentTime+.05;step=0;
@@ -1357,7 +1400,7 @@ async function decodeFrame(){
 /* ================= Listes de cartes, onglets, boutons ================= */
 function cardButtons(el){
   const deckIds=d=>Object.keys(CARDS).filter(id=>CARDS[id].deck===d).sort((a,b)=>"RBHMJ".indexOf(a[0])-"RBHMJ".indexOf(b[0]));
-  el.innerHTML=Object.keys(DECKS).map(d=>`<h4>${DECKS[d].glyph} ${DECKS[d].name} · zone ${DECKS[d].zone[0]}–${DECKS[d].zone[1]}</h4>`+deckIds(d).map(id=>`<button data-k="${id}" style="--cc:${DECKS[d].color}"><span>${SAMPLES[SREF(id)]?"🎵 ":""}${cardLabel(CARDS[id])} · ${tempoTxt(id)}</span><small>${SAMPLES[SREF(id)]?"boucle MP3":NOSYNTH.includes(CARDS[id].deck)?"bip de repère (pas encore de MP3)":"son synthétisé"}</small><small class="fname">sons/${SREF(id)}.mp3</small></button>`).join("")).join("")
+  el.innerHTML=Object.keys(DECKS).map(d=>`<h4>${DECKS[d].glyph} ${DECKS[d].name} · zone ${DECKS[d].zone[0]}–${DECKS[d].zone[1]}</h4>`+deckIds(d).map(id=>`<button data-k="${id}" style="--cc:${DECKS[d].color}"><span>${SAMPLES[SREF(id)]?"🎵 ":""}${cardLabel(CARDS[id])} · ${tempoTxt(id)}</span><small>${CARDS[id].joker?"joue le son de sa tribu sur la piste adverse choisie":SAMPLES[SREF(id)]?"boucle MP3":NOSYNTH.includes(CARDS[id].deck)?"bip de repère (pas encore de MP3)":"son synthétisé"}</small>${CARDS[id].joker?"":`<small class="fname">sons/${FNAME(SREF(id))}.mp3</small>`}</button>`).join("")).join("")
     +`<h4>Actions (communes)</h4>`+Object.keys(ACTIONS).map(id=>`<button data-k="${id}" style="--cc:var(--spot)"><span>${ACTIONS[id]}</span></button>`).join("");
 }
 cardButtons($("sons"));cardButtons($("sim"));
@@ -1366,7 +1409,7 @@ $("sim").onclick=e=>{const b=e.target.closest("button");if(!b)return;startAudio(
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("sel",x===b));
   ["sons","sim","regles"].forEach(k=>$("pane-"+k).hidden=k!==b.dataset.tab);});
-function simHidden(){const e=$("simHid");return !!(e&&e.checked&&simClick);}
+
 let simClick=false;
 $("scene").onclick=e=>{const el=e.target.closest(".piste");if(!el)return;if(S.solo&&!picking){const p=el.dataset.p;if(S.stacks[p].length){snap();S.stacks[p]=[];if(S.last===p)S.last=null;render();toast(PISTES[p]+" vidée");}return;}onPisteTap(el.dataset.p);};
 $("mesureBtn").onclick=playMesure;
