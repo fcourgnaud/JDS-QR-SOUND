@@ -391,7 +391,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
     <h3>La musique</h3>
     <p>La carte Harmonie du dessus fixe la grille d'accords pour tout le monde (sinon c'est la carte Mélodie). Les autres pistes suivent ces accords, donc tous les mélanges restent justes.</p>
     <h3>Tes propres sons (MP3)</h3>
-    <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec la référence de son : la lettre de la piste (R, B, H, M, J pour le Joker) suivie de celle de la tribu (F Tribu 1, N Tribu 2, E Tribu 3), par exemple <b>sons/RF.mp3</b>. Les deux cartes de la même piste d'un deck jouent ce même fichier, qui remplace leur son synthétisé. La référence est visible dans l'onglet « Sons des decks ». Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées.</p>
+    <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec la référence de son : la lettre de la piste (R, B, H, M, J pour le Joker) suivie de celle de la tribu (F Tribu 1, N Tribu 2, E Tribu 3), par exemple <b>sons/RF.mp3</b>. Les deux cartes de la même piste d'un deck jouent ce même fichier, qui remplace leur son synthétisé. La référence est visible dans l'onglet « Sons des decks ». Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées. Si un fichier n'a pas la durée prévue, l'app retrouve son tempo d'après sa durée et l'affiche sur l'écran de départ.</p>
     <h3>Fin</h3>
     <ul><li>Après la 8e mesure, le meilleur score gagne. La musique s'arrête.</li><li>Égalité : celui qui contrôle le plus de pistes l'emporte.</li></ul>
   </div>
@@ -417,7 +417,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v36";
+const VERSION="v38";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -893,6 +893,7 @@ function startAudio(){
     schedTimer=setInterval(()=>{
       const tgt=targetBpm();
       if(tgt!==targetBpm.last){targetBpm.last=tgt;if(window.prepTempo)prepTempo(tgt);}
+      while(nextT<ctx.currentTime-.02){nextT+=SPB;step=(step+1)%LOOP;}
       while(nextT<ctx.currentTime+.25){if(step%4===0)curBpm=tgt;SPB=60/curBpm/4;
         try{playStep(step,nextT);}catch(e){console.error(e);}nextT+=SPB;step=(step+1)%LOOP;}
       delNode.delayTime.setTargetAtTime(SPB*3,ctx.currentTime,.05);
@@ -1135,7 +1136,19 @@ async function initSamples(){
   smpOffset=0;let best=Infinity;
   for(const id in SMP){const d=SMP[id].raw.getChannelData(0),sr=SMP[id].raw.sampleRate,lim=Math.min(d.length,sr*.08);
     for(let i=0;i<lim;i++)if(Math.abs(d[i])>.01){best=Math.min(best,i/sr);break;}}
+  best=Math.min(best,.03);   /* le silence d'encodeur ne dépasse pas ~30 ms : au-delà, c'est un silence voulu dans la boucle */
   if(isFinite(best))smpOffset=best;
+  /* contrôle de la durée : si un fichier ne fait pas la durée prévue par reglages.json, on retrouve son tempo (et son nombre de temps)
+     d'après sa durée, sinon il se décalerait de la grille et laisserait un blanc à chaque tour */
+  const fixes=[];
+  for(const id in SMP){const s=SMP[id],D=s.D,len=s.raw.duration-smpOffset,fits=(b,n)=>{const L=n*60/b;return len-L>-.04&&len-L<.13;};
+    if(!fits(D.bpm,D.beats)){let found=null;
+      for(const n of [D.beats,16,32,8,64]){if(found)break;let bestB=null;
+        for(let b=60;b<=200;b++)if(fits(b,n)&&(bestB===null||Math.abs(b-D.bpm)<Math.abs(bestB-D.bpm)))bestB=b;
+        if(bestB)found={bpm:bestB,beats:n};}
+      if(found){s.D=SAMPLES[id]=Object.assign({},D,found);fixes.push(id+".mp3 : "+found.beats+" temps à "+found.bpm+" BPM");}
+      else fixes.push(id+".mp3 dure "+len.toFixed(2)+" s (attendu "+(D.beats*60/D.bpm).toFixed(2)+" s)");}}
+  if(fixes.length){toast("Durée différente de reglages.json → "+fixes.join(" · "),true);console.warn("MP3",fixes);mp3Info+=" · ⚠ "+fixes.join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
   for(const id in SMP){const s=SMP[id];s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm);s.cache[s.D.bpm]=s.base;
     /* volume : chaque boucle est ramenée au niveau des autres sons */
     let ss=0;const d=s.base.getChannelData(0);for(let i=0;i<d.length;i+=4)ss+=d[i]*d[i];const rms=Math.sqrt(ss/(d.length/4))||.1;s.g.gain.value=Math.min(1.5,.1/rms);
@@ -1172,24 +1185,31 @@ let prepQueue=[];
 function prepTempo(bpm){bpm=Math.round(bpm);for(const id in SMP){const s=SMP[id];if(s.ready&&!s.cache[bpm]&&!prepQueue.some(q=>q[0]===id&&q[1]===bpm))prepQueue.push([id,bpm]);}
   if(prepQueue.length&&!prepTempo.busy){prepTempo.busy=true;let job=null;
     setTimeout(function run(){const t0=performance.now();
-      while(performance.now()-t0<8){
+      while(performance.now()-t0<5){
         if(!job){const q=prepQueue.shift();if(!q)break;const s=SMP[q[0]];if(s.cache[q[1]])continue;job={q,s,g:wsola(s.base,s.D.bpm/q[1])};}
         const r=job.g.next();if(r.done){const c=job.s.cache;c[job.q[1]]=r.value;const ks=Object.keys(c).map(Number).filter(k=>k!==job.s.D.bpm);
           if(ks.length>4){ks.sort((a,b)=>Math.abs(a-curBpm)-Math.abs(b-curBpm));ks.slice(4).forEach(k=>delete c[k]);}job=null;}}
-      if(job||prepQueue.length)setTimeout(run,4);else prepTempo.busy=false;},4);}}
+      if(job||prepQueue.length)setTimeout(run,12);else prepTempo.busy=false;},12);}}
 const smpOn=id=>SMP[id]&&SMP[id].ready;
-/* beat = temps de la boucle (0 à 15) où la lecture démarre */
+/* beat = temps de la boucle (0 à 15) où la lecture démarre.
+   La boucle tourne toute seule (lecture en boucle native du navigateur, à l'échantillon près, sans blanc) ;
+   on ne la relance que si le tempo change ou si elle s'est décalée de la grille des temps. */
 function startSample(id,t,beat){const s=SMP[id],D=s.D,bpm=Math.round(curBpm),pp=s.at||D.piste;
   if(s.bus!==pp){try{s.g.disconnect();}catch(e){}s.g.connect(buses[pp]);s.bus=pp;}
-  if(s.src){try{s.src.stop(t+.003);}catch(e){}}   /* pas de coupure : la boucle précédente s'arrête exactement au départ de la suivante */
   let buf=s.cache[bpm],rate=1;
   if(!buf){/* tempo pas encore préparé : on prend le plus proche, en corrigeant légèrement la vitesse */
     let bestB=D.bpm;for(const k in s.cache)if(Math.abs(k-bpm)<Math.abs(bestB-bpm))bestB=+k;buf=s.cache[bestB];rate=bpm/bestB;prepTempo(bpm);}
-  const loopDur=buf.duration,off=beat/D.beats*loopDur;
-  const src=ctx.createBufferSource();src.buffer=buf;src.playbackRate.value=rate;src.connect(s.g);
-  src.start(t,off);src.stop(t+(loopDur-off)/rate+.003);
+  const loopDur=buf.duration;let off=beat/D.beats*loopDur;
+  /* départ demandé dans le passé (téléphone ralenti) : on part tout de suite, à la bonne position */
+  const now=ctx.currentTime+.01;if(t<now){off+=(now-t)*rate;t=now;}
+  off%=loopDur;
+  if(s.src){const old=s.src;try{old.stop(t+.003);}catch(e){}}
+  const src=ctx.createBufferSource();src.buffer=buf;src.playbackRate.value=rate;src.loop=true;src.loopStart=0;src.loopEnd=loopDur;src.connect(s.g);
+  src.start(t,off);
   (s.srcs=s.srcs||[]).push(src);src.onended=()=>{s.srcs=s.srcs.filter(x=>x!==src);};
-  s.src=src;s.bpm=bpm;s.playing=true;}
+  Object.assign(s,{src,bpm,rate,t0:t,off0:off,loopDur,playing:true});}
+/* position (en secondes dans la boucle) que la lecture aura à l'instant t */
+function samplePos(s,t){return ((s.off0+(t-s.t0)*s.rate)%s.loopDur+s.loopDur)%s.loopDur;}
 /* arrêt immédiat (carte retirée, recouverte, mutée, fin de partie) */
 function stopSample(id){const s=SMP[id];if(!s||!s.playing)return;(s.srcs||[]).forEach(x=>{try{x.stop();}catch(e){}});s.srcs=[];s.src=null;s.playing=false;}
 function stopAllSamples(){for(const id in SMP)stopSample(id);}
@@ -1229,8 +1249,13 @@ function sampleStep(st,t){
         if(beat%4===0){s.phase=bar;startSample(id,t,0);}
       }else{
         const rel=((beat-s.phase*4)%16+16)%16;          /* temps écoulés dans SA boucle */
-        if(rel===0)startSample(id,t,0);                  /* fin de sa boucle : elle repart du début */
-        else if(s.bpm!==Math.round(curBpm))startSample(id,t,rel);   /* changement de tempo : on garde la position */
+        /* boucles de plus de 16 temps : on garde la bonne moitié (ou le bon quart) */
+        const seg=s.loopDur*Math.min(1,16/s.D.beats),half=Math.floor(samplePos(s,t)/seg+.02)%Math.max(1,s.D.beats/16);
+        if(s.bpm!==Math.round(curBpm))startSample(id,t,rel+16*half);          /* changement de tempo : on garde la position */
+        else if(rel===0){
+          /* début de son cycle : la lecture doit être pile sur un début de 16 temps ; sinon (décalage), ou si le tempo exact vient d'être préparé, on recale */
+          const p=samplePos(s,t)%seg,drift=Math.min(p,seg-p);
+          if(drift>.004||(s.rate!==1&&s.cache[s.bpm]))startSample(id,t,16*(Math.round(samplePos(s,t)/seg)%Math.max(1,s.D.beats/16)));}
       }
     }
     const b=beat;setTimeout(()=>showBeat(b),Math.max(0,(t-ctx.currentTime)*1000));}
