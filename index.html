@@ -331,6 +331,48 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 .jk-grid button b{font-size:20px}.jk-grid button small{opacity:.75}
 .jk-grid button[disabled]{opacity:.25;border-color:transparent;cursor:default}
 .piste.now{box-shadow:0 0 0 3px var(--ac),0 0 22px var(--ac)}
+/* ===== mode La Corde ===== */
+body.rope .wrap{display:none}
+body.rope{background:var(--arc-bg);background-image:none}
+#rope{position:relative;min-height:100dvh;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 18px;display:flex;flex-direction:column;gap:10px;font-family:var(--arc-t);color:#fff;max-width:640px;margin:0 auto}
+.rp-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.rp-top .t{font-family:var(--arc-d);font-size:18px;color:var(--neon2);text-shadow:0 0 10px var(--neon2)}
+.rp-btns{display:flex;gap:6px;flex-shrink:0}.rp-top .t{white-space:nowrap}
+.rp-top button{font:inherit;font-size:13px;padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff}
+.rp-top button:disabled{opacity:.35}
+.rp-scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.rp-sc{position:relative;overflow:hidden;border:2px solid color-mix(in srgb,var(--pc) 55%,transparent);border-radius:14px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.04)}
+.rp-sc.on{border-color:var(--pc);box-shadow:0 0 14px var(--pc)}
+.rp-sc span{font-weight:700;color:var(--pc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-sc b{font-family:var(--arc-d);font-size:26px}
+.rp-sc i{position:absolute;left:0;bottom:0;height:3px;background:var(--pc)}
+.rp-turn{width:100%;padding:8px 14px 10px;border-radius:18px;text-align:center;border:3px solid var(--pc);background:linear-gradient(180deg,color-mix(in srgb,var(--pc) 22%,transparent),transparent)}
+.rp-turn .at-name{font-size:clamp(26px,8vw,40px)}
+.rp-turn .at-tribe{font-size:14px;color:#cfcbe8}
+.rp-tracks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rp-tr{position:relative;border-radius:16px;padding:8px 8px 10px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);transition:box-shadow .2s,border-color .2s}
+.rp-tr.now{border-color:var(--kc);box-shadow:0 0 18px color-mix(in srgb,var(--kc) 70%,transparent)}
+.rp-h{display:flex;gap:6px;align-items:center}.rp-h b{font-size:15px}.rp-now{color:var(--gold);animation:crown .6s infinite alternate}
+.rp-svg{width:100%;height:auto;display:block;margin:4px 0;overflow:visible}
+.rp-rope{fill:none;stroke:rgba(255,255,255,.35);stroke-width:.35}
+.rp-tick{stroke:rgba(255,255,255,.18);stroke-width:.2}
+.rp-pull{stroke-width:.45;opacity:.8}
+.rp-knot{stroke:#fff;stroke-width:.35;transition:cx .35s,cy .35s}
+.rp-g{font-size:2.2px;text-anchor:middle}
+.rp-sub{font-size:12px;color:#cfcbe8;text-align:center;min-height:1.2em}
+.rp-ten{position:relative;height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:6px}
+.rp-ten i{position:absolute;inset:0 auto 0 0;background:#4fdc96;transition:width .3s}
+.rp-ten.warm i{background:#ffd23f}.rp-ten.hot i{background:#ff5468;animation:shake .5s infinite}
+.rp-ten span{position:relative;font-size:10px;letter-spacing:.08em;padding-left:6px;line-height:14px;color:#0b0a1e;font-weight:800;mix-blend-mode:screen;color:#fff}
+.rp-log{min-height:2.4em;text-align:center;font-size:14px;color:#e8e6ff;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.05)}
+.rp-burst{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--arc-d);font-size:34px;text-shadow:0 0 14px currentColor;animation:rpb 1.2s ease-out forwards;pointer-events:none}
+@keyframes rpb{0%{opacity:0;transform:translate(-50%,-20%) scale(.6)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-140%) scale(1)}}
+.rp-ban{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:30;background:#0d0b2b;border:2px solid var(--neon2);border-radius:20px;padding:16px 22px;text-align:center;display:flex;flex-direction:column;gap:4px;box-shadow:0 0 30px rgba(56,243,255,.35);animation:rpban 2.2s ease forwards;min-width:240px}
+.rp-ban b{font-family:var(--arc-d);font-size:30px;text-shadow:0 0 14px currentColor}.rp-ban span{color:#e8e6ff}
+@keyframes rpban{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}80%{opacity:1}100%{opacity:0}}
+body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:var(--arc-t);color:#fff}
+.mode{flex-wrap:wrap}
+.rpk .sheet{max-height:92dvh;overflow:auto}.rpk .jk-grid button{padding:10px 6px}.rpk .jk-grid button b{font-size:16px}
 </style>
 </head>
 <body>
@@ -396,6 +438,15 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
     <p>Une seule boucle joue à la fois. Quand une carte est posée, l'app finit la boucle en cours puis lance la nouvelle. Ensuite elle joue les pistes l'une après l'autre, toujours dans l'ordre A, B, C, D (Rythme, Basse, Harmonie, Mélodie), en repartant de la piste qui suit : une carte posée en Basse joue, puis Harmonie, Mélodie, Rythme, Basse… jusqu'à la prochaine carte posée. Les pistes vides ou coupées par un Mute sont sautées. La pile qui joue s'illumine.</p>
     <h3>Tes propres sons (MP3)</h3>
     <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec la lettre de la piste (A Rythme, B Basse, C Harmonie, D Mélodie), puis « tribu » et le numéro de la tribu, par exemple <b>sons/Btribu1.mp3</b> pour la Basse de la Tribu 1. Les deux cartes de la même piste d'un deck jouent ce même fichier, qui remplace leur son synthétisé. Le nom est visible dans l'onglet « Sons des decks ». Le Joker n'a pas de fichier : il joue celui de sa tribu pour la piste choisie. Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées. Si un fichier n'a pas la durée prévue, l'app retrouve son tempo d'après sa durée et l'affiche sur l'écran de départ.</p>
+    <h3>🪢 Mode La Corde (2 à 4 joueurs)</h3>
+    <ul><li>Chaque piste est une corde, avec un nœud tiré vers le coin de chaque joueur : une ligne à 2, un triangle à 3, un carré à 4.</li>
+    <li><b>Ton tour</b> : scanne un instrument, il tire sa piste vers toi de sa force (les points dans l'étoile). Ou joue une Action, ou passe. Repioche jusqu'à 4.</li>
+    <li><b>Le son</b> : les pistes jouent une par une, A, B, C, D. Chacune mélange les versions des tribus : plus le nœud est proche de toi, plus on entend la tienne.</li>
+    <li><b>Marquer</b> : quand une piste a fini de jouer, le joueur le plus proche du nœud marque 1 point, 2 si le nœud est dans sa moitié. Nœud au bout : la piste est capturée, elle rapporte 3 points à chaque passage et ne bouge plus.</li>
+    <li><b>Tension</b> : chaque traction tend la corde (elle grince). Elle se détend de 2 à chaque passage. Au-delà d'un seuil secret, elle casse : le nœud revient au centre et le dernier qui a tiré perd 3 points.</li>
+    <li><b>Joker</b> : tire n'importe quelle piste de 3, ou en détend une de 4.</li>
+    <li><b>Actions</b> : Mute = Lâcher (le nœud bondit de 4 vers le joueur de ton choix, libère une capture) · Larsen = Ancrage (la piste ne peut plus s'éloigner de toi jusqu'à ton prochain tour) · Drop = Détente (tension à zéro) · Tonalité = Transfert (une piste recule de 3 vers le centre, tu en tires une autre de 3).</li>
+    <li>Le premier à 20 points gagne.</li></ul>
     <h3>Fin</h3>
     <ul><li>Après la 8e mesure, le meilleur score gagne. La musique s'arrête.</li><li>Égalité : celui qui contrôle le plus de pistes l'emporte.</li></ul>
   </div>
@@ -416,12 +467,20 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
   <div class="arc-burst" id="arcBurst" hidden></div>
   <div class="arc-ann" id="arcAnn" hidden></div>
 </div>
+<div id="rope" hidden>
+  <div class="rp-top"><span class="t">🪢 LA CORDE</span><span class="rp-btns"><button id="undoBtnR" title="Annuler">↶</button><button id="passR">Passer</button><button id="quitR" title="Quitter">✕</button></span></div>
+  <section class="rp-scores" id="rpScores"></section>
+  <section class="rp-turn" id="rpTurn"></section>
+  <section class="rp-tracks" id="rpTracks"></section>
+  <div class="rp-log" id="rpLog"></div>
+  <div class="rp-ban" id="ropeBan" hidden></div>
+</div>
 <div id="layer"></div>
 <video id="video" class="camfeed" playsinline muted autoplay></video>
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v40";
+const VERSION="v41";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -429,6 +488,7 @@ const PORDER=["R","B","H","M"];
 const DECKS={
   F:{name:"Tribu 1",short:"Tribu 1",glyph:"⚒️",color:"#ff7a3d",zone:[92,122],ideal:107},
   N:{name:"Tribu 2",short:"Tribu 2",glyph:"🌿",color:"#a493ff",zone:[80,110],ideal:86},
+  S:{name:"Tribu 4",short:"Tribu 4",glyph:"🌙",color:"#ff5fa2",zone:[85,115],ideal:100},
   E:{name:"Tribu 3",short:"Tribu 3",glyph:"⚡",color:"#3ccfe0",zone:[100,130],ideal:124}};
 /* Tempo du jeu entre 80 et 130 BPM. Les zones se chevauchent toujours : 100–110 est la zone commune aux trois tribus. */
 const BPM_MIN=80,BPM_MAX=130,BPM_START=103,IDEAL_WIN=2;
@@ -443,7 +503,8 @@ function layoutZones(decks){
   const list=[...new Set(decks)];for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]];}
   const n=list.length,span=BPM_MAX-BPM_MIN;let W,step;
   if(n<=2){do{W=rnd(28,34);step=W-rnd(12,20);}while(W+step>span);}
-  else{do{W=rnd(28,34);step=rnd(9,13);}while(W+2*step>span||W-2*step<6);}
+  else if(n===3){do{W=rnd(28,34);step=rnd(9,13);}while(W+2*step>span||W-2*step<6);}
+  else{do{W=rnd(26,30);step=rnd(6,8);}while(W+(n-1)*step>span);}
   const total=W+step*(n-1),lo=BPM_MIN+rnd(0,span-total),d=rnd(3,7);
   list.forEach((k,i)=>{const a=lo+i*step,z=[a,a+W];let ideal;
     if(n===1)ideal=Math.round(a+W/2);else if(i===0)ideal=a+d;else if(i===n-1)ideal=a+W-d;else ideal=Math.round(a+W/2);
@@ -477,15 +538,18 @@ const INFO={
   HE4:{t:"Harmonie",tempo:5,prog:"F G Em Am"},
   ME2:{t:"Mélodie",tempo:-5,prog:"Am F C G"},
   ME4:{t:"Mélodie",tempo:10,prog:"Am F Am G"},
-  JE2:{t:"Joker",tempo:"home"}};
+  JE2:{t:"Joker",tempo:"home"},
+  RS2:{t:"Rythme",tempo:5},RS4:{t:"Rythme",tempo:-10},BS2:{t:"Basse",tempo:5},BS4:{t:"Basse",tempo:0},
+  HS2:{t:"Harmonie",tempo:-5,prog:"Am Em F G"},HS4:{t:"Harmonie",tempo:10,prog:"Am C G F"},MS2:{t:"Mélodie",tempo:0,prog:"Am Em F G"},MS4:{t:"Mélodie",tempo:-5,prog:"Am C G F"},
+  JS2:{t:"Joker",tempo:"home"}};
 const CARDS={};
-for(const p of PORDER)for(const d of "FNE")for(const v of [2,4])CARDS[p+d+v]={id:p+d+v,kind:"inst",piste:p,deck:d,val:v};
-for(const d of "FNE")CARDS["J"+d+"2"]={id:"J"+d+"2",kind:"inst",piste:"*",deck:d,val:2,joker:true};
+for(const p of PORDER)for(const d of "FNES")for(const v of [2,4])CARDS[p+d+v]={id:p+d+v,kind:"inst",piste:p,deck:d,val:v};
+for(const d of "FNES")CARDS["J"+d+"2"]={id:"J"+d+"2",kind:"inst",piste:"*",deck:d,val:2,joker:true};
 const ACTIONS={XMUTE:"Mute",XLAR1:"Larsen",XLAR2:"Larsen",XDROP:"Drop",XTON:"Tonalité"};
 for(const k in ACTIONS)CARDS[k]={id:k,kind:"action",name:ACTIONS[k]};
 /* Points de chaque carte, de 1 à 6 (indépendants du code du QR). Règle d'équilibre : une carte qui pousse le tempo
    vers la zone de son propre deck vaut peu ; une carte qui le pousse ailleurs, ou le laisse stable, vaut plus. Chaque deck totalise 29 points. */
-const POINTS={"RF2":3,"RF4":2,"BF2":4,"BF4":3,"HF2":5,"HF4":2,"MF2":3,"MF4":6,"JF2":1,"RN2":5,"RN4":3,"BN2":2,"BN4":4,"HN2":3,"HN4":1,"MN2":4,"MN4":6,"JN2":1,"RE2":3,"RE4":1,"BE2":4,"BE4":5,"HE2":6,"HE4":2,"ME2":5,"ME4":2,"JE2":1};
+const POINTS={"RF2":3,"RF4":2,"BF2":4,"BF4":3,"HF2":5,"HF4":2,"MF2":3,"MF4":6,"JF2":1,"RN2":5,"RN4":3,"BN2":2,"BN4":4,"HN2":3,"HN4":1,"MN2":4,"MN4":6,"JN2":1,"RE2":3,"RE4":1,"BE2":4,"BE4":5,"HE2":6,"HE4":2,"ME2":5,"ME4":2,"JE2":1,"RS2":4,"RS4":2,"BS2":3,"BS4":5,"HS2":2,"HS4":6,"MS2":3,"MS4":3,"JS2":1};
 for(const k in POINTS)CARDS[k].val=POINTS[k];
 const LARSEN_MS=7000;
 function tempoTxt(id){const x=INFO[id].tempo;return x==="home"?"♩ "+DECKS[CARDS[id].deck].ideal:x>0?"▲ +"+x:x<0?"▼ −"+(-x):"= tempo";}
@@ -508,6 +572,7 @@ function applyTempo(id){const x=INFO[id].tempo,b=S.bpm;S.bpm=x==="home"?DECKS[CA
 /* ================= Rendu ================= */
 const pct=b=>((b-BPM_MIN)/(BPM_MAX-BPM_MIN)*100).toFixed(2)+"%";
 function render(){
+  if(S&&S.rope)return renderRope();
   $("mesure").textContent=S.solo?"Test":Math.min(S.mesure,S.max)+" / "+S.max;
   /* tempo */
   $("bpmTxt").innerHTML=`♩ = ${S.bpm} <small>BPM</small>`;
@@ -559,7 +624,7 @@ let camStream=null;
 function stopEverything(){
   clearTimeout(mesureTimer);stopLarsen();picking=null;pending=null;
   if(schedTimer){clearInterval(schedTimer);schedTimer=null;}
-  try{plReset();stopAllSamples();}catch(e){}preview=null;
+  try{plReset();ropeAudioReset();stopAllSamples();}catch(e){}preview=null;
   if(ctx&&ctx.state==="running")ctx.suspend().catch(()=>{});
   scanning=false;if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}try{video.srcObject=null;}catch(e){}
   bonusOn=false;const ab=$("arcBonus");if(ab)ab.hidden=true;const an=$("arcAnn");if(an)an.hidden=true;const cm=$("countModal");if(cm)cm.className="";
@@ -597,18 +662,18 @@ function drawStart(){
     el.classList.remove("rb-tick","rb-win");void el.offsetWidth;el.classList.add(final?"rb-win":"rb-tick");
     if(final&&ctx){const tt=ctx.currentTime;beepT(784,tt,.1,.1,"triangle");beepT(1175,tt+.1,.1,.1,"triangle");beepT(1568,tt+.2,.22,.1,"triangle");}}
 }
-function setup(){stopEverything();
-  let n=2;const pls=[{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"},{name:"Joueur 3",deck:"E"}];
+function setup(){stopEverything();setRope(false);
+  let n=2;const pls=[{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"},{name:"Joueur 3",deck:"E"},{name:"Joueur 4",deck:"S"}];
   const save=()=>{for(let i=0;i<n;i++){const e=$("pn"+i);if(e)pls[i].name=e.value;}};
-  const draw=()=>{
+  const draw=()=>{if(modeChoice!=="corde"&&n>3)n=3;
     $("layer").innerHTML=`<div class="overlay"><div class="sheet">
       <h2>Nouvelle partie <small class="ver">${VERSION}</small></h2>
-      <div><span class="label">Version du jeu</span><div class="mode"><button data-m="arcade" class="${modeChoice==="arcade"?"sel":""}">🕹️ Arcade<small>écran épuré, tempo + bonus</small></button><button data-m="classic" class="${modeChoice==="classic"?"sel":""}">📋 Classique<small>tout le détail à l'écran</small></button></div></div>
-      <div><span class="label">Nombre de musiciens</span><div class="count">${[2,3].map(k=>`<button data-n="${k}" class="${k===n?"sel":""}">${k}</button>`).join("")}</div></div>
+      <div><span class="label">Version du jeu</span><div class="mode"><button data-m="arcade" class="${modeChoice==="arcade"?"sel":""}">🕹️ Arcade<small>écran épuré, tempo + bonus</small></button><button data-m="classic" class="${modeChoice==="classic"?"sel":""}">📋 Classique<small>tout le détail à l'écran</small></button><button data-m="corde" class="${modeChoice==="corde"?"sel":""}">🪢 La Corde<small>tir à la corde musical, 2 à 4</small></button></div></div>
+      <div><span class="label">Nombre de musiciens</span><div class="count">${(modeChoice==="corde"?[2,3,4]:[2,3]).map(k=>`<button data-n="${k}" class="${k===n?"sel":""}">${k}</button>`).join("")}</div></div>
       ${pls.slice(0,n).map((p,i)=>`<div class="pl" style="--pc:${DECKS[p.deck].color}">
         <input type="text" id="pn${i}" value="${esc(p.name)}" aria-label="Nom du joueur ${i+1}">
         <div class="decks">${Object.keys(DECKS).map(d=>`<button data-i="${i}" data-d="${d}" class="${p.deck===d?"sel":""}" style="--dc:${DECKS[d].color}">${DECKS[d].glyph} ${DECKS[d].short}</button>`).join("")}</div></div>`).join("")}
-      <p class="note" style="margin:0">Chaque joueur choisit sa tribu : Tribu 1, Tribu 2 ou Tribu 3. Le bouton lance la musique et la caméra frontale.</p>
+      <p class="note" style="margin:0">Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale.</p>
       <p class="note" id="mp3Status" style="margin:0">${mp3Info||"Recherche des boucles MP3…"}</p>
       <button class="btn main" id="go">Lancer le concert</button><button class="btn" id="goSolo">🎧 Tester un deck en solo (sans règles)</button></div></div>`;
     document.querySelectorAll(".count button").forEach(b=>b.onclick=()=>{save();n=+b.dataset.n;draw();});
@@ -617,6 +682,7 @@ function setup(){stopEverything();
       if(j>=0&&j!==i)pls[j].deck=pls[i].deck;pls[i].deck=d;draw();});
     $("goSolo").onclick=startSolo;
     $("go").onclick=()=>{save();stopLarsen();clearTimeout(mesureTimer);
+      if(modeChoice==="corde")return startRope(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));
       S=fresh(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));plReset();undoStack=[];picking=null;pending=null;
       layoutZones(S.players.map(p=>p.deck));S.arcade=modeChoice==="arcade";setArcade(S.arcade);
       $("layer").innerHTML="";startAudio();startCamera();drawStart();};
@@ -684,8 +750,159 @@ function arcFinal(){
 }
 $("arcQuit").onclick=()=>$("newBtn").click();
 
+/* ================= MODE « LA CORDE » : tir à la corde musical, 2 à 4 joueurs =================
+   Chaque piste (A Rythme, B Basse, C Harmonie, D Mélodie) est une corde. Son nœud est tiré vers le coin de chaque joueur.
+   L'app joue les pistes une par une ; chaque piste mélange les versions des tribus selon la position du nœud.
+   Quand une piste a fini de jouer, le joueur le plus proche du nœud marque. Tirer tend la corde : au-delà d'un seuil secret, elle casse. */
+const ROPE={WIN:20,CAP:1.5,HALF:5,THR:[14,20],RELAX:2,BREAK_PEN:3,JOKER_PULL:3,JOKER_RELAX:4,LACHER:4,TRANSFER:3};
+const RNAME={XMUTE:"Lâcher",XLAR1:"Ancrage",XLAR2:"Ancrage",XDROP:"Détente",XTON:"Transfert"};
+const RDESC={XMUTE:"le nœud d'une piste fait un bond de 4 vers le joueur de ton choix (libère une piste capturée)",
+  XLAR1:"une piste ne peut plus s'éloigner de toi jusqu'à ton prochain tour",XLAR2:"une piste ne peut plus s'éloigner de toi jusqu'à ton prochain tour",
+  XDROP:"la tension d'une piste retombe à zéro",XTON:"le nœud d'une piste recule de 3 vers le centre, et tu tires une autre piste de 3"};
+let RP={cur:null,beat:0,idx:-1,prog:null,voices:[]};
+function setRope(on){document.body.classList.toggle("rope",!!on);$("rope").hidden=!on;}
+function ropeCorners(n){if(n===2)return[{x:-10,y:0},{x:10,y:0}];
+  const a0=n===3?-90:-135;return [...Array(n)].map((_,i)=>{const a=(a0+i*360/n)*Math.PI/180;return{x:+(10*Math.cos(a)).toFixed(3),y:+(10*Math.sin(a)).toFixed(3)};});}
+const rThr=()=>ROPE.THR[0]+Math.floor(Math.random()*(ROPE.THR[1]-ROPE.THR[0]+1));
+function startRope(players){
+  S=fresh(players);S.rope={corners:ropeCorners(players.length),tr:{},log:"",anchor:{}};S.bpm=Math.round(+SET.bpm||100);
+  PORDER.forEach(p=>S.rope.tr[p]={x:0,y:0,cap:null,ten:0,thr:rThr()});
+  S.turn=Math.floor(Math.random()*players.length);undoStack=[];picking=null;pending=null;plReset();ropeAudioReset();
+  setArcade(false);setRope(true);$("layer").innerHTML="";startAudio();startCamera();
+  S.rope.log=`🎲 ${esc(S.players[S.turn].name)} tire en premier`;render();ropeBanner("🪢 LA CORDE",`${esc(S.players[S.turn].name)} commence`,S.players[S.turn].color);}
+const rDist=(k,i)=>{const T=S.rope.tr[k],c=S.rope.corners[i];return Math.hypot(T.x-c.x,T.y-c.y);};
+function rClosest(k){const T=S.rope.tr[k];if(T.cap!==null)return{i:T.cap,d:0};let best=null,bd=1e9,tie=false;
+  S.players.forEach((_,i)=>{const d=rDist(k,i);if(d<bd-1e-3){bd=d;best=i;tie=false;}else if(Math.abs(d-bd)<=1e-3)tie=true;});return tie?{i:null,d:bd}:{i:best,d:bd};}
+/* déplace le nœud de la piste k vers le coin du joueur i, de f crans (f négatif : vers le centre) */
+function rMove(k,i,f){const T=S.rope.tr[k],c=i===null?{x:0,y:0}:S.rope.corners[i];
+  const dx=c.x-T.x,dy=c.y-T.y,L=Math.hypot(dx,dy);if(L<1e-6)return 0;const st=Math.min(f,L),nx=T.x+dx/L*st,ny=T.y+dy/L*st;
+  const an=S.rope.anchor[k];   /* ancrage : la corde ne peut pas s'éloigner du joueur qui l'a ancrée */
+  if(an!==undefined&&an!==i){const ac=S.rope.corners[an];if(Math.hypot(nx-ac.x,ny-ac.y)>Math.hypot(T.x-ac.x,T.y-ac.y)+1e-6)return -1;}
+  T.x=+nx.toFixed(3);T.y=+ny.toFixed(3);
+  if(i!==null&&Math.hypot(T.x-c.x,T.y-c.y)<=ROPE.CAP){T.x=c.x;T.y=c.y;T.cap=i;}
+  return st;}
+/* tension : ajout, grincement, rupture */
+function rTense(k,f,who){const T=S.rope.tr[k];T.ten+=f;
+  if(T.ten>T.thr){Object.assign(T,{x:0,y:0,cap:null,ten:0,thr:rThr()});delete S.rope.anchor[k];
+    S.players[who].score=Math.max(0,S.players[who].score-ROPE.BREAK_PEN);snapSound();
+    S.rope.log=`💥 La corde ${PISTES[k]} casse ! ${esc(S.players[who].name)} perd ${ROPE.BREAK_PEN} points`;ropeBanner("💥 CRAC !",`La corde ${PISTES[k]} a cassé`,"#ff5468");return true;}
+  creak(T.ten/T.thr);return false;}
+function rPull(k,i,f){const T=S.rope.tr[k];
+  if(T.cap!==null){toast(`${PISTES[k]} est capturée par ${S.players[T.cap].name} : un Lâcher peut la libérer`,true);return false;}
+  const m=rMove(k,i,f);if(m<0){toast(`${PISTES[k]} est ancrée par ${S.players[S.rope.anchor[k]].name} : la corde ne cède pas`,true);return false;}
+  if(!rTense(k,f,i)){S.rope.log=`${esc(S.players[i].name)} tire ${PISTES[k]} de ${f}`+(T.cap===i?` — 🔒 capturée !`:"");if(T.cap===i)ropeBanner("🔒 CAPTURE",`${esc(S.players[i].name)} prend ${PISTES[k]}`,S.players[i].color);}
+  return true;}
+function ropeNext(){S.turn=(S.turn+1)%S.players.length;for(const k in S.rope.anchor)if(S.rope.anchor[k]===S.turn)delete S.rope.anchor[k];render();}
+/* carte scannée */
+function ropePlay(c){if(S.ended)return;const me=S.turn;
+  if(c.kind==="inst"&&!c.joker){snap();if(rPull(c.piste,me,c.val))ropeNext();else{undoStack.pop();render();}return;}
+  if(c.joker)return ropePick(`${DECKS[c.deck].glyph} JOKER`,"Tire n'importe quelle piste de 3, ou détends-en une de 4.",
+    [...PORDER.map(p=>({v:"P"+p,l:"Tirer "+PISTES[p],s:"+3 vers toi",off:S.rope.tr[p].cap!==null})),...PORDER.map(p=>({v:"D"+p,l:"Détendre "+PISTES[p],s:"tension −4"}))],
+    v=>{snap();const k=v[1];if(v[0]==="P"){if(!rPull(k,me,ROPE.JOKER_PULL)){undoStack.pop();return render();}}
+      else{const T=S.rope.tr[k];T.ten=Math.max(0,T.ten-ROPE.JOKER_RELAX);S.rope.log=`${esc(S.players[me].name)} détend ${PISTES[k]}`;}ropeNext();});
+  const name=RNAME[c.id],trk=PORDER.map(p=>({v:p,l:PISTES[p],s:ropeTrSub(p)}));
+  if(c.id==="XMUTE")return ropePick("✋ "+name,RDESC[c.id],trk,k=>{
+    const others=S.players.map((p,i)=>({v:String(i),l:p.name,s:DECKS[p.deck].glyph,c:p.color})).filter((_,i)=>i!==me);
+    if(others.length===1)return doLacher(k,+others[0].v);
+    ropePick("✋ "+name+" · "+PISTES[k],"Vers qui le nœud part-il ?",others,i=>doLacher(k,+i));});
+  if(c.id.startsWith("XLAR"))return ropePick("⚓ "+name,RDESC[c.id],trk,k=>{snap();S.rope.anchor[k]=me;S.rope.log=`⚓ ${esc(S.players[me].name)} ancre ${PISTES[k]}`;ropeNext();});
+  if(c.id==="XDROP")return ropePick("🌬️ "+name,RDESC[c.id],trk,k=>{snap();S.rope.tr[k].ten=0;S.rope.log=`🌬️ ${esc(S.players[me].name)} détend ${PISTES[k]}`;ropeNext();});
+  if(c.id==="XTON")return ropePick("🔀 "+name,"Choisis la piste dont le nœud recule de 3 vers le centre.",trk.map(o=>({...o,off:S.rope.tr[o.v].cap!==null})),a=>
+    ropePick("🔀 "+name,"Puis la piste que tu tires de 3.",trk.filter(o=>o.v!==a).map(o=>({...o,off:S.rope.tr[o.v].cap!==null})),b=>{
+      snap();const m=rMove(a,null,ROPE.TRANSFER);if(m<0){undoStack.pop();toast(`${PISTES[a]} est ancrée : elle ne recule pas`,true);return render();}
+      if(!rPull(b,me,ROPE.TRANSFER)){undoStack.pop();return render();}S.rope.log=`🔀 ${esc(S.players[me].name)} : ${PISTES[a]} recule, ${PISTES[b]} +3`;ropeNext();}));
+}
+function doLacher(k,i){snap();const me=S.turn,T=S.rope.tr[k];const was=T.cap;T.cap=null;delete S.rope.anchor[k];
+  if(was!==null){T.x=T.x*.85;T.y=T.y*.85;}   /* le nœud sort de la zone de capture avant de bondir */
+  rMove(k,i,ROPE.LACHER);S.rope.log=`✋ ${esc(S.players[me].name)} lâche ${PISTES[k]} : le nœud bondit vers ${esc(S.players[i].name)}`+(was!==null?" (capture libérée)":"");
+  creak(.3);ropeNext();}
+function ropeTrSub(p){const T=S.rope.tr[p];return T.cap!==null?"🔒 "+S.players[T.cap].name:(()=>{const c=rClosest(p);return c.i===null?"au centre":"penche vers "+S.players[c.i].name;})();}
+/* écran de choix générique */
+function ropePick(title,txt,opts,cb){pending={};picking={kind:"rope"};
+  $("layer").innerHTML=`<div class="overlay jk rpk" style="align-items:center"><div class="sheet"><h2>${title}</h2><p class="note" style="margin:0 0 10px">${txt}</p>
+    <div class="jk-grid">${opts.map(o=>`<button data-v="${o.v}" ${o.off?"disabled":""} style="--dc:${o.c||"var(--spot)"}"><b>${esc(o.l)}</b><small>${esc(o.s||"")}</small></button>`).join("")}</div>
+    <button class="btn" id="pickCancel">Annuler</button></div></div>`;
+  $("pickCancel").onclick=()=>{pending=null;picking=null;$("layer").innerHTML="";render();};
+  document.querySelectorAll(".jk-grid button:not([disabled])").forEach(b=>b.onclick=()=>{pending=null;picking=null;$("layer").innerHTML="";cb(b.dataset.v);});}
+/* score : quand une piste a fini de jouer */
+function ropeScore(k){if(!S||!S.rope||S.ended)return;const T=S.rope.tr[k],c=rClosest(k);let pts=0;
+  if(T.cap!==null)pts=3;else if(c.i!==null)pts=c.d<ROPE.HALF?2:1;
+  T.ten=Math.max(0,T.ten-ROPE.RELAX);
+  if(pts){const p=S.players[c.i];p.score+=pts;S.rope.log=`${PISTES[k]} a joué : ${esc(p.name)} +${pts}`;ropeBurst(k,"+"+pts,p.color);}
+  else S.rope.log=`${PISTES[k]} a joué : nœud au centre, personne ne marque`;
+  const w=S.players.findIndex(p=>p.score>=ROPE.WIN);if(w>=0){S.ended=true;render();return ropeFinal();}
+  render();}
+function ropeFinal(){cheer();const r=[...S.players].sort((a,b)=>b.score-a.score);
+  $("layer").innerHTML=`<div class="overlay" style="align-items:center"><div class="sheet" style="text-align:center"><h2>FIN DU TIR À LA CORDE</h2>
+    <div class="ann-crown">👑</div><b class="ann-name" style="color:${r[0].color}">${esc(r[0].name)}</b><div class="ann-score" style="font-size:64px">${r[0].score}<small>PTS</small></div>
+    <div class="lines">${r.slice(1).map((p,i)=>`<div><span style="color:${p.color}">${i+2}. ${esc(p.name)}</span><span class="mono">${p.score}</span></div>`).join("")}</div>
+    <button class="btn main" id="ok">Rejouer</button></div></div>`;$("ok").onclick=()=>{$("layer").innerHTML="";setup();};}
+function ropeBanner(a,b,col){const el=$("ropeBan");if(!el)return;el.innerHTML=`<b style="color:${col}">${a}</b><span>${b}</span>`;el.hidden=false;el.style.animation="none";void el.offsetWidth;el.style.animation="";
+  clearTimeout(ropeBanner.t);ropeBanner.t=setTimeout(()=>el.hidden=true,2200);}
+function ropeBurst(k,txt,col){const el=document.querySelector(`.rp-tr[data-k="${k}"]`);if(!el)return;const b=document.createElement("i");b.className="rp-burst";b.textContent=txt;b.style.color=col;el.appendChild(b);setTimeout(()=>b.remove(),1200);}
+/* ---------- rendu ---------- */
+function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn];
+  $("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}</span><b>${p.score}</b><i style="width:${Math.min(100,p.score/ROPE.WIN*100)}%"></i></div>`).join("");
+  $("rpTurn").style.setProperty("--pc",pl.color);
+  $("rpTurn").innerHTML=S.ended?`<span class="at-k">PARTIE TERMINÉE</span>`:`<span class="at-k">À TOI DE TIRER</span><div class="at-name">${esc(pl.name)}</div><div class="at-tribe">${DECKS[pl.deck].glyph} ${DECKS[pl.deck].short}</div>`;
+  const vb=n===2?"-12.5 -4.5 25 9":n===3?"-12.5 -12.5 25 20":"-9.8 -9.8 19.6 19.6";
+  $("rpTracks").innerHTML=PORDER.map(k=>{const T=R.tr[k],c=rClosest(k),col=T.cap!==null?S.players[T.cap].color:c.i!==null?S.players[c.i].color:"#fff";
+    const poly=n===2?`<line x1="-10" y1="0" x2="10" y2="0" class="rp-rope"/>`+[-5,0,5].map(x=>`<line x1="${x}" y1="-1" x2="${x}" y2="1" class="rp-tick"/>`).join("")
+      :`<polygon points="${R.corners.map(q=>q.x+","+q.y).join(" ")}" class="rp-rope"/>`+R.corners.map(q=>`<line x1="0" y1="0" x2="${q.x}" y2="${q.y}" class="rp-tick"/>`).join("");
+    const corners=R.corners.map((q,i)=>`<circle cx="${q.x}" cy="${q.y}" r="${ROPE.CAP+.6}" fill="${S.players[i].color}" opacity="${T.cap===i?1:.35}"/><text x="${q.x}" y="${q.y+.9}" class="rp-g">${DECKS[S.players[i].deck].glyph}</text>`).join("");
+    const knot=`<line x1="0" y1="0" x2="${T.x}" y2="${T.y}" class="rp-pull" stroke="${col}"/><circle cx="${T.x}" cy="${T.y}" r="1.5" class="rp-knot" fill="${col}"/>`;
+    const tz=Math.min(1,T.ten/ROPE.THR[0]),hot=tz>.85?"hot":tz>.55?"warm":"";
+    const now=RP.cur&&RP.cur.k===k;
+    return `<div class="rp-tr${now?" now":""}" data-k="${k}" style="--kc:${col}"><div class="rp-h"><b>${FLET[k]} · ${PISTES[k]}</b>${now?'<span class="rp-now">♪</span>':""}${R.anchor[k]!==undefined?`<span title="ancrée">⚓</span>`:""}</div>
+      <svg viewBox="${vb}" class="rp-svg">${poly}${corners}${knot}</svg>
+      <div class="rp-sub">${ropeTrSub(k)}</div><div class="rp-ten ${hot}" title="tension"><i style="width:${(tz*100).toFixed(0)}%"></i></div></div>`;}).join("");
+  $("rpLog").innerHTML=R.log||"Scanne une carte : elle tire sa piste vers toi.";
+  $("undoBtnR").disabled=!undoStack.length;
+}
+/* ---------- son ---------- */
+function ropeAudioReset(){if(RP.cur)ropeStopAt(ctx?ctx.currentTime:0);RP={cur:null,beat:0,idx:-1,prog:null};
+  for(const id in SMP){const s=SMP[id];try{s.g.gain.cancelScheduledValues(0);s.g.gain.value=s.norm||s.g.gain.value;}catch(e){}}}
+function ropeWeights(k){const T=S.rope.tr[k],n=S.players.length;
+  if(T.cap!==null)return S.players.map((_,i)=>i===T.cap?1:0);
+  const raw=S.players.map((_,i)=>1/Math.pow(rDist(k,i)+2.5,2.2)),sum=raw.reduce((a,b)=>a+b,0);return raw.map(v=>v/sum);}
+function ropeStopAt(t){const c=RP.cur;RP.cur=null;if(!c)return;c.refs.forEach(r=>{const s=SMP[r];if(!s)return;(s.srcs||[]).forEach(x=>{try{x.stop(t+.003);}catch(e){}});s.src=null;s.playing=false;});}
+function ropeTick(st,t){
+  if(st%4)return st;
+  if(!S||!S.rope||S.ended||!soundOn||preview){if(RP.cur)ropeStopAt(t);return st;}
+  if(RP.cur){RP.beat++;if(RP.beat<16)return st;
+    const k=RP.cur.k;setTimeout(()=>ropeScore(k),Math.max(0,(t-ctx.currentTime)*1000));ropeStopAt(t);}
+  else if(st%16)return st;
+  RP.idx=(RP.idx+1)%4;const k=PORDER[RP.idx];
+  const ids=S.players.map(p=>k+p.deck+"2"),refs=[];
+  tonalOn=k!=="R"&&ids.some(id=>{const r=SREF(id);return SAMPLES[r]&&smpOn(r);});KEY=tonalOn?SAMPLE_KEY:0;
+  RP.prog=(ids.map(id=>INFO[id].prog).find(Boolean))||null;
+  const w=ropeWeights(k);
+  ids.forEach((id,i)=>{const r=SREF(id);if(SAMPLES[r]&&smpOn(r)){const s=SMP[r];s.at=k;startSample(r,t,0);
+    s.g.gain.cancelScheduledValues(t);s.g.gain.setValueAtTime((s.norm||1)*w[i],t);refs.push(r);}});
+  RP.cur={k,ids,refs};RP.beat=0;
+  setTimeout(()=>{if(S&&S.rope)render();},Math.max(0,(t-ctx.currentTime)*1000));
+  return 0;}
+function ropeStep(st,t,info){if(!RP.cur||S.ended)return;const k=RP.cur.k,w=ropeWeights(k);
+  if(st%4===0)pulseLater(k,t);
+  RP.cur.ids.forEach((id,i)=>{const r=SREF(id);
+    if(RP.cur.refs.includes(r)){if(st%2===0)SMP[r].g.gain.setTargetAtTime((SMP[r].norm||1)*w[i],t,.08);return;}
+    if(w[i]<.02)return;curGain=(CG[id]||1)*Math.min(1,w[i]*1.6);VOICE[id]({...info,p:k});curGain=1;});}
+/* grincement de la corde (plus fort quand la tension monte) et rupture */
+function creak(lv){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02,n=2+Math.round(lv*4);
+  for(let j=0;j<n;j++){const s=ctx.createBufferSource();s.buffer=noiseBuf();const f=bq("bandpass",300+lv*500+Math.random()*200,18),g=ctx.createGain(),tt=t+j*(.07+Math.random()*.05);
+    f.frequency.setValueAtTime(f.frequency.value,tt);f.frequency.exponentialRampToValueAtTime(f.frequency.value*(1.6+lv),tt+.09);
+    g.gain.setValueAtTime(.0001,tt);g.gain.exponentialRampToValueAtTime(.25+lv*.9,tt+.01);g.gain.exponentialRampToValueAtTime(.0001,tt+.11);
+    chain(s,f,g);g.connect(masterIn);s.start(tt,Math.random());s.stop(tt+.15);}}
+function snapSound(){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02;const s=ctx.createBufferSource();s.buffer=noiseBuf();const g=ctx.createGain();
+  g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.0001,t+.25);chain(s,bq("highpass",1200,.7),g);g.connect(masterIn);s.start(t);s.stop(t+.3);
+  const o=ctx.createOscillator(),g2=ctx.createGain();o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(40,t+.3);g2.gain.setValueAtTime(.7,t);g2.gain.exponentialRampToValueAtTime(.0001,t+.35);o.connect(g2);g2.connect(masterIn);o.start(t);o.stop(t+.4);}
+
+$("undoBtnR").onclick=()=>$("undoBtn").onclick();
+$("passR").onclick=()=>{if(!S||!S.rope||S.ended)return;snap();S.rope.log=esc(S.players[S.turn].name)+" passe";ropeNext();};
+$("quitR").onclick=()=>$("newBtn").click();
+
 /* ================= Mode test solo : on scanne, ça joue, sans règles ================= */
-function startSolo(){stopLarsen();clearTimeout(mesureTimer);plReset();setArcade(false);layoutZones(["N","F","E"]);
+function startSolo(){stopLarsen();clearTimeout(mesureTimer);plReset();setArcade(false);layoutZones(Object.keys(DECKS));
   S=fresh(Object.keys(DECKS).map(d=>({name:DECKS[d].short,deck:d})));S.solo=true;undoStack=[];picking=null;pending=null;
   $("layer").innerHTML="";document.body.classList.add("solo");render();startAudio();startCamera();
   toast("Mode test : scanne n'importe quelle carte, elle joue tout de suite");}
@@ -715,6 +932,7 @@ function onCode(raw){
     if(o!==S.turn){toast(DECKS[c.deck].glyph+" Carte "+DECKS[c.deck].short+" : c'est au tour de "+S.players[S.turn].name,true);arcShake();return;}
   }
   flashHit();blip();if(navigator.vibrate)navigator.vibrate(60);
+  if(S.rope)return ropePlay(c);
   if(id.startsWith("XLAR"))return playLarsen();
   arcBonusScan();
   if(c.kind==="action")return openAction(c);
@@ -1067,13 +1285,16 @@ function melody(id,st,t,ch,shift,fn){const n=MELIDX[id][st];if(!n)return;const m
 const ACID=[["R",1],["R"],["8",1],null,["b7",0,1],["R"],["8",1],["3"],["R"],["5",0,1],["R",1],["8"],null,["b7"],["5",1,1],["3"]];
 /* ---------- une fonction par carte ---------- */
 /* tribus sans sons synthétisés : leurs cartes ne jouent que leur MP3 */
-const NOSYNTH=["F"];
+const NOSYNTH=["F","S"];
 const MARK_F={R:523,B:392,H:659,M:784,J:988};
 function marker(i,k){if(i.s===0)beepT(MARK_F[k],i.t,.07,.06);}
 const VOICE={
   /* ===== TRIBU 1 : uniquement des MP3 ; sans fichier, un bip de repère au début de chaque mesure ===== */
   RF2:(i)=>marker(i,"R"),RF4:(i)=>marker(i,"R"),BF2:(i)=>marker(i,"B"),BF4:(i)=>marker(i,"B"),
   HF2:(i)=>marker(i,"H"),HF4:(i)=>marker(i,"H"),MF2:(i)=>marker(i,"M"),MF4:(i)=>marker(i,"M"),JF2:(i)=>marker(i,"J"),
+  /* ===== TRIBU 4 : uniquement des MP3 (sons/Atribu4.mp3…), bip de repère sans fichier ===== */
+  RS2:(i)=>marker(i,"R"),RS4:(i)=>marker(i,"R"),BS2:(i)=>marker(i,"B"),BS4:(i)=>marker(i,"B"),
+  HS2:(i)=>marker(i,"H"),HS4:(i)=>marker(i,"H"),MS2:(i)=>marker(i,"M"),MS4:(i)=>marker(i,"M"),JS2:(i)=>marker(i,"J"),
   /* ===== CLASSIQUE ===== */
   RN2:(i)=>drums(PAT.RN2,i.st,i.t,i.p,.45),
   RN4:(i)=>{const r=rootIn(i.ch,40),f=iv(i.ch,r,"5")-12;
@@ -1120,7 +1341,7 @@ const SAMPLES={};                  /* rempli au démarrage : une entrée par fic
 /* Référence de son : piste + tribu (RF, BF, HF, MF…). Les deux cartes d'une même piste d'un deck partagent le même MP3.
    Nom du fichier : A Rythme, B Basse, C Harmonie, D Mélodie + « tribu » + numéro de la tribu (1, 2, 3), ex. sons/Btribu1.mp3 */
 const SREF=id=>id.slice(0,2);
-const FLET={R:"A",B:"B",H:"C",M:"D",J:"J"},FNUM={F:1,N:2,E:3};
+const FLET={R:"A",B:"B",H:"C",M:"D",J:"J"},FNUM={F:1,N:2,E:3,S:4};
 const FNAME=ref=>FLET[ref[0]]+"tribu"+FNUM[ref[1]];
 let SAMPLE_KEY=5,SAMPLE_PROG="Am E F Dm",tonalOn=false;
 const SMP={};let smpOffset=null;
@@ -1171,7 +1392,7 @@ async function initSamples(){
   if(fixes.length){toast("Durée différente de reglages.json → "+fixes.join(" · "),true);console.warn("MP3",fixes);mp3Info+=" · ⚠ "+fixes.join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
   for(const id in SMP){const s=SMP[id];s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm);s.cache[s.D.bpm]=s.base;
     /* volume : chaque boucle est ramenée au niveau des autres sons */
-    let ss=0;const d=s.base.getChannelData(0);for(let i=0;i<d.length;i+=4)ss+=d[i]*d[i];const rms=Math.sqrt(ss/(d.length/4))||.1;s.g.gain.value=Math.min(1.5,.1/rms);
+    let ss=0;const d=s.base.getChannelData(0);for(let i=0;i<d.length;i+=4)ss+=d[i]*d[i];const rms=Math.sqrt(ss/(d.length/4))||.1;s.norm=Math.min(1.5,.1/rms);s.g.gain.value=s.norm;
     s.ready=true;}
   const n=Object.keys(SMP).filter(id=>SMP[id].ready).length;if(n)toast(n+" boucle"+(n>1?"s":"")+" MP3 chargée"+(n>1?"s":"")+" depuis le dossier sons");
   $("arcCam").dataset.mp3=n?"🎵"+n:"";
@@ -1289,6 +1510,7 @@ function plStart(n,t){const id=sndOf(n.t),r=SREF(id),mp3=!!(SAMPLES[r]&&smpOn(r)
   const d=Math.max(0,(t-ctx.currentTime)*1000);setTimeout(()=>{if(S)render();},d);}
 /* appelé à chaque pas, avant de le jouer ; renvoie le pas (remis à 0 au début de chaque boucle) */
 function plTick(st,t){
+  if(S&&S.rope)return ropeTick(st,t);
   if(st%4)return st;
   if(preview||!S||S.ended||!soundOn){if(PL.cur)plStopAt(t);return st;}
   if(PL.cur){
@@ -1302,7 +1524,8 @@ function plTick(st,t){
 }
 function sampleStep(st,t){
   /* tonalité : si une boucle MP3 tonale est en jeu, tout le monde suit sa tonalité */
-  const vis=plVisible();tonalOn=vis.some(v=>{const r=SREF(sndOf(v.t));return SAMPLES[r]&&smpOn(r)&&SAMPLES[r].tonal;});KEY=tonalOn?SAMPLE_KEY:0;
+  const vis=plVisible();if(S&&S.rope){if(st%4===0){const b=st/4;setTimeout(()=>showBeat(b),Math.max(0,(t-ctx.currentTime)*1000));}return[];}
+  tonalOn=vis.some(v=>{const r=SREF(sndOf(v.t));return SAMPLES[r]&&smpOn(r)&&SAMPLES[r].tonal;});KEY=tonalOn?SAMPLE_KEY:0;
   if(preview){const r=SREF(preview.id);if(SAMPLES[r]&&smpOn(r)){const s=SMP[r];s.at=preview.piste;
       if(!s.playing&&st===0)startSample(r,t,0);else if(s.playing&&st%4===0&&s.bpm!==Math.round(curBpm))startSample(r,t,(st/4)%16);return[r];}}
   else if(PL.cur&&PL.cur.ref&&st%4===0){const s=SMP[PL.cur.ref];if(s.playing&&s.bpm!==Math.round(curBpm))startSample(PL.cur.ref,t,PL.beat);}
@@ -1312,6 +1535,7 @@ function sampleStep(st,t){
 /* ---------- séquenceur ---------- */
 function progNow(){
   if(tonalOn)return prog(SAMPLE_PROG);
+  if(S&&S.rope)return prog(RP.prog||DEFAULT_PROG);
   const id=preview?preview.id:PL.cur?PL.cur.id:null;
   return prog(id&&INFO[id].prog||DEFAULT_PROG);
 }
@@ -1323,6 +1547,7 @@ function playStep(st,t){
     if(ctx.currentTime>preview.until){preview=null;markPlaying(null);return;}
     if(!smp.includes(SREF(preview.id))){curGain=CG[preview.id]||1;VOICE[preview.id]({...info,p:preview.piste});curGain=1;}return;
   }
+  if(S&&S.rope)return ropeStep(st,t,info);
   if(!S||S.ended||!PL.cur)return;
   const c=PL.cur;if(st%4===0)pulseLater(c.p,t);
   if(c.ref)return;                       /* boucle MP3 : elle joue toute seule */
