@@ -490,7 +490,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
     <h3>La musique</h3>
     <p>Une seule boucle joue à la fois. Quand une carte est posée, l'app finit la boucle en cours puis lance la nouvelle. Ensuite elle joue les pistes l'une après l'autre, toujours dans l'ordre A, B, C, D (Rythme, Basse, Harmonie, Mélodie), en repartant de la piste qui suit : une carte posée en Basse joue, puis Harmonie, Mélodie, Rythme, Basse… jusqu'à la prochaine carte posée. Les pistes vides ou coupées par un Mute sont sautées. La pile qui joue s'illumine.</p>
     <h3>Tes propres sons (MP3)</h3>
-    <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec la lettre de la piste (A Rythme, B Basse, C Harmonie, D Mélodie), puis « tribu » et le numéro de la tribu, par exemple <b>sons/Btribu1.mp3</b> pour la Basse de la Tribu 1. Les deux cartes de la même piste d'un deck jouent ce même fichier, qui remplace leur son synthétisé. Le nom est visible dans l'onglet « Sons des decks ». Le Joker n'a pas de fichier : il joue celui de sa tribu pour la piste choisie. Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées. Si un fichier n'a pas la durée prévue, l'app retrouve son tempo d'après sa durée et l'affiche sur l'écran de départ.</p>
+    <p>Dépose les fichiers dans le dossier <b>sons</b> du site. <b>Un fichier par carte</b> : la lettre de la piste (A Rythme, B Basse, C Harmonie, D Mélodie), « tribu », le numéro de la tribu, puis <b>-1</b> ou <b>-2</b> pour la carte, par exemple <b>sons/Btribu1-1.mp3</b> et <b>sons/Btribu1-2.mp3</b> pour les deux Basses de la Tribu 1. Joker : <b>Jtribu1.mp3</b>. Sans fichier pour une carte, l'app prend le fichier commun de la piste (<b>Btribu1.mp3</b>), sinon le son synthétisé. Les noms exacts sont dans l'onglet « Sons des decks ». Les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité de <b>sons/reglages.json</b>. Sons ponctuels : <b>Action-Elan</b>, <b>Action-CoupDeReins</b>, <b>Action-Cadenas</b>, <b>Action-Projecteur</b>, <b>Action-Coupure</b>, <b>Action-Sabotage</b>, <b>Action-Mute</b>, <b>Action-Larsen</b>, <b>Action-Drop</b>, <b>Action-Tonalite</b>, <b>Objectif</b>.</p>
     <h3>🪢 Mode La Corde (2 à 4 joueurs)</h3>
     <ul><li>Une seule corde commune, avec un camp par joueur (une ligne à 2, un triangle à 3, un carré à 4), graduée d'un cran par point de traction. Ton camp commence à 3 crans du centre. À 2 joueurs, la corde démarre à 2 crans vers le premier joueur.</li>
     <li>Chaque instrument a des <b>points de victoire</b> (étoile) et une <b>traction</b> (+1 à +5). Plus il rapporte, moins il tire.</li>
@@ -541,7 +541,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v48";
+const VERSION="v49";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -899,7 +899,7 @@ function ropeObjScan(c){const R=S.rope,i=S.turn;
   if(!R.objOn||R.round!==1){toast("Les objectifs se scannent au premier tour",true);return;}
   if(R.obj[i]){toast("Tu as déjà un objectif",true);return;}
   if(R.obj.includes(c.id)){toast("Cet objectif est déjà pris : pioches-en un autre",true);return;}
-  R.obj[i]=c.id;pending=null;$("layer").innerHTML="";R.log=`🎯 ${esc(S.players[i].name)} a un objectif secret`;render();
+  R.obj[i]=c.id;playOne("OBJ");pending=null;$("layer").innerHTML="";R.log=`🎯 ${esc(S.players[i].name)} a un objectif secret`;render();
   ropeModal(`<span class="ann-k">🎯 OBJECTIF ENREGISTRÉ</span><b class="ann-name" style="color:${S.players[i].color}">${esc(S.players[i].name)}</b><span class="ann-gain">garde ta carte face cachée</span>`,1500,null,true);}
 function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope;
   if(c.kind==="obj")return ropeObjScan(c);
@@ -920,10 +920,10 @@ function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope;
     R.log=`${esc(S.players[me].name)} pose ${PISTES[p]} (${v[0]} pt${v[0]>1?"s":""}) et tire de ${pull}`+(sur?" — ⚡ surenchère !":"")+(lk?" — 🔒 verrouillée !":"");
     if(sur||lk)ropeBanner(lk?"🔒 VERROU":"⚡ SURENCHÈRE",`${esc(S.players[me].name)} ${lk?"verrouille "+PISTES[p]:"tire +1"}`,S.players[me].color);
     openCount(e);}
-  else{snap();rPull(me,v[1]);R.lastPlace=null;R.log=`${esc(S.players[me].name)} : ${c.joker?"Joker":RNAME[c.id]}, tire de ${v[1]}`;}
+  else{snap();rPull(me,v[1]);R.lastPlace=null;if(c.joker)playOne(CFILE(c.id));R.log=`${esc(S.players[me].name)} : ${c.joker?"Joker":RNAME[c.id]}, tire de ${v[1]}`;}
   creak(.3+v[1]/10);ropeNextTurn();}
 /* cartes du deck Action */
-function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;
+function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;const _snd=()=>playOne(c.act);
   if(R.usedA.includes(c.id)){toast(`${a.n} : cette carte a déjà été jouée`,true);return;}
   if(a.react){/* réaction sur la carte qui vient d'être posée */
     const L=R.lastPlace,t=L&&topOf(L.p);
@@ -936,7 +936,7 @@ function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;
       ropeBanner("✂️ COUPURE",`${esc(o.name)} reprend sa carte ${PISTES[L.p]} sous son deck`,"#ff5468");}
     else{const t2=topOf(L.p);t2.sab=true;rPush(L.owner,2);R.log=`🚫 SABOTAGE ! La carte ${PISTES[L.p]} de ${esc(o.name)} ne marquera pas cette manche, et la corde s'éloigne de lui de 2`;
       ropeBanner("🚫 SABOTAGE",`${PISTES[L.p]} de ${esc(o.name)} ne marque pas`,"#ff5468");}
-    R.lastPlace=null;sfx("XMUTE");render();return;}
+    R.lastPlace=null;if(!_snd())sfx("XMUTE");render();return;}
   if(R.closing||pending){toast("Attends ton tour pour jouer cette carte",true);return;}
   if(R.actUsed){toast("Une seule carte Action par tour (avant ta carte)",true);return;}
   const p0=S.players[me];
@@ -948,7 +948,7 @@ function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;
     if(!p){toast("Projecteur : aucune piste ne joue en ce moment",true);return;}
     snap();R.projo[p]=true;R.log=`🔦 PROJECTEUR sur ${PISTES[p]} : elle marque double à cette fin de manche`;ropeBanner("🔦 PROJECTEUR",`${PISTES[p]} marque double`,p0.color);}
   else{snap();rPull(me,a.tr);creak(.3+a.tr/10);R.log=`${esc(p0.name)} : ${a.n}, tire de ${a.tr}`;}
-  R.usedA.push(c.id);R.actUsed=true;p0.score+=1;R.log+=" · +1 point";render();}
+  R.usedA.push(c.id);R.actUsed=true;p0.score+=1;R.log+=" · +1 point";_snd();render();}
 function ropeNextTurn(){const R=S.rope;R.played.push(S.turn);R.actUsed=false;
   if(R.played.length>=S.players.length){R.closing=true;render();
     if(R.lastPlace){ropeReactWindow();return setTimeout(()=>{R.closing=false;ropeRound();},ROPE_REACT_MS);}
@@ -1119,7 +1119,7 @@ function onPisteTap(p){
 function place(c,p){
   snap();pending=null;
   const prev=topOf(p),me=S.turn,entry={id:c.id,owner:me,hidden:false,prevBpm:S.bpm,tempoDone:true,seq:++S.seqN};
-  if(c.joker)entry.snd=p+c.deck+"2";          /* le Joker joue le son de sa tribu sur cette piste */
+  if(c.joker)entry.snd=SMP[c.id]&&SMP[c.id].ready?c.id:p+c.deck+"2";   /* le Joker joue son propre MP3, sinon le son de sa tribu sur cette piste */
   S.stacks[p].push(entry);S.last=p;plAdd(entry);
   const tmsg=applyTempo(c.id);
   toast(S.players[me].name+" : "+(c.joker?"Joker sur ":"")+PISTES[p]+tmsg);
@@ -1485,9 +1485,19 @@ let SET={bpm:100,temps:16,tonalite:"Dm",grille:"Dm A Bb Gm"};
 const SAMPLES={};                  /* rempli au démarrage : une entrée par fichier sons/<REF>.mp3 trouvé */
 /* Référence de son : piste + tribu (RF, BF, HF, MF…). Les deux cartes d'une même piste d'un deck partagent le même MP3.
    Nom du fichier : A Rythme, B Basse, C Harmonie, D Mélodie + « tribu » + numéro de la tribu (1, 2, 3), ex. sons/Btribu1.mp3 */
-const SREF=id=>id.slice(0,2);
+/* Un MP3 par carte : sons/<piste><tribu>-<n>.mp3, ex. Btribu1-1 et Btribu1-2 (les deux Basses de la Tribu 1).
+   À défaut, le fichier commun de la piste (Btribu1.mp3) sert pour les deux cartes. */
+const SNDKEY={};
+const SREF=id=>SNDKEY[id]||id.slice(0,2);
 const FLET={R:"A",B:"B",H:"C",M:"D",J:"J"},FNUM={F:1,N:2,E:3,S:4};
 const FNAME=ref=>FLET[ref[0]]+"tribu"+FNUM[ref[1]];
+const CFILE=id=>id[0]==="J"?"Jtribu"+FNUM[id[1]]:FLET[id[0]]+"tribu"+FNUM[id[1]]+"-"+(id[2]==="2"?1:2);
+const KFILE=k=>k.length===2?FNAME(k):CFILE(k);
+/* sons ponctuels : cartes Action, Objectif */
+const ONEFILE={XMUTE:"Action-Mute",XLAR1:"Action-Larsen",XLAR2:"Action-Larsen",XDROP:"Action-Drop",XTON:"Action-Tonalite",
+  ELAN:"Action-Elan",REINS:"Action-CoupDeReins",CADENAS:"Action-Cadenas",PROJO:"Action-Projecteur",COUPURE:"Action-Coupure",SABOT:"Action-Sabotage",OBJ:"Objectif"};
+const ONE={},ONERAW={};
+function playOne(k){const f=ONEFILE[k]||k,b=ONE[f];if(!b||!ctx||!soundOn)return false;const s=ctx.createBufferSource(),g=ctx.createGain();g.gain.value=.9;s.buffer=b;s.connect(g);g.connect(masterIn);s.start(ctx.currentTime+.02);return true;}
 let SAMPLE_KEY=5,SAMPLE_PROG="Am E F Dm",tonalOn=false;
 const SMP={};let smpOffset=null;
 function decode(ab){return new Promise((res,rej)=>{const p=ctx.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);});}
@@ -1499,11 +1509,16 @@ function preloadSons(){
   if(location.protocol==="file:"){mp3Info="MP3 : ouvre la page depuis GitHub pour charger le dossier sons";return PRE=Promise.resolve({set:null,files:{}});}
   PRE=(async()=>{const out={set:null,files:{}};const rg=await getFile("sons/reglages.json");
     if(rg){try{out.set=await rg.json();}catch(e){out.setErr=true;}}
-    const ids=Object.keys(CARDS).filter(id=>CARDS[id].kind==="inst"&&!CARDS[id].joker),refs=[...new Set(ids.map(SREF))];
-    /* sons/Atribu1.mp3 (ou Atribue1.mp3) ; à défaut, les anciens noms (RF.mp3, RF2.mp3, RF4.mp3) */
-    await Promise.all(refs.map(async ref=>{for(const n of [FNAME(ref),FNAME(ref).replace("tribu","tribue"),ref,...ids.filter(i=>SREF(i)===ref)]){const r=await getFile("sons/"+n+".mp3");
-      if(r){try{out.files[ref]=await r.arrayBuffer();break;}catch(e){}}}}));
-    const k=Object.keys(out.files);mp3Info=k.length?"🎵 "+k.length+" boucle"+(k.length>1?"s":"")+" MP3 trouvée"+(k.length>1?"s":"")+" : "+k.map(FNAME).join(", "):"Aucune boucle MP3 trouvée dans le dossier sons";
+    const cards=Object.keys(CARDS).filter(id=>CARDS[id].kind==="inst"),ids=cards.filter(id=>!CARDS[id].joker),refs=[...new Set(ids.map(i=>i.slice(0,2)))];
+    const tryF=async names=>{for(const n of names){const r=await getFile("sons/"+n+".mp3");if(r){try{return await r.arrayBuffer();}catch(e){}}}return null;};
+    /* 1) un fichier par carte : Atribu1-1.mp3 (ou Atribue1-1.mp3), Jtribu1.mp3 pour le Joker */
+    await Promise.all(cards.map(async id=>{const f=CFILE(id),ab=await tryF([f,f.replace("tribu","tribue")]);if(ab){out.files[id]=ab;SNDKEY[id]=id;}}));
+    /* 2) à défaut, le fichier commun de la piste : Atribu1.mp3, puis les anciens noms (RF.mp3, RF2.mp3, RF4.mp3) */
+    await Promise.all(refs.map(async ref=>{if(ids.filter(i=>i.slice(0,2)===ref).every(i=>SNDKEY[i]))return;
+      const ab=await tryF([FNAME(ref),FNAME(ref).replace("tribu","tribue"),ref,...ids.filter(i=>i.slice(0,2)===ref)]);if(ab)out.files[ref]=ab;}));
+    /* 3) sons ponctuels (Actions, Objectif) */
+    out.one={};await Promise.all([...new Set(Object.values(ONEFILE))].map(async f=>{const ab=await tryF([f]);if(ab)out.one[f]=ab;}));
+    const k=Object.keys(out.files),o=Object.keys(out.one);mp3Info=(k.length?"🎵 "+k.length+" boucle"+(k.length>1?"s":"")+" MP3 : "+k.map(KFILE).join(", "):"Aucune boucle MP3 trouvée dans le dossier sons")+(o.length?" · 🔊 "+o.join(", "):"");
     const el=$("mp3Status");if(el)el.textContent=mp3Info;return out;})();
   return PRE;}
 async function initSamples(){
@@ -1514,10 +1529,11 @@ async function initSamples(){
   const tc=chordOf(String(SET.tonalite).trim());let k=((tc.root-9)%12+12)%12;if(k>6)k-=12;SAMPLE_KEY=k;
   SAMPLE_PROG=String(SET.grille).trim().split(/\s+/).slice(0,4).map(n=>chordShift(n,k)).join(" ");
   while(SAMPLE_PROG.split(" ").length<4)SAMPLE_PROG+=" "+SAMPLE_PROG.split(" ")[0];
+  await Promise.all(Object.keys(pre.one||{}).map(async f=>{try{ONE[f]=await decode(pre.one[f].slice(0));}catch(e){}}));
   await Promise.all(Object.keys(pre.files).map(async id=>{
-    try{const raw=await decode(pre.files[id].slice(0));const c=CARDS[Object.keys(CARDS).find(i=>SREF(i)===id)];
+    try{const raw=await decode(pre.files[id].slice(0));const c=CARDS[id]||CARDS[Object.keys(CARDS).find(i=>i.slice(0,2)===id)];
       SAMPLES[id]={piste:c.joker?"M":c.piste,bpm:+SET.bpm||100,beats:+SET.temps||16,tonal:c.piste!=="R"};
-      const g=ctx.createGain();SMP[id]={D:SAMPLES[id],g,raw,ready:false,playing:false,cache:{}};}catch(e){console.error(id,e);toast("sons/"+FNAME(id)+".mp3 n'a pas pu être lu",true);}}));
+      const g=ctx.createGain();SMP[id]={D:SAMPLES[id],g,raw,ready:false,playing:false,cache:{}};}catch(e){console.error(id,e);toast("sons/"+KFILE(id)+".mp3 n'a pas pu être lu",true);}}));
   /* silence ajouté par l'encodeur MP3 au début : le plus petit décalage trouvé, commun à des boucles exportées ensemble */
   smpOffset=0;let best=Infinity;
   for(const id in SMP){const d=SMP[id].raw.getChannelData(0),sr=SMP[id].raw.sampleRate,lim=Math.min(d.length,sr*.08);
@@ -1532,8 +1548,8 @@ async function initSamples(){
       for(const n of [D.beats,16,32,8,64]){if(found)break;let bestB=null;
         for(let b=60;b<=200;b++)if(fits(b,n)&&(bestB===null||Math.abs(b-D.bpm)<Math.abs(bestB-D.bpm)))bestB=b;
         if(bestB)found={bpm:bestB,beats:n};}
-      if(found){s.D=SAMPLES[id]=Object.assign({},D,found);fixes.push(FNAME(id)+".mp3 : "+found.beats+" temps à "+found.bpm+" BPM");}
-      else fixes.push(FNAME(id)+".mp3 dure "+len.toFixed(2)+" s (attendu "+(D.beats*60/D.bpm).toFixed(2)+" s)");}}
+      if(found){s.D=SAMPLES[id]=Object.assign({},D,found);fixes.push(KFILE(id)+".mp3 : "+found.beats+" temps à "+found.bpm+" BPM");}
+      else fixes.push(KFILE(id)+".mp3 dure "+len.toFixed(2)+" s (attendu "+(D.beats*60/D.bpm).toFixed(2)+" s)");}}
   if(fixes.length){toast("Durée différente de reglages.json → "+fixes.join(" · "),true);console.warn("MP3",fixes);mp3Info+=" · ⚠ "+fixes.join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
   for(const id in SMP){const s=SMP[id];s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm);s.cache[s.D.bpm]=s.base;
     /* volume : chaque boucle est ramenée au niveau des autres sons */
@@ -1695,7 +1711,7 @@ function playStep(st,t){
 }
 /* Sons des cartes Action */
 function sfx(id){
-  if(!ctx||!soundOn)return;const t=ctx.currentTime+.02;
+  if(!ctx||!soundOn)return;if(playOne(id))return;const t=ctx.currentTime+.02;
   const sweep=(type,f0,f1,dur,v)=>{const o=ctx.createOscillator(),g=envG(t,.01,v,dur*.6,dur*.4);o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);o.connect(g);g.connect(masterIn);o.start(t);o.stop(t+dur+.1);};
   if(id==="XMUTE")sweep("square",440,40,.6,.12);
   if(id.startsWith("XLAR"))sweep("sawtooth",2000,3600,.8,.12);
@@ -1705,7 +1721,8 @@ function sfx(id){
 function auditionCard(id){
   startAudio();const c=CARDS[id];
   if(c.kind==="action"){preview=null;sfx(id);markPlaying(id);setTimeout(()=>markPlaying(null),900);return;}
-  if(c.joker){toast("Le Joker joue le son de sa tribu sur la piste adverse choisie");return;}
+  if(c.kind==="ract"||c.kind==="obj"){preview=null;if(!playOne(c.kind==="obj"?"OBJ":c.act))sfx("XMUTE");markPlaying(id);setTimeout(()=>markPlaying(null),900);return;}
+  if(c.joker&&!(SAMPLES[SREF(id)]&&smpOn(SREF(id)))){toast("Pas encore de fichier "+CFILE(id)+".mp3 : le Joker joue le son de sa tribu sur la piste choisie");return;}
   const bpm=DECKS[c.deck].ideal;curBpm=bpm;SPB=60/bpm/4;
   preview={id,piste:c.joker?"M":c.piste,bpm,until:ctx.currentTime+SPB*LOOP+.3};markPlaying(id);
   nextT=ctx.currentTime+.05;step=0;
@@ -1764,8 +1781,10 @@ async function decodeFrame(){
 /* ================= Listes de cartes, onglets, boutons ================= */
 function cardButtons(el){
   const deckIds=d=>Object.keys(CARDS).filter(id=>CARDS[id].deck===d).sort((a,b)=>"RBHMJ".indexOf(a[0])-"RBHMJ".indexOf(b[0]));
-  el.innerHTML=Object.keys(DECKS).map(d=>`<h4>${DECKS[d].glyph} ${DECKS[d].name} · zone ${DECKS[d].zone[0]}–${DECKS[d].zone[1]}</h4>`+deckIds(d).map(id=>`<button data-k="${id}" style="--cc:${DECKS[d].color}"><span>${SAMPLES[SREF(id)]?"🎵 ":""}${cardLabel(CARDS[id])} · ${tempoTxt(id)}</span><small>${CARDS[id].joker?"joue le son de sa tribu sur la piste adverse choisie":SAMPLES[SREF(id)]?"boucle MP3":NOSYNTH.includes(CARDS[id].deck)?"bip de repère (pas encore de MP3)":"son synthétisé"}</small>${CARDS[id].joker?"":`<small class="fname">sons/${FNAME(SREF(id))}.mp3</small>`}</button>`).join("")).join("")
-    +`<h4>Actions (communes)</h4>`+Object.keys(ACTIONS).map(id=>`<button data-k="${id}" style="--cc:var(--spot)"><span>${ACTIONS[id]}</span></button>`).join("");
+  el.innerHTML=Object.keys(DECKS).map(d=>`<h4>${DECKS[d].glyph} ${DECKS[d].name} · zone ${DECKS[d].zone[0]}–${DECKS[d].zone[1]}</h4>`+deckIds(d).map(id=>`<button data-k="${id}" style="--cc:${DECKS[d].color}"><span>${SAMPLES[SREF(id)]?"🎵 ":""}${cardLabel(CARDS[id])} · ${tempoTxt(id)}</span><small>${CARDS[id].joker?"joue le son de sa tribu sur la piste adverse choisie":SAMPLES[SREF(id)]?"boucle MP3":NOSYNTH.includes(CARDS[id].deck)?"bip de repère (pas encore de MP3)":"son synthétisé"}</small>${CARDS[id].joker?`<small class="fname">sons/${CFILE(id)}.mp3</small>`:`<small class="fname">sons/${CFILE(id)}.mp3${SNDKEY[id]?"":SAMPLES[id.slice(0,2)]?" (commun : "+FNAME(id.slice(0,2))+")":""}</small>`}</button>`).join("")).join("")
+    +`<h4>Actions (modes Arcade et Classique)</h4>`+Object.keys(ACTIONS).map(id=>`<button data-k="${id}" style="--cc:var(--spot)"><span>${ACTIONS[id]}</span><small class="fname">sons/${ONEFILE[id]}.mp3</small></button>`).join("")
+    +`<h4>Deck Action (La Corde)</h4>`+Object.keys(RACT).map(k=>`<button data-k="${Object.keys(RACT_IDS).find(i=>RACT_IDS[i]===k)}" style="--cc:var(--spot)"><span>${RACT[k].n}</span><small class="fname">sons/${ONEFILE[k]}.mp3</small></button>`).join("")
+    +`<h4>Objectifs</h4><button data-k="O01" style="--cc:var(--spot)"><span>Objectif (au scan)</span><small class="fname">sons/Objectif.mp3</small></button>`;
 }
 cardButtons($("sons"));cardButtons($("sim"));
 $("sons").onclick=e=>{const b=e.target.closest("button");if(b)auditionCard(b.dataset.k);};
