@@ -240,6 +240,8 @@ body.solo .regie{grid-template-columns:1fr}
 .piste .head b{font-size:15px}
 .piste .body{flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .piste .glyph{font-size:24px;line-height:1}
+.tdot{display:inline-block;width:.8em;height:.8em;border-radius:50%;vertical-align:-.05em;flex-shrink:0;box-shadow:0 0 0 1.5px rgba(255,255,255,.25)}
+.piste .glyph .tdot,.rp-gl .tdot{width:22px;height:22px}
 .piste .val{font-family:var(--mono);font-size:22px;font-weight:600}
 .piste .ttl{font-size:12px;color:var(--muted);line-height:1.2;width:100%}
 .owner{font-size:11.5px;padding:2px 8px;border-radius:99px;background:var(--oc);color:#14121f;font-weight:800;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
@@ -368,10 +370,23 @@ body.rope{background:var(--arc-bg);background-image:none}
 .rp-burst{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--arc-d);font-size:34px;text-shadow:0 0 14px currentColor;animation:rpb 1.2s ease-out forwards;pointer-events:none}
 @keyframes rpb{0%{opacity:0;transform:translate(-50%,-20%) scale(.6)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-140%) scale(1)}}
 .rp-ban{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:30;background:#0d0b2b;border:2px solid var(--neon2);border-radius:20px;padding:16px 22px;text-align:center;display:flex;flex-direction:column;gap:4px;box-shadow:0 0 30px rgba(56,243,255,.35);animation:rpban 2.2s ease forwards;min-width:240px}
-.rp-ban b{font-family:var(--arc-d);font-size:30px;text-shadow:0 0 14px currentColor}.rp-ban span{color:#e8e6ff}
+.rp-ban[hidden]{display:none}.rp-ban b{font-family:var(--arc-d);font-size:30px;text-shadow:0 0 14px currentColor}.rp-ban span{color:#e8e6ff}
 @keyframes rpban{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}80%{opacity:1}100%{opacity:0}}
 body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:var(--arc-t);color:#fff}
 .mode{flex-wrap:wrap}
+.rp-round{display:flex;align-items:center;gap:10px}.rp-k{font-family:var(--arc-d);font-size:14px;color:var(--gold);white-space:nowrap}
+.rp-seg{flex:1;display:flex;gap:5px}.rp-seg i{flex:1;height:14px;border-radius:7px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.04)}
+.rp-seg i.on{background:var(--pc);border-color:var(--pc);box-shadow:0 0 10px var(--pc)}.rp-seg i.now{border-color:var(--pc);animation:rpblink .7s infinite alternate}@keyframes rpblink{from{opacity:1}to{opacity:.35}}
+.rp-gauge{border-radius:16px;padding:8px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1)}
+.rp-gauge .rp-svg.line{max-height:110px}.rp-gauge .rp-svg{max-height:180px}
+.rp-tick.maj{stroke:rgba(255,255,255,.45)}.rp-num{font-size:1.1px;fill:rgba(255,255,255,.55);text-anchor:middle}.rp-dot{fill:rgba(255,255,255,.4)}
+.rp-tracks{grid-template-columns:repeat(4,1fr)!important;gap:6px!important}
+.rp-tr{padding:6px!important;text-align:center}.rp-tr .rp-h{justify-content:center;font-size:12px}.rp-tr .rp-h b{font-size:12px!important}
+.rp-tr.lk{border-color:var(--kc);background:color-mix(in srgb,var(--kc) 14%,transparent)}
+.rp-card{display:flex;align-items:center;justify-content:center;gap:4px;margin:6px 0 2px}.rp-gl{font-size:22px}
+.rp-star{display:inline-grid;place-items:center;width:30px;height:30px;font-weight:800;color:#1a1530;background:#f4c64e;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.rp-L{font-family:var(--arc-d);font-size:20px!important;font-weight:400}.rp-pn{font-size:11px;color:#cfcbe8;margin-top:-2px}
+.rp-own{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rp-empty{opacity:.4;font-size:13px;margin:14px 0}
 .rpk .sheet{max-height:92dvh;overflow:auto}.rpk .jk-grid button{padding:10px 6px}.rpk .jk-grid button b{font-size:16px}
 </style>
 </head>
@@ -439,14 +454,12 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
     <h3>Tes propres sons (MP3)</h3>
     <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec la lettre de la piste (A Rythme, B Basse, C Harmonie, D Mélodie), puis « tribu » et le numéro de la tribu, par exemple <b>sons/Btribu1.mp3</b> pour la Basse de la Tribu 1. Les deux cartes de la même piste d'un deck jouent ce même fichier, qui remplace leur son synthétisé. Le nom est visible dans l'onglet « Sons des decks ». Le Joker n'a pas de fichier : il joue celui de sa tribu pour la piste choisie. Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées. Si un fichier n'a pas la durée prévue, l'app retrouve son tempo d'après sa durée et l'affiche sur l'écran de départ.</p>
     <h3>🪢 Mode La Corde (2 à 4 joueurs)</h3>
-    <ul><li>Chaque piste est une corde, avec un nœud tiré vers le coin de chaque joueur : une ligne à 2, un triangle à 3, un carré à 4.</li>
-    <li><b>Ton tour</b> : scanne un instrument, il tire sa piste vers toi de sa force (les points dans l'étoile). Ou joue une Action, ou passe. Repioche jusqu'à 4.</li>
-    <li><b>Le son</b> : les pistes jouent une par une, A, B, C, D. Chacune mélange les versions des tribus : plus le nœud est proche de toi, plus on entend la tienne.</li>
-    <li><b>Marquer</b> : quand une piste a fini de jouer, le joueur le plus proche du nœud marque 1 point, 2 si le nœud est dans sa moitié. Nœud au bout : la piste est capturée, elle rapporte 3 points à chaque passage et ne bouge plus.</li>
-    <li><b>Tension</b> : chaque traction tend la corde (elle grince). Elle se détend de 2 à chaque passage. Au-delà d'un seuil secret, elle casse : le nœud revient au centre et le dernier qui a tiré perd 3 points.</li>
-    <li><b>Joker</b> : tire n'importe quelle piste de 3, ou en détend une de 4.</li>
-    <li><b>Actions</b> : Mute = Lâcher (le nœud bondit de 4 vers le joueur de ton choix, libère une capture) · Larsen = Ancrage (la piste ne peut plus s'éloigner de toi jusqu'à ton prochain tour) · Drop = Détente (tension à zéro) · Tonalité = Transfert (une piste recule de 3 vers le centre, tu en tires une autre de 3).</li>
-    <li>Le premier à 20 points gagne.</li></ul>
+    <ul><li>Une seule corde commune, avec un camp par joueur (une ligne à 2, un triangle à 3, un carré à 4). Elle est graduée d'un cran par point de traction ; ton camp commence à 4 crans du centre.</li>
+    <li>Chaque carte instrument a des <b>points de victoire</b> (étoile) et une <b>traction</b> (corde). Plus elle rapporte de points, moins elle tire.</li>
+    <li><b>Ton tour</b> : scanne une carte et pose-la sur sa piste (elle recouvre celle du dessus). Elle tire le curseur vers toi de sa traction. Si le curseur est alors dans ton camp, ta carte se <b>verrouille</b> : personne ne peut la recouvrir jusqu'à la fin de la manche.</li>
+    <li>Joker et cartes Élan, Coup de reins, Arrachage : traction pure, 0 point, elles ne se posent pas sur une piste.</li>
+    <li>La jauge des tours se remplit à chaque joueur. Pleine, la manche se joue : chacun marque les points de ses cartes visibles, celui qui a la corde dans son camp gagne +3. La corde revient au centre, les verrous sautent, le premier joueur change. 8 manches.</li>
+    <li>La musique joue les pistes une par une, A, B, C, D, comme dans les autres modes.</li></ul>
     <h3>Fin</h3>
     <ul><li>Après la 8e mesure, le meilleur score gagne. La musique s'arrête.</li><li>Égalité : celui qui contrôle le plus de pistes l'emporte.</li></ul>
   </div>
@@ -470,7 +483,9 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <div id="rope" hidden>
   <div class="rp-top"><span class="t">🪢 LA CORDE</span><span class="rp-btns"><button id="undoBtnR" title="Annuler">↶</button><button id="passR">Passer</button><button id="quitR" title="Quitter">✕</button></span></div>
   <section class="rp-scores" id="rpScores"></section>
+  <section class="rp-round" id="rpRound"></section>
   <section class="rp-turn" id="rpTurn"></section>
+  <section class="rp-gauge" id="rpGauge"></section>
   <section class="rp-tracks" id="rpTracks"></section>
   <div class="rp-log" id="rpLog"></div>
   <div class="rp-ban" id="ropeBan" hidden></div>
@@ -480,7 +495,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v41";
+const VERSION="v42";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -488,8 +503,10 @@ const PORDER=["R","B","H","M"];
 const DECKS={
   F:{name:"Tribu 1",short:"Tribu 1",glyph:"⚒️",color:"#ff7a3d",zone:[92,122],ideal:107},
   N:{name:"Tribu 2",short:"Tribu 2",glyph:"🌿",color:"#a493ff",zone:[80,110],ideal:86},
-  S:{name:"Tribu 4",short:"Tribu 4",glyph:"🌙",color:"#ff5fa2",zone:[85,115],ideal:100},
-  E:{name:"Tribu 3",short:"Tribu 3",glyph:"⚡",color:"#3ccfe0",zone:[100,130],ideal:124}};
+  E:{name:"Tribu 3",short:"Tribu 3",glyph:"⚡",color:"#3ccfe0",zone:[100,130],ideal:124},
+  S:{name:"Tribu 4",short:"Tribu 4",glyph:"🌙",color:"#ff5fa2",zone:[85,115],ideal:100}};
+/* Symbole d'une tribu : un rond plein de sa couleur */
+for(const k in DECKS)DECKS[k].glyph=`<i class="tdot" style="background:${DECKS[k].color}"></i>`;
 /* Tempo du jeu entre 80 et 130 BPM. Les zones se chevauchent toujours : 100–110 est la zone commune aux trois tribus. */
 const BPM_MIN=80,BPM_MAX=130,BPM_START=103,IDEAL_WIN=2;
 /* Zones tirées au hasard à chaque partie, avec un chevauchement équilibré :
@@ -585,7 +602,7 @@ function render(){
   /* tour */
   const pl=S.players[S.turn];
   $("turn").style.setProperty("--pc",pl.color);$("turnName").textContent=pl.name;
-  $("turnDeck").textContent=DECKS[pl.deck].glyph+" "+DECKS[pl.deck].short;
+  $("turnDeck").innerHTML=DECKS[pl.deck].glyph+" "+DECKS[pl.deck].short;
   $("dots").innerHTML=S.players.map((_,i)=>`<i class="${i<S.played?"on":""}"></i>`).join("");
   const mods=[S.drop&&"Drop armé : la prochaine mesure compte double",...Object.keys(S.boost).map(p=>"Tonalité : "+PISTES[p]+" +2"),...Object.keys(S.muted).map(p=>"Mute : "+PISTES[p])].filter(Boolean);
   $("mods").textContent=mods.join(" · ");$("mods").hidden=!mods.length;
@@ -624,7 +641,7 @@ let camStream=null;
 function stopEverything(){
   clearTimeout(mesureTimer);stopLarsen();picking=null;pending=null;
   if(schedTimer){clearInterval(schedTimer);schedTimer=null;}
-  try{plReset();ropeAudioReset();stopAllSamples();}catch(e){}preview=null;
+  try{plReset();stopAllSamples();}catch(e){}preview=null;
   if(ctx&&ctx.state==="running")ctx.suspend().catch(()=>{});
   scanning=false;if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}try{video.srcObject=null;}catch(e){}
   bonusOn=false;const ab=$("arcBonus");if(ab)ab.hidden=true;const an=$("arcAnn");if(an)an.hidden=true;const cm=$("countModal");if(cm)cm.className="";
@@ -654,7 +671,7 @@ function drawStart(){
     else if(!bDone){bDone=true;showBpm(R.bpm,true);$("rollState").textContent=`${S.players[R.first].name} commence à ${R.bpm} BPM`;}
     if(t<END)requestAnimationFrame(frame);else{$("layer").innerHTML="";render();}})();
   function showRoll(i,final){const p=S.players[i],el=$("rollName"),tr=$("rollTribe");if(!el)return;
-    el.textContent=p.name;el.style.color=p.color;tr.textContent=DECKS[p.deck].glyph+" "+DECKS[p.deck].name;
+    el.textContent=p.name;el.style.color=p.color;tr.innerHTML=DECKS[p.deck].glyph+" "+DECKS[p.deck].name;
     el.classList.remove("tick","win");void el.offsetWidth;el.classList.add(final?"win":"tick");
     if(ctx){const tt=ctx.currentTime;beepT(final?1046:740,tt,final?.12:.025,final?.12:.05,final?"triangle":"square");if(final)beepT(1568,tt+.12,.18,.1,"triangle");}}
   function showBpm(v,final){const el=$("rollBpm"),nd=$("rollNeedle");if(!el)return;
@@ -750,155 +767,100 @@ function arcFinal(){
 }
 $("arcQuit").onclick=()=>$("newBtn").click();
 
-/* ================= MODE « LA CORDE » : tir à la corde musical, 2 à 4 joueurs =================
-   Chaque piste (A Rythme, B Basse, C Harmonie, D Mélodie) est une corde. Son nœud est tiré vers le coin de chaque joueur.
-   L'app joue les pistes une par une ; chaque piste mélange les versions des tribus selon la position du nœud.
-   Quand une piste a fini de jouer, le joueur le plus proche du nœud marque. Tirer tend la corde : au-delà d'un seuil secret, elle casse. */
-const ROPE={WIN:20,CAP:1.5,HALF:5,THR:[14,20],RELAX:2,BREAK_PEN:3,JOKER_PULL:3,JOKER_RELAX:4,LACHER:4,TRANSFER:3};
-const RNAME={XMUTE:"Lâcher",XLAR1:"Ancrage",XLAR2:"Ancrage",XDROP:"Détente",XTON:"Transfert"};
-const RDESC={XMUTE:"le nœud d'une piste fait un bond de 4 vers le joueur de ton choix (libère une piste capturée)",
-  XLAR1:"une piste ne peut plus s'éloigner de toi jusqu'à ton prochain tour",XLAR2:"une piste ne peut plus s'éloigner de toi jusqu'à ton prochain tour",
-  XDROP:"la tension d'une piste retombe à zéro",XTON:"le nœud d'une piste recule de 3 vers le centre, et tu tires une autre piste de 3"};
-let RP={cur:null,beat:0,idx:-1,prog:null,voices:[]};
+/* ================= MODE « LA CORDE » : 2 à 4 joueurs =================
+   - Une seule corde commune. Chaque carte tire le curseur vers toi de sa force de traction.
+   - Un instrument se pose sur sa piste (il recouvre la carte du dessus) et vaut ses points de victoire.
+     Si, une fois posée, le curseur est dans ton camp, la carte se verrouille : personne ne peut la recouvrir jusqu'à la fin de la manche.
+   - Joker et cartes Action : traction pure, 0 point, elles ne se posent pas sur une piste.
+   - Jauge des tours : quand chaque joueur a joué une fois, la manche se joue : chacun marque les points de ses cartes visibles,
+     celui dont le camp contient le curseur gagne +3. La corde revient au centre, les verrous sautent. 8 manches. */
+const ROPE={R:10,CAMP:4,BONUS:3,ROUNDS:8};
+/* [points de victoire, traction] : même jeu de valeurs pour chaque tribu, réparti autrement sur les pistes */
+const RV={RF2:[1,5],RF4:[4,2],BF2:[2,4],BF4:[5,1],HF2:[3,3],HF4:[2,4],MF2:[4,2],MF4:[3,3],
+  RN2:[3,3],RN4:[2,4],BN2:[4,2],BN4:[1,5],HN2:[5,1],HN4:[3,3],MN2:[2,4],MN4:[4,2],
+  RE2:[2,4],RE4:[5,1],BE2:[3,3],BE4:[4,2],HE2:[1,5],HE4:[4,2],ME2:[3,3],ME4:[2,4],
+  RS2:[4,2],RS4:[3,3],BS2:[2,4],BS4:[3,3],HS2:[4,2],HS4:[2,4],MS2:[5,1],MS4:[1,5],
+  JF2:[0,6],JN2:[0,6],JE2:[0,6],JS2:[0,6],XMUTE:[0,3],XLAR1:[0,4],XLAR2:[0,4],XDROP:[0,5],XTON:[0,3]};
+const RNAME={XMUTE:"Élan",XLAR1:"Coup de reins",XLAR2:"Coup de reins",XDROP:"Arrachage",XTON:"Élan"};
 function setRope(on){document.body.classList.toggle("rope",!!on);$("rope").hidden=!on;}
-function ropeCorners(n){if(n===2)return[{x:-10,y:0},{x:10,y:0}];
-  const a0=n===3?-90:-135;return [...Array(n)].map((_,i)=>{const a=(a0+i*360/n)*Math.PI/180;return{x:+(10*Math.cos(a)).toFixed(3),y:+(10*Math.sin(a)).toFixed(3)};});}
-const rThr=()=>ROPE.THR[0]+Math.floor(Math.random()*(ROPE.THR[1]-ROPE.THR[0]+1));
+function ropeCorners(n){if(n===2)return[{x:-ROPE.R,y:0},{x:ROPE.R,y:0}];
+  const a0=n===3?-90:-135;return [...Array(n)].map((_,i)=>{const a=(a0+i*360/n)*Math.PI/180;return{x:+(ROPE.R*Math.cos(a)).toFixed(3),y:+(ROPE.R*Math.sin(a)).toFixed(3)};});}
 function startRope(players){
-  S=fresh(players);S.rope={corners:ropeCorners(players.length),tr:{},log:"",anchor:{}};S.bpm=Math.round(+SET.bpm||100);
-  PORDER.forEach(p=>S.rope.tr[p]={x:0,y:0,cap:null,ten:0,thr:rThr()});
-  S.turn=Math.floor(Math.random()*players.length);undoStack=[];picking=null;pending=null;plReset();ropeAudioReset();
+  S=fresh(players);S.rope={corners:ropeCorners(players.length),x:0,y:0,locks:{},played:[],round:1,starter:0,log:""};S.bpm=Math.round(+SET.bpm||100);
+  S.rope.starter=S.turn=Math.floor(Math.random()*players.length);undoStack=[];picking=null;pending=null;plReset();
   setArcade(false);setRope(true);$("layer").innerHTML="";startAudio();startCamera();
-  S.rope.log=`🎲 ${esc(S.players[S.turn].name)} tire en premier`;render();ropeBanner("🪢 LA CORDE",`${esc(S.players[S.turn].name)} commence`,S.players[S.turn].color);}
-const rDist=(k,i)=>{const T=S.rope.tr[k],c=S.rope.corners[i];return Math.hypot(T.x-c.x,T.y-c.y);};
-function rClosest(k){const T=S.rope.tr[k];if(T.cap!==null)return{i:T.cap,d:0};let best=null,bd=1e9,tie=false;
-  S.players.forEach((_,i)=>{const d=rDist(k,i);if(d<bd-1e-3){bd=d;best=i;tie=false;}else if(Math.abs(d-bd)<=1e-3)tie=true;});return tie?{i:null,d:bd}:{i:best,d:bd};}
-/* déplace le nœud de la piste k vers le coin du joueur i, de f crans (f négatif : vers le centre) */
-function rMove(k,i,f){const T=S.rope.tr[k],c=i===null?{x:0,y:0}:S.rope.corners[i];
-  const dx=c.x-T.x,dy=c.y-T.y,L=Math.hypot(dx,dy);if(L<1e-6)return 0;const st=Math.min(f,L),nx=T.x+dx/L*st,ny=T.y+dy/L*st;
-  const an=S.rope.anchor[k];   /* ancrage : la corde ne peut pas s'éloigner du joueur qui l'a ancrée */
-  if(an!==undefined&&an!==i){const ac=S.rope.corners[an];if(Math.hypot(nx-ac.x,ny-ac.y)>Math.hypot(T.x-ac.x,T.y-ac.y)+1e-6)return -1;}
-  T.x=+nx.toFixed(3);T.y=+ny.toFixed(3);
-  if(i!==null&&Math.hypot(T.x-c.x,T.y-c.y)<=ROPE.CAP){T.x=c.x;T.y=c.y;T.cap=i;}
-  return st;}
-/* tension : ajout, grincement, rupture */
-function rTense(k,f,who){const T=S.rope.tr[k];T.ten+=f;
-  if(T.ten>T.thr){Object.assign(T,{x:0,y:0,cap:null,ten:0,thr:rThr()});delete S.rope.anchor[k];
-    S.players[who].score=Math.max(0,S.players[who].score-ROPE.BREAK_PEN);snapSound();
-    S.rope.log=`💥 La corde ${PISTES[k]} casse ! ${esc(S.players[who].name)} perd ${ROPE.BREAK_PEN} points`;ropeBanner("💥 CRAC !",`La corde ${PISTES[k]} a cassé`,"#ff5468");return true;}
-  creak(T.ten/T.thr);return false;}
-function rPull(k,i,f){const T=S.rope.tr[k];
-  if(T.cap!==null){toast(`${PISTES[k]} est capturée par ${S.players[T.cap].name} : un Lâcher peut la libérer`,true);return false;}
-  const m=rMove(k,i,f);if(m<0){toast(`${PISTES[k]} est ancrée par ${S.players[S.rope.anchor[k]].name} : la corde ne cède pas`,true);return false;}
-  if(!rTense(k,f,i)){S.rope.log=`${esc(S.players[i].name)} tire ${PISTES[k]} de ${f}`+(T.cap===i?` — 🔒 capturée !`:"");if(T.cap===i)ropeBanner("🔒 CAPTURE",`${esc(S.players[i].name)} prend ${PISTES[k]}`,S.players[i].color);}
-  return true;}
-function ropeNext(){S.turn=(S.turn+1)%S.players.length;for(const k in S.rope.anchor)if(S.rope.anchor[k]===S.turn)delete S.rope.anchor[k];render();}
-/* carte scannée */
-function ropePlay(c){if(S.ended)return;const me=S.turn;
-  if(c.kind==="inst"&&!c.joker){snap();if(rPull(c.piste,me,c.val))ropeNext();else{undoStack.pop();render();}return;}
-  if(c.joker)return ropePick(`${DECKS[c.deck].glyph} JOKER`,"Tire n'importe quelle piste de 3, ou détends-en une de 4.",
-    [...PORDER.map(p=>({v:"P"+p,l:"Tirer "+PISTES[p],s:"+3 vers toi",off:S.rope.tr[p].cap!==null})),...PORDER.map(p=>({v:"D"+p,l:"Détendre "+PISTES[p],s:"tension −4"}))],
-    v=>{snap();const k=v[1];if(v[0]==="P"){if(!rPull(k,me,ROPE.JOKER_PULL)){undoStack.pop();return render();}}
-      else{const T=S.rope.tr[k];T.ten=Math.max(0,T.ten-ROPE.JOKER_RELAX);S.rope.log=`${esc(S.players[me].name)} détend ${PISTES[k]}`;}ropeNext();});
-  const name=RNAME[c.id],trk=PORDER.map(p=>({v:p,l:PISTES[p],s:ropeTrSub(p)}));
-  if(c.id==="XMUTE")return ropePick("✋ "+name,RDESC[c.id],trk,k=>{
-    const others=S.players.map((p,i)=>({v:String(i),l:p.name,s:DECKS[p.deck].glyph,c:p.color})).filter((_,i)=>i!==me);
-    if(others.length===1)return doLacher(k,+others[0].v);
-    ropePick("✋ "+name+" · "+PISTES[k],"Vers qui le nœud part-il ?",others,i=>doLacher(k,+i));});
-  if(c.id.startsWith("XLAR"))return ropePick("⚓ "+name,RDESC[c.id],trk,k=>{snap();S.rope.anchor[k]=me;S.rope.log=`⚓ ${esc(S.players[me].name)} ancre ${PISTES[k]}`;ropeNext();});
-  if(c.id==="XDROP")return ropePick("🌬️ "+name,RDESC[c.id],trk,k=>{snap();S.rope.tr[k].ten=0;S.rope.log=`🌬️ ${esc(S.players[me].name)} détend ${PISTES[k]}`;ropeNext();});
-  if(c.id==="XTON")return ropePick("🔀 "+name,"Choisis la piste dont le nœud recule de 3 vers le centre.",trk.map(o=>({...o,off:S.rope.tr[o.v].cap!==null})),a=>
-    ropePick("🔀 "+name,"Puis la piste que tu tires de 3.",trk.filter(o=>o.v!==a).map(o=>({...o,off:S.rope.tr[o.v].cap!==null})),b=>{
-      snap();const m=rMove(a,null,ROPE.TRANSFER);if(m<0){undoStack.pop();toast(`${PISTES[a]} est ancrée : elle ne recule pas`,true);return render();}
-      if(!rPull(b,me,ROPE.TRANSFER)){undoStack.pop();return render();}S.rope.log=`🔀 ${esc(S.players[me].name)} : ${PISTES[a]} recule, ${PISTES[b]} +3`;ropeNext();}));
-}
-function doLacher(k,i){snap();const me=S.turn,T=S.rope.tr[k];const was=T.cap;T.cap=null;delete S.rope.anchor[k];
-  if(was!==null){T.x=T.x*.85;T.y=T.y*.85;}   /* le nœud sort de la zone de capture avant de bondir */
-  rMove(k,i,ROPE.LACHER);S.rope.log=`✋ ${esc(S.players[me].name)} lâche ${PISTES[k]} : le nœud bondit vers ${esc(S.players[i].name)}`+(was!==null?" (capture libérée)":"");
-  creak(.3);ropeNext();}
-function ropeTrSub(p){const T=S.rope.tr[p];return T.cap!==null?"🔒 "+S.players[T.cap].name:(()=>{const c=rClosest(p);return c.i===null?"au centre":"penche vers "+S.players[c.i].name;})();}
-/* écran de choix générique */
-function ropePick(title,txt,opts,cb){pending={};picking={kind:"rope"};
-  $("layer").innerHTML=`<div class="overlay jk rpk" style="align-items:center"><div class="sheet"><h2>${title}</h2><p class="note" style="margin:0 0 10px">${txt}</p>
-    <div class="jk-grid">${opts.map(o=>`<button data-v="${o.v}" ${o.off?"disabled":""} style="--dc:${o.c||"var(--spot)"}"><b>${esc(o.l)}</b><small>${esc(o.s||"")}</small></button>`).join("")}</div>
-    <button class="btn" id="pickCancel">Annuler</button></div></div>`;
-  $("pickCancel").onclick=()=>{pending=null;picking=null;$("layer").innerHTML="";render();};
-  document.querySelectorAll(".jk-grid button:not([disabled])").forEach(b=>b.onclick=()=>{pending=null;picking=null;$("layer").innerHTML="";cb(b.dataset.v);});}
-/* score : quand une piste a fini de jouer */
-function ropeScore(k){if(!S||!S.rope||S.ended)return;const T=S.rope.tr[k],c=rClosest(k);let pts=0;
-  if(T.cap!==null)pts=3;else if(c.i!==null)pts=c.d<ROPE.HALF?2:1;
-  T.ten=Math.max(0,T.ten-ROPE.RELAX);
-  if(pts){const p=S.players[c.i];p.score+=pts;S.rope.log=`${PISTES[k]} a joué : ${esc(p.name)} +${pts}`;ropeBurst(k,"+"+pts,p.color);}
-  else S.rope.log=`${PISTES[k]} a joué : nœud au centre, personne ne marque`;
-  const w=S.players.findIndex(p=>p.score>=ROPE.WIN);if(w>=0){S.ended=true;render();return ropeFinal();}
-  render();}
-function ropeFinal(){cheer();const r=[...S.players].sort((a,b)=>b.score-a.score);
-  $("layer").innerHTML=`<div class="overlay" style="align-items:center"><div class="sheet" style="text-align:center"><h2>FIN DU TIR À LA CORDE</h2>
-    <div class="ann-crown">👑</div><b class="ann-name" style="color:${r[0].color}">${esc(r[0].name)}</b><div class="ann-score" style="font-size:64px">${r[0].score}<small>PTS</small></div>
-    <div class="lines">${r.slice(1).map((p,i)=>`<div><span style="color:${p.color}">${i+2}. ${esc(p.name)}</span><span class="mono">${p.score}</span></div>`).join("")}</div>
-    <button class="btn main" id="ok">Rejouer</button></div></div>`;$("ok").onclick=()=>{$("layer").innerHTML="";setup();};}
+  S.rope.log=`🎲 ${esc(S.players[S.turn].name)} commence`;render();ropeBanner("🪢 LA CORDE",`${esc(S.players[S.turn].name)} commence`,S.players[S.turn].color);}
+const rDist=i=>{const R=S.rope,c=R.corners[i];return Math.hypot(R.x-c.x,R.y-c.y);};
+/* camp : le curseur a avancé d'au moins 4 crans depuis le centre vers ton coin */
+function rCamp(){for(let i=0;i<S.players.length;i++)if(rDist(i)<=ROPE.R-ROPE.CAMP+1e-6)return i;return null;}
+function rPull(i,f){const R=S.rope,c=R.corners[i],dx=c.x-R.x,dy=c.y-R.y,L=Math.hypot(dx,dy);if(L<1e-6||!f)return;
+  const st=Math.min(f,L);R.x=+(R.x+dx/L*st).toFixed(3);R.y=+(R.y+dy/L*st).toFixed(3);}
+function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope,v=RV[c.id];if(!v)return;
+  if(c.kind==="inst"&&!c.joker){const p=c.piste;
+    if(R.locks[p]!==undefined){toast(`${PISTES[p]} est verrouillée par ${S.players[R.locks[p]].name} jusqu'à la fin de la manche`,true);arcShake();return;}
+    snap();const e={id:c.id,owner:me,hidden:false,tempoDone:true,seq:++S.seqN};S.stacks[p].push(e);S.last=p;plAdd(e);
+    rPull(me,v[1]);let lk=rCamp()===me;if(lk)R.locks[p]=me;
+    R.log=`${esc(S.players[me].name)} pose ${PISTES[p]} (${v[0]} pt${v[0]>1?"s":""}) et tire de ${v[1]}`+(lk?" — 🔒 verrouillée !":"");
+    if(lk)ropeBanner("🔒 VERROU",`${esc(S.players[me].name)} verrouille ${PISTES[p]}`,S.players[me].color);
+    openCount(e);}
+  else{snap();rPull(me,v[1]);R.log=`${esc(S.players[me].name)} : ${c.joker?"Joker":RNAME[c.id]}, tire de ${v[1]}`;}
+  creak(.3+v[1]/10);ropeNextTurn();}
+function ropeNextTurn(){const R=S.rope;R.played.push(S.turn);
+  if(R.played.length>=S.players.length){render();return setTimeout(ropeRound,700);}
+  S.turn=(S.turn+1)%S.players.length;render();}
+/* fin de manche */
+function ropeRound(){if(!S||!S.rope||S.ended)return;snap();const R=S.rope,n=S.players.length,gains=S.players.map(()=>0),lines=[];
+  PORDER.forEach(p=>{const t=topOf(p);if(!t)return;const pv=RV[t.id][0];gains[t.owner]+=pv;
+    lines.push(`<div><span>${FLET[p]} · ${PISTES[p]} ${DECKS[CARDS[t.id].deck].glyph}${R.locks[p]!==undefined?" 🔒":""}</span><span style="color:${S.players[t.owner].color}">${esc(S.players[t.owner].name)} +${pv}</span></div>`);});
+  const camp=rCamp();if(camp!==null){gains[camp]+=ROPE.BONUS;lines.push(`<div class="big"><span>🪢 Corde dans le camp de ${esc(S.players[camp].name)}</span><span class="mono">+${ROPE.BONUS}</span></div>`);}
+  else lines.push(`<div><span>🪢 Corde au milieu : pas de bonus</span><span></span></div>`);
+  S.players.forEach((p,i)=>{p.score+=gains[i];lines.push(`<div class="big"><span style="color:${p.color}">${esc(p.name)}</span><span class="mono">+${gains[i]} → ${p.score}</span></div>`);});
+  const last=R.round>=ROPE.ROUNDS;
+  R.x=0;R.y=0;R.locks={};R.played=[];R.round++;R.starter=(R.starter+1)%n;S.turn=R.starter;
+  R.log=last?"Fin de la partie":`Manche ${R.round} : ${esc(S.players[S.turn].name)} commence`;
+  if(last){S.ended=true;render();cheer();return showSheet("Fin du tir à la corde",lines.join("")+ranking(),"Rejouer",setup);}
+  render();cheer();showSheet(`Fin de la manche ${R.round-1}`,lines.join(""),"Manche suivante",()=>render());}
 function ropeBanner(a,b,col){const el=$("ropeBan");if(!el)return;el.innerHTML=`<b style="color:${col}">${a}</b><span>${b}</span>`;el.hidden=false;el.style.animation="none";void el.offsetWidth;el.style.animation="";
-  clearTimeout(ropeBanner.t);ropeBanner.t=setTimeout(()=>el.hidden=true,2200);}
-function ropeBurst(k,txt,col){const el=document.querySelector(`.rp-tr[data-k="${k}"]`);if(!el)return;const b=document.createElement("i");b.className="rp-burst";b.textContent=txt;b.style.color=col;el.appendChild(b);setTimeout(()=>b.remove(),1200);}
+  clearTimeout(ropeBanner.t);ropeBanner.t=setTimeout(()=>el.hidden=true,2000);}
 /* ---------- rendu ---------- */
-function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn];
-  $("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}</span><b>${p.score}</b><i style="width:${Math.min(100,p.score/ROPE.WIN*100)}%"></i></div>`).join("");
+function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],camp=rCamp();
+  $("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}</span><b>${p.score}</b></div>`).join("");
+  /* jauge des tours : un segment par joueur */
+  $("rpRound").innerHTML=`<span class="rp-k">MANCHE ${Math.min(R.round,ROPE.ROUNDS)}/${ROPE.ROUNDS}</span><div class="rp-seg">${[...Array(n)].map((_,k)=>{const who=R.played[k];
+    return `<i class="${who!==undefined?"on":k===R.played.length&&!S.ended?"now":""}" style="--pc:${who!==undefined?S.players[who].color:k===R.played.length?pl.color:"transparent"}"></i>`;}).join("")}</div>`;
   $("rpTurn").style.setProperty("--pc",pl.color);
-  $("rpTurn").innerHTML=S.ended?`<span class="at-k">PARTIE TERMINÉE</span>`:`<span class="at-k">À TOI DE TIRER</span><div class="at-name">${esc(pl.name)}</div><div class="at-tribe">${DECKS[pl.deck].glyph} ${DECKS[pl.deck].short}</div>`;
-  const vb=n===2?"-12.5 -4.5 25 9":n===3?"-12.5 -12.5 25 20":"-9.8 -9.8 19.6 19.6";
-  $("rpTracks").innerHTML=PORDER.map(k=>{const T=R.tr[k],c=rClosest(k),col=T.cap!==null?S.players[T.cap].color:c.i!==null?S.players[c.i].color:"#fff";
-    const poly=n===2?`<line x1="-10" y1="0" x2="10" y2="0" class="rp-rope"/>`+[-5,0,5].map(x=>`<line x1="${x}" y1="-1" x2="${x}" y2="1" class="rp-tick"/>`).join("")
-      :`<polygon points="${R.corners.map(q=>q.x+","+q.y).join(" ")}" class="rp-rope"/>`+R.corners.map(q=>`<line x1="0" y1="0" x2="${q.x}" y2="${q.y}" class="rp-tick"/>`).join("");
-    const corners=R.corners.map((q,i)=>`<circle cx="${q.x}" cy="${q.y}" r="${ROPE.CAP+.6}" fill="${S.players[i].color}" opacity="${T.cap===i?1:.35}"/><text x="${q.x}" y="${q.y+.9}" class="rp-g">${DECKS[S.players[i].deck].glyph}</text>`).join("");
-    const knot=`<line x1="0" y1="0" x2="${T.x}" y2="${T.y}" class="rp-pull" stroke="${col}"/><circle cx="${T.x}" cy="${T.y}" r="1.5" class="rp-knot" fill="${col}"/>`;
-    const tz=Math.min(1,T.ten/ROPE.THR[0]),hot=tz>.85?"hot":tz>.55?"warm":"";
-    const now=RP.cur&&RP.cur.k===k;
-    return `<div class="rp-tr${now?" now":""}" data-k="${k}" style="--kc:${col}"><div class="rp-h"><b>${FLET[k]} · ${PISTES[k]}</b>${now?'<span class="rp-now">♪</span>':""}${R.anchor[k]!==undefined?`<span title="ancrée">⚓</span>`:""}</div>
-      <svg viewBox="${vb}" class="rp-svg">${poly}${corners}${knot}</svg>
-      <div class="rp-sub">${ropeTrSub(k)}</div><div class="rp-ten ${hot}" title="tension"><i style="width:${(tz*100).toFixed(0)}%"></i></div></div>`;}).join("");
-  $("rpLog").innerHTML=R.log||"Scanne une carte : elle tire sa piste vers toi.";
+  $("rpTurn").innerHTML=S.ended?`<span class="at-k">PARTIE TERMINÉE</span>`:`<span class="at-k">À TOI DE JOUER</span><div class="at-name">${esc(pl.name)}</div><div class="at-tribe">${DECKS[pl.deck].glyph} ${DECKS[pl.deck].short}</div>`;
+  /* la corde : graduée d'un cran par point de traction */
+  const C=R.corners,col=camp!==null?S.players[camp].color:"#fff";let g="";
+  if(n===2){g+=`<rect x="${-ROPE.R}" y="-1.6" width="${ROPE.R-ROPE.CAMP}" height="3.2" rx=".6" fill="${S.players[0].color}" opacity=".22"/><rect x="${ROPE.CAMP}" y="-1.6" width="${ROPE.R-ROPE.CAMP}" height="3.2" rx=".6" fill="${S.players[1].color}" opacity=".22"/>`;
+    g+=`<line x1="${-ROPE.R}" y1="0" x2="${ROPE.R}" y2="0" class="rp-rope"/>`;
+    for(let k=-ROPE.R;k<=ROPE.R;k++)g+=`<line x1="${k}" y1="${k%5?-.7:-1.3}" x2="${k}" y2="${k%5?.7:1.3}" class="rp-tick${k%5?"":" maj"}"/>`+(k&&k%2===0?`<text x="${k}" y="2.9" class="rp-num">${Math.abs(k)}</text>`:"");}
+  else{g+=C.map((q,i)=>{const f=(ROPE.R-ROPE.CAMP)/ROPE.R;return `<circle cx="${q.x}" cy="${q.y}" r="${ROPE.R-ROPE.CAMP}" fill="${S.players[i].color}" opacity=".16"/>`;}).join("");
+    g+=`<polygon points="${C.map(q=>q.x+","+q.y).join(" ")}" class="rp-rope"/>`;
+    g+=C.map(q=>{let s=`<line x1="0" y1="0" x2="${q.x}" y2="${q.y}" class="rp-tick"/>`;for(let k=1;k<ROPE.R;k++){const x=q.x*k/ROPE.R,y=q.y*k/ROPE.R;s+=`<circle cx="${x}" cy="${y}" r="${k%5?.18:.32}" class="rp-dot"/>`;}return s;}).join("");}
+  g+=C.map((q,i)=>`<circle cx="${q.x}" cy="${q.y}" r="1.7" fill="${S.players[i].color}"/>`).join("");
+  g+=`<line x1="0" y1="0" x2="${R.x}" y2="${R.y}" class="rp-pull" stroke="${col}"/><circle cx="${R.x}" cy="${R.y}" r="1.4" class="rp-knot" fill="${col}"/>`;
+  const vb=n===2?"-11.8 -3 23.6 6.6":n===3?"-11.8 -11.8 23.6 18":"-9.2 -9.2 18.4 18.4";
+  $("rpGauge").innerHTML=`<svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg><div class="rp-sub">${camp!==null?`Corde dans le camp de <b style="color:${col}">${esc(S.players[camp].name)}</b> : sa carte posée se verrouille`:"Corde au milieu"}</div>`;
+  /* les 4 pistes */
+  $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),now=PL.cur&&t&&PL.cur.seq===t.seq,lk=R.locks[p]!==undefined;
+    const hd=`<div class="rp-h"><b class="rp-L">${FLET[p]}</b>${now?'<span class="rp-now">♪</span>':""}${lk?'<span>🔒</span>':""}</div><div class="rp-pn">${PISTES[p]}</div>`;
+    if(!t)return `<div class="rp-tr empty">${hd}<div class="rp-empty">libre</div></div>`;
+    const o=S.players[t.owner],v=RV[t.id];
+    return `<div class="rp-tr${now?" now":""}${lk?" lk":""}" style="--kc:${o.color}">${hd}
+      <div class="rp-card"><span class="rp-star">${v[0]}</span><span class="rp-gl">${DECKS[CARDS[t.id].deck].glyph}</span></div><div class="rp-own" style="color:${o.color}">${esc(o.name)}</div></div>`;}).join("");
+  $("rpLog").innerHTML=R.log||"Scanne une carte.";
   $("undoBtnR").disabled=!undoStack.length;
 }
-/* ---------- son ---------- */
-function ropeAudioReset(){if(RP.cur)ropeStopAt(ctx?ctx.currentTime:0);RP={cur:null,beat:0,idx:-1,prog:null};
-  for(const id in SMP){const s=SMP[id];try{s.g.gain.cancelScheduledValues(0);s.g.gain.value=s.norm||s.g.gain.value;}catch(e){}}}
-function ropeWeights(k){const T=S.rope.tr[k],n=S.players.length;
-  if(T.cap!==null)return S.players.map((_,i)=>i===T.cap?1:0);
-  const raw=S.players.map((_,i)=>1/Math.pow(rDist(k,i)+2.5,2.2)),sum=raw.reduce((a,b)=>a+b,0);return raw.map(v=>v/sum);}
-function ropeStopAt(t){const c=RP.cur;RP.cur=null;if(!c)return;c.refs.forEach(r=>{const s=SMP[r];if(!s)return;(s.srcs||[]).forEach(x=>{try{x.stop(t+.003);}catch(e){}});s.src=null;s.playing=false;});}
-function ropeTick(st,t){
-  if(st%4)return st;
-  if(!S||!S.rope||S.ended||!soundOn||preview){if(RP.cur)ropeStopAt(t);return st;}
-  if(RP.cur){RP.beat++;if(RP.beat<16)return st;
-    const k=RP.cur.k;setTimeout(()=>ropeScore(k),Math.max(0,(t-ctx.currentTime)*1000));ropeStopAt(t);}
-  else if(st%16)return st;
-  RP.idx=(RP.idx+1)%4;const k=PORDER[RP.idx];
-  const ids=S.players.map(p=>k+p.deck+"2"),refs=[];
-  tonalOn=k!=="R"&&ids.some(id=>{const r=SREF(id);return SAMPLES[r]&&smpOn(r);});KEY=tonalOn?SAMPLE_KEY:0;
-  RP.prog=(ids.map(id=>INFO[id].prog).find(Boolean))||null;
-  const w=ropeWeights(k);
-  ids.forEach((id,i)=>{const r=SREF(id);if(SAMPLES[r]&&smpOn(r)){const s=SMP[r];s.at=k;startSample(r,t,0);
-    s.g.gain.cancelScheduledValues(t);s.g.gain.setValueAtTime((s.norm||1)*w[i],t);refs.push(r);}});
-  RP.cur={k,ids,refs};RP.beat=0;
-  setTimeout(()=>{if(S&&S.rope)render();},Math.max(0,(t-ctx.currentTime)*1000));
-  return 0;}
-function ropeStep(st,t,info){if(!RP.cur||S.ended)return;const k=RP.cur.k,w=ropeWeights(k);
-  if(st%4===0)pulseLater(k,t);
-  RP.cur.ids.forEach((id,i)=>{const r=SREF(id);
-    if(RP.cur.refs.includes(r)){if(st%2===0)SMP[r].g.gain.setTargetAtTime((SMP[r].norm||1)*w[i],t,.08);return;}
-    if(w[i]<.02)return;curGain=(CG[id]||1)*Math.min(1,w[i]*1.6);VOICE[id]({...info,p:k});curGain=1;});}
-/* grincement de la corde (plus fort quand la tension monte) et rupture */
-function creak(lv){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02,n=2+Math.round(lv*4);
+/* petit grincement quand on tire */
+function creak(lv){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02,n=2+Math.round(lv*3);
   for(let j=0;j<n;j++){const s=ctx.createBufferSource();s.buffer=noiseBuf();const f=bq("bandpass",300+lv*500+Math.random()*200,18),g=ctx.createGain(),tt=t+j*(.07+Math.random()*.05);
     f.frequency.setValueAtTime(f.frequency.value,tt);f.frequency.exponentialRampToValueAtTime(f.frequency.value*(1.6+lv),tt+.09);
-    g.gain.setValueAtTime(.0001,tt);g.gain.exponentialRampToValueAtTime(.25+lv*.9,tt+.01);g.gain.exponentialRampToValueAtTime(.0001,tt+.11);
+    g.gain.setValueAtTime(.0001,tt);g.gain.exponentialRampToValueAtTime(.2+lv*.6,tt+.01);g.gain.exponentialRampToValueAtTime(.0001,tt+.11);
     chain(s,f,g);g.connect(masterIn);s.start(tt,Math.random());s.stop(tt+.15);}}
-function snapSound(){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02;const s=ctx.createBufferSource();s.buffer=noiseBuf();const g=ctx.createGain();
-  g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.0001,t+.25);chain(s,bq("highpass",1200,.7),g);g.connect(masterIn);s.start(t);s.stop(t+.3);
-  const o=ctx.createOscillator(),g2=ctx.createGain();o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(40,t+.3);g2.gain.setValueAtTime(.7,t);g2.gain.exponentialRampToValueAtTime(.0001,t+.35);o.connect(g2);g2.connect(masterIn);o.start(t);o.stop(t+.4);}
 
 $("undoBtnR").onclick=()=>$("undoBtn").onclick();
-$("passR").onclick=()=>{if(!S||!S.rope||S.ended)return;snap();S.rope.log=esc(S.players[S.turn].name)+" passe";ropeNext();};
+$("passR").onclick=()=>{if(!S||!S.rope||S.ended)return;snap();S.rope.log=esc(S.players[S.turn].name)+" passe";ropeNextTurn();};
 $("quitR").onclick=()=>$("newBtn").click();
 
 /* ================= Mode test solo : on scanne, ça joue, sans règles ================= */
@@ -928,8 +890,8 @@ function onCode(raw){
   if(S.solo){flashHit();blip();return soloScan(c);}
   if(c.kind==="inst"){
     const o=ownerOf(c.deck);
-    if(o<0){toast(DECKS[c.deck].glyph+" "+DECKS[c.deck].short+" n'est pas dans cette partie",true);return;}
-    if(o!==S.turn){toast(DECKS[c.deck].glyph+" Carte "+DECKS[c.deck].short+" : c'est au tour de "+S.players[S.turn].name,true);arcShake();return;}
+    if(o<0){toast(DECKS[c.deck].short+" n'est pas dans cette partie",true);return;}
+    if(o!==S.turn){toast("Carte "+DECKS[c.deck].short+" : c'est au tour de "+S.players[S.turn].name,true);arcShake();return;}
   }
   flashHit();blip();if(navigator.vibrate)navigator.vibrate(60);
   if(S.rope)return ropePlay(c);
@@ -1510,7 +1472,6 @@ function plStart(n,t){const id=sndOf(n.t),r=SREF(id),mp3=!!(SAMPLES[r]&&smpOn(r)
   const d=Math.max(0,(t-ctx.currentTime)*1000);setTimeout(()=>{if(S)render();},d);}
 /* appelé à chaque pas, avant de le jouer ; renvoie le pas (remis à 0 au début de chaque boucle) */
 function plTick(st,t){
-  if(S&&S.rope)return ropeTick(st,t);
   if(st%4)return st;
   if(preview||!S||S.ended||!soundOn){if(PL.cur)plStopAt(t);return st;}
   if(PL.cur){
@@ -1524,8 +1485,7 @@ function plTick(st,t){
 }
 function sampleStep(st,t){
   /* tonalité : si une boucle MP3 tonale est en jeu, tout le monde suit sa tonalité */
-  const vis=plVisible();if(S&&S.rope){if(st%4===0){const b=st/4;setTimeout(()=>showBeat(b),Math.max(0,(t-ctx.currentTime)*1000));}return[];}
-  tonalOn=vis.some(v=>{const r=SREF(sndOf(v.t));return SAMPLES[r]&&smpOn(r)&&SAMPLES[r].tonal;});KEY=tonalOn?SAMPLE_KEY:0;
+  const vis=plVisible();  tonalOn=vis.some(v=>{const r=SREF(sndOf(v.t));return SAMPLES[r]&&smpOn(r)&&SAMPLES[r].tonal;});KEY=tonalOn?SAMPLE_KEY:0;
   if(preview){const r=SREF(preview.id);if(SAMPLES[r]&&smpOn(r)){const s=SMP[r];s.at=preview.piste;
       if(!s.playing&&st===0)startSample(r,t,0);else if(s.playing&&st%4===0&&s.bpm!==Math.round(curBpm))startSample(r,t,(st/4)%16);return[r];}}
   else if(PL.cur&&PL.cur.ref&&st%4===0){const s=SMP[PL.cur.ref];if(s.playing&&s.bpm!==Math.round(curBpm))startSample(PL.cur.ref,t,PL.beat);}
@@ -1535,7 +1495,6 @@ function sampleStep(st,t){
 /* ---------- séquenceur ---------- */
 function progNow(){
   if(tonalOn)return prog(SAMPLE_PROG);
-  if(S&&S.rope)return prog(RP.prog||DEFAULT_PROG);
   const id=preview?preview.id:PL.cur?PL.cur.id:null;
   return prog(id&&INFO[id].prog||DEFAULT_PROG);
 }
@@ -1547,7 +1506,6 @@ function playStep(st,t){
     if(ctx.currentTime>preview.until){preview=null;markPlaying(null);return;}
     if(!smp.includes(SREF(preview.id))){curGain=CG[preview.id]||1;VOICE[preview.id]({...info,p:preview.piste});curGain=1;}return;
   }
-  if(S&&S.rope)return ropeStep(st,t,info);
   if(!S||S.ended||!PL.cur)return;
   const c=PL.cur;if(st%4===0)pulseLater(c.p,t);
   if(c.ref)return;                       /* boucle MP3 : elle joue toute seule */
