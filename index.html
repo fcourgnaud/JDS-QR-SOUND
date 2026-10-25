@@ -354,7 +354,7 @@ body.rope{background:var(--arc-bg);background-image:none}
 .rp-tracks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .rp-tr{position:relative;border-radius:16px;padding:8px 8px 10px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);transition:box-shadow .2s,border-color .2s}
 .rp-tr.now{border-color:var(--kc);box-shadow:0 0 18px color-mix(in srgb,var(--kc) 70%,transparent)}
-.rp-h{display:flex;gap:6px;align-items:center}.rp-h b{font-size:15px}.rp-now{color:var(--gold);animation:crown .6s infinite alternate}
+.rp-h{display:flex;gap:6px;align-items:center}.rp-h b{font-size:15px}.rp-now{color:var(--gold);animation:rpblink .6s infinite alternate}
 .rp-svg{width:100%;height:auto;display:block;margin:4px 0;overflow:visible}
 .rp-rope{fill:none;stroke:rgba(255,255,255,.35);stroke-width:.35}
 .rp-tick{stroke:rgba(255,255,255,.18);stroke-width:.2}
@@ -374,6 +374,18 @@ body.rope{background:var(--arc-bg);background-image:none}
 @keyframes rpban{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}80%{opacity:1}100%{opacity:0}}
 body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:var(--arc-t);color:#fff}
 .mode{flex-wrap:wrap}
+/* décompte avant le lancement d'une boucle : petite fenêtre en haut */
+#countModal{inset:auto;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:none;backdrop-filter:none;width:auto}
+#countModal .cm-box{width:auto;flex-direction:row;align-items:center;gap:10px;padding:8px 14px;border-width:2px;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+#countModal .cm-num{font-size:30px}#countModal .cm-lab{font-size:13px}#countModal .cm-sub{font-size:12px}
+#countModal .cm-dots{grid-template-columns:repeat(4,10px);gap:4px;margin:0}#countModal .cm-dots i{height:10px;border-width:1px}
+.ann-next{font-family:var(--arc-d);font-size:clamp(26px,9vw,42px);color:#fff;text-shadow:0 0 16px var(--neon2);margin-top:8px}
+.ann-next.fin{color:#ff8a3d;text-shadow:0 0 20px #ff5468;animation:crown .5s infinite alternate}
+.ann-note{font-size:15px;color:#ffe9a3;font-weight:700}
+.rp-k.fin{color:#ff8a3d;text-shadow:0 0 10px #ff5468}
+.obj-scan{font-size:54px;margin:6px 0;animation:crown .8s infinite alternate}
+.objopt{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-weight:700;padding:10px 12px;border-radius:12px;border:1px solid var(--line)}
+.objopt small{flex-basis:100%;font-weight:400;color:var(--muted)}.objopt input{width:20px;height:20px}
 .rp-round{display:flex;align-items:center;gap:10px}.rp-k{font-family:var(--arc-d);font-size:14px;color:var(--gold);white-space:nowrap}
 .rp-seg{flex:1;display:flex;gap:5px}.rp-seg i{flex:1;height:14px;border-radius:7px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.04)}
 .rp-seg i.on{background:var(--pc);border-color:var(--pc);box-shadow:0 0 10px var(--pc)}.rp-seg i.now{border-color:var(--pc);animation:rpblink .7s infinite alternate}@keyframes rpblink{from{opacity:1}to{opacity:.35}}
@@ -454,12 +466,15 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
     <h3>Tes propres sons (MP3)</h3>
     <p>Dépose un fichier dans le dossier <b>sons</b> du site, nommé avec la lettre de la piste (A Rythme, B Basse, C Harmonie, D Mélodie), puis « tribu » et le numéro de la tribu, par exemple <b>sons/Btribu1.mp3</b> pour la Basse de la Tribu 1. Les deux cartes de la même piste d'un deck jouent ce même fichier, qui remplace leur son synthétisé. Le nom est visible dans l'onglet « Sons des decks ». Le Joker n'a pas de fichier : il joue celui de sa tribu pour la piste choisie. Toutes les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité indiqués dans <b>sons/reglages.json</b>. Les cartes de la piste Rythme ne sont pas transposées. Si un fichier n'a pas la durée prévue, l'app retrouve son tempo d'après sa durée et l'affiche sur l'écran de départ.</p>
     <h3>🪢 Mode La Corde (2 à 4 joueurs)</h3>
-    <ul><li>Une seule corde commune, avec un camp par joueur (une ligne à 2, un triangle à 3, un carré à 4). Elle est graduée d'un cran par point de traction ; ton camp commence à 4 crans du centre.</li>
-    <li>Chaque carte instrument a des <b>points de victoire</b> (étoile) et une <b>traction</b> (corde). Plus elle rapporte de points, moins elle tire.</li>
-    <li><b>Ton tour</b> : scanne une carte et pose-la sur sa piste (elle recouvre celle du dessus). Elle tire le curseur vers toi de sa traction. Si le curseur est alors dans ton camp, ta carte se <b>verrouille</b> : personne ne peut la recouvrir jusqu'à la fin de la manche.</li>
-    <li>Joker et cartes Élan, Coup de reins, Arrachage : traction pure, 0 point, elles ne se posent pas sur une piste.</li>
-    <li>La jauge des tours se remplit à chaque joueur. Pleine, la manche se joue : chacun marque les points de ses cartes visibles, celui qui a la corde dans son camp gagne +3. La corde revient au centre, les verrous sautent, le premier joueur change. 8 manches.</li>
-    <li>La musique joue les pistes une par une, A, B, C, D, comme dans les autres modes.</li></ul>
+    <ul><li>Une seule corde commune, avec un camp par joueur (une ligne à 2, un triangle à 3, un carré à 4), graduée d'un cran par point de traction. Ton camp commence à 4 crans du centre.</li>
+    <li>Chaque instrument a des <b>points de victoire</b> (étoile) et une <b>traction</b> (+1 à +5). Plus il rapporte, moins il tire.</li>
+    <li><b>Ton tour</b> : scanne une carte et pose-la sur sa piste. Elle tire le curseur vers toi. Si le curseur est alors dans ton camp, ta carte se <b>verrouille</b> jusqu'à la fin de la manche.</li>
+    <li><b>Surenchère</b> (cartes marquées) : si elle recouvre une carte adverse qui vaut moins de points, elle tire +1.</li>
+    <li>Joker, Élan, Coup de reins, Arrachage : traction pure, 0 point, ne se posent pas.</li>
+    <li><b>Fin de manche</b> (jauge des tours pleine) : chacun marque ses cartes visibles ; +3 pour le camp de la corde ; <b>Chœur</b> : +5 si les 4 pistes sont à la même tribu. La corde recule de moitié vers le centre et les verrous sautent.</li>
+    <li><b>Main au soliste</b> : à la manche suivante, le joueur le plus loin de la corde joue en premier.</li>
+    <li><b>Dernière manche</b> (8e) : tempo +20, cartes ×2, corde +5.</li>
+    <li><b>Objectifs secrets</b> (option) : à son premier tour, chacun pioche une carte Objectif et scanne son QR. Révélés et comptés à la fin.</li></ul>
     <h3>Fin</h3>
     <ul><li>Après la 8e mesure, le meilleur score gagne. La musique s'arrête.</li><li>Égalité : celui qui contrôle le plus de pistes l'emporte.</li></ul>
   </div>
@@ -489,13 +504,14 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
   <section class="rp-tracks" id="rpTracks"></section>
   <div class="rp-log" id="rpLog"></div>
   <div class="rp-ban" id="ropeBan" hidden></div>
+  <div class="arc-ann" id="ropeAnn" hidden></div>
 </div>
 <div id="layer"></div>
 <video id="video" class="camfeed" playsinline muted autoplay></video>
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v42";
+const VERSION="v43";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -687,6 +703,7 @@ function setup(){stopEverything();setRope(false);
       <h2>Nouvelle partie <small class="ver">${VERSION}</small></h2>
       <div><span class="label">Version du jeu</span><div class="mode"><button data-m="arcade" class="${modeChoice==="arcade"?"sel":""}">🕹️ Arcade<small>écran épuré, tempo + bonus</small></button><button data-m="classic" class="${modeChoice==="classic"?"sel":""}">📋 Classique<small>tout le détail à l'écran</small></button><button data-m="corde" class="${modeChoice==="corde"?"sel":""}">🪢 La Corde<small>tir à la corde musical, 2 à 4</small></button></div></div>
       <div><span class="label">Nombre de musiciens</span><div class="count">${(modeChoice==="corde"?[2,3,4]:[2,3]).map(k=>`<button data-n="${k}" class="${k===n?"sel":""}">${k}</button>`).join("")}</div></div>
+      ${modeChoice==="corde"?`<label class="objopt"><input type="checkbox" id="objOpt" ${ropeObjOpt?"checked":""}> 🎯 Objectifs secrets <small>chaque joueur scanne une carte Objectif à son premier tour</small></label>`:""}
       ${pls.slice(0,n).map((p,i)=>`<div class="pl" style="--pc:${DECKS[p.deck].color}">
         <input type="text" id="pn${i}" value="${esc(p.name)}" aria-label="Nom du joueur ${i+1}">
         <div class="decks">${Object.keys(DECKS).map(d=>`<button data-i="${i}" data-d="${d}" class="${p.deck===d?"sel":""}" style="--dc:${DECKS[d].color}">${DECKS[d].glyph} ${DECKS[d].short}</button>`).join("")}</div></div>`).join("")}
@@ -698,6 +715,7 @@ function setup(){stopEverything();setRope(false);
     document.querySelectorAll(".decks button").forEach(b=>b.onclick=()=>{save();const i=+b.dataset.i,d=b.dataset.d,j=pls.findIndex(p=>p.deck===d);
       if(j>=0&&j!==i)pls[j].deck=pls[i].deck;pls[i].deck=d;draw();});
     $("goSolo").onclick=startSolo;
+    const oo=$("objOpt");if(oo)oo.onchange=()=>{ropeObjOpt=oo.checked;try{localStorage.setItem("ts-obj",oo.checked?"1":"0");}catch(e){}};
     $("go").onclick=()=>{save();stopLarsen();clearTimeout(mesureTimer);
       if(modeChoice==="corde")return startRope(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));
       S=fresh(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));plReset();undoStack=[];picking=null;pending=null;
@@ -768,91 +786,155 @@ function arcFinal(){
 $("arcQuit").onclick=()=>$("newBtn").click();
 
 /* ================= MODE « LA CORDE » : 2 à 4 joueurs =================
-   - Une seule corde commune. Chaque carte tire le curseur vers toi de sa force de traction.
+   - Une seule corde commune. Chaque carte tire le curseur vers toi de sa traction.
    - Un instrument se pose sur sa piste (il recouvre la carte du dessus) et vaut ses points de victoire.
-     Si, une fois posée, le curseur est dans ton camp, la carte se verrouille : personne ne peut la recouvrir jusqu'à la fin de la manche.
+     Si, une fois posée, le curseur est dans ton camp, la carte se verrouille jusqu'à la fin de la manche.
+   - Surenchère : recouvrir une carte adverse qui vaut moins de points → +1 de traction.
    - Joker et cartes Action : traction pure, 0 point, elles ne se posent pas sur une piste.
-   - Jauge des tours : quand chaque joueur a joué une fois, la manche se joue : chacun marque les points de ses cartes visibles,
-     celui dont le camp contient le curseur gagne +3. La corde revient au centre, les verrous sautent. 8 manches. */
-const ROPE={R:10,CAMP:4,BONUS:3,ROUNDS:8};
-/* [points de victoire, traction] : même jeu de valeurs pour chaque tribu, réparti autrement sur les pistes */
+   - Fin de manche (chaque joueur a joué une fois) : chacun marque ses cartes visibles, +3 pour le camp de la corde,
+     +5 (Chœur) si les 4 pistes sont à la même tribu. La corde recule de moitié vers le centre (la pente).
+     La manche suivante, le joueur le plus loin de la corde joue en premier (main au soliste).
+   - Dernière manche : tempo +20, toutes les cartes comptent double, bonus de corde +5.
+   - Option objectifs secrets : chaque joueur scanne une carte Objectif à son premier tour ; révélés et comptés à la fin. */
+const ROPE={R:10,CAMP:4,BONUS:3,BONUS_FINAL:5,CHOIR:5,ROUNDS:8,FINAL_BPM:20,MODAL_MS:5000,DUCK:.2};
 const RV={RF2:[1,5],RF4:[4,2],BF2:[2,4],BF4:[5,1],HF2:[3,3],HF4:[2,4],MF2:[4,2],MF4:[3,3],
   RN2:[3,3],RN4:[2,4],BN2:[4,2],BN4:[1,5],HN2:[5,1],HN4:[3,3],MN2:[2,4],MN4:[4,2],
   RE2:[2,4],RE4:[5,1],BE2:[3,3],BE4:[4,2],HE2:[1,5],HE4:[4,2],ME2:[3,3],ME4:[2,4],
   RS2:[4,2],RS4:[3,3],BS2:[2,4],BS4:[3,3],HS2:[4,2],HS4:[2,4],MS2:[5,1],MS4:[1,5],
   JF2:[0,6],JN2:[0,6],JE2:[0,6],JS2:[0,6],XMUTE:[0,3],XLAR1:[0,4],XLAR2:[0,4],XDROP:[0,5],XTON:[0,3]};
+/* cartes Surenchère : les deux cartes à 4 points de chaque tribu */
+const SUR=new Set(Object.keys(RV).filter(k=>RV[k][0]===4));
 const RNAME={XMUTE:"Élan",XLAR1:"Coup de reins",XLAR2:"Coup de reins",XDROP:"Arrachage",XTON:"Élan"};
-function setRope(on){document.body.classList.toggle("rope",!!on);$("rope").hidden=!on;}
+/* objectifs secrets (QR au recto : BOUCLE:O01…) */
+const OBJ={
+  O01:{t:"Tenir le Rythme (A) à la fin de la partie",v:4,ok:(i,R)=>topOwnerEnd(R,"R")===i},
+  O02:{t:"Tenir la Basse (B) à la fin de la partie",v:4,ok:(i,R)=>topOwnerEnd(R,"B")===i},
+  O03:{t:"Tenir l'Harmonie (C) à la fin de la partie",v:4,ok:(i,R)=>topOwnerEnd(R,"H")===i},
+  O04:{t:"Tenir la Mélodie (D) à la fin de la partie",v:4,ok:(i,R)=>topOwnerEnd(R,"M")===i},
+  O05:{t:"Verrouiller 3 cartes",v:5,ok:(i,R)=>R.st[i].locks>=3},
+  O06:{t:"Gagner 3 fois le bonus de corde",v:5,ok:(i,R)=>R.st[i].ropeWins>=3},
+  O07:{t:"Finir la partie avec la corde dans ton camp",v:4,ok:(i,R)=>R.finalCamp===i},
+  O08:{t:"Tenir 3 pistes à la fin d'une manche",v:4,ok:(i,R)=>R.st[i].held3},
+  O09:{t:"Recouvrir 4 cartes adverses",v:4,ok:(i,R)=>R.st[i].covers>=4},
+  O10:{t:"Réussir 2 surenchères",v:5,ok:(i,R)=>R.st[i].sur>=2},
+  O11:{t:"Poser une carte sur chacune des 4 pistes",v:3,ok:(i,R)=>R.st[i].tracks.length>=4},
+  O12:{t:"Marquer le plus de points pendant la dernière manche",v:5,ok:(i,R)=>R.lastBest===i}};
+for(const k in OBJ)CARDS[k]={id:k,kind:"obj"};
+function topOwnerEnd(R,p){return R.endTops?R.endTops[p]:null;}
+function setRope(on){document.body.classList.toggle("rope",!!on);$("rope").hidden=!on;if(!on)duck(false);}
 function ropeCorners(n){if(n===2)return[{x:-ROPE.R,y:0},{x:ROPE.R,y:0}];
   const a0=n===3?-90:-135;return [...Array(n)].map((_,i)=>{const a=(a0+i*360/n)*Math.PI/180;return{x:+(ROPE.R*Math.cos(a)).toFixed(3),y:+(ROPE.R*Math.sin(a)).toFixed(3)};});}
+let ropeObjOpt=false;try{ropeObjOpt=localStorage.getItem("ts-obj")==="1";}catch(e){}
 function startRope(players){
-  S=fresh(players);S.rope={corners:ropeCorners(players.length),x:0,y:0,locks:{},played:[],round:1,starter:0,log:""};S.bpm=Math.round(+SET.bpm||100);
-  S.rope.starter=S.turn=Math.floor(Math.random()*players.length);undoStack=[];picking=null;pending=null;plReset();
+  const n=players.length,first=Math.floor(Math.random()*n);
+  S=fresh(players);S.rope={corners:ropeCorners(n),x:0,y:0,locks:{},played:[],round:1,log:"",baseBpm:Math.round(+SET.bpm||100),
+    order:[...Array(n)].map((_,k)=>(first+k)%n),objOn:ropeObjOpt,obj:players.map(()=>null),objAsked:players.map(()=>false),
+    st:players.map(()=>({locks:0,ropeWins:0,covers:0,sur:0,tracks:[],held3:false})),finalCamp:null,lastBest:null,endTops:null};
+  S.bpm=S.rope.baseBpm;S.turn=first;undoStack=[];picking=null;pending=null;plReset();
   setArcade(false);setRope(true);$("layer").innerHTML="";startAudio();startCamera();
-  S.rope.log=`🎲 ${esc(S.players[S.turn].name)} commence`;render();ropeBanner("🪢 LA CORDE",`${esc(S.players[S.turn].name)} commence`,S.players[S.turn].color);}
+  S.rope.log=`🎲 ${esc(S.players[first].name)} commence`;render();
+  ropeModal(`<span class="ann-k">🪢 LA CORDE · MANCHE 1</span><b class="ann-name" style="color:${S.players[first].color}">${esc(S.players[first].name)}</b><span class="ann-gain">commence</span>`,2500,ropeAskObj);}
 const rDist=i=>{const R=S.rope,c=R.corners[i];return Math.hypot(R.x-c.x,R.y-c.y);};
-/* camp : le curseur a avancé d'au moins 4 crans depuis le centre vers ton coin */
 function rCamp(){for(let i=0;i<S.players.length;i++)if(rDist(i)<=ROPE.R-ROPE.CAMP+1e-6)return i;return null;}
 function rPull(i,f){const R=S.rope,c=R.corners[i],dx=c.x-R.x,dy=c.y-R.y,L=Math.hypot(dx,dy);if(L<1e-6||!f)return;
   const st=Math.min(f,L);R.x=+(R.x+dx/L*st).toFixed(3);R.y=+(R.y+dy/L*st).toFixed(3);}
-function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope,v=RV[c.id];if(!v)return;
+const isFinal=()=>S.rope.round>=ROPE.ROUNDS;
+/* objectif : invitation au premier tour de chaque joueur */
+function ropeAskObj(){const R=S.rope;if(!R.objOn||R.round!==1||S.ended)return;const i=S.turn;if(R.obj[i]||R.objAsked[i])return;
+  R.objAsked[i]=true;const p=S.players[i];pending={obj:true};
+  $("layer").innerHTML=`<div class="overlay" style="align-items:center"><div class="sheet" style="text-align:center;--dc:${p.color}"><h2>🎯 Objectif secret</h2>
+    <p style="margin:0"><b style="color:${p.color}">${esc(p.name)}</b>, pioche une carte Objectif au hasard, regarde-la sans la montrer, puis scanne son QR code.</p>
+    <div class="obj-scan">📷</div><p class="note" style="margin:0">L'objectif reste secret : il sera révélé et compté à la fin de la partie.</p>
+    <button class="btn" id="objSkip">Jouer sans objectif</button></div></div>`;
+  $("objSkip").onclick=()=>{pending=null;$("layer").innerHTML="";render();};}
+function ropeObjScan(c){const R=S.rope,i=S.turn;
+  if(!R.objOn||R.round!==1){toast("Les objectifs se scannent au premier tour",true);return;}
+  if(R.obj[i]){toast("Tu as déjà un objectif",true);return;}
+  if(R.obj.includes(c.id)){toast("Cet objectif est déjà pris : pioches-en un autre",true);return;}
+  R.obj[i]=c.id;pending=null;$("layer").innerHTML="";R.log=`🎯 ${esc(S.players[i].name)} a un objectif secret`;render();
+  ropeModal(`<span class="ann-k">🎯 OBJECTIF ENREGISTRÉ</span><b class="ann-name" style="color:${S.players[i].color}">${esc(S.players[i].name)}</b><span class="ann-gain">garde ta carte face cachée</span>`,1500,null,true);}
+function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope;
+  if(c.kind==="obj")return ropeObjScan(c);
+  if(pending&&pending.obj){toast("Scanne d'abord ton objectif, ou choisis « Jouer sans objectif »",true);return;}
+  if(pending)return;
+  const v=RV[c.id];if(!v)return;
   if(c.kind==="inst"&&!c.joker){const p=c.piste;
     if(R.locks[p]!==undefined){toast(`${PISTES[p]} est verrouillée par ${S.players[R.locks[p]].name} jusqu'à la fin de la manche`,true);arcShake();return;}
-    snap();const e={id:c.id,owner:me,hidden:false,tempoDone:true,seq:++S.seqN};S.stacks[p].push(e);S.last=p;plAdd(e);
-    rPull(me,v[1]);let lk=rCamp()===me;if(lk)R.locks[p]=me;
-    R.log=`${esc(S.players[me].name)} pose ${PISTES[p]} (${v[0]} pt${v[0]>1?"s":""}) et tire de ${v[1]}`+(lk?" — 🔒 verrouillée !":"");
-    if(lk)ropeBanner("🔒 VERROU",`${esc(S.players[me].name)} verrouille ${PISTES[p]}`,S.players[me].color);
+    snap();const prev=topOf(p),e={id:c.id,owner:me,hidden:false,tempoDone:true,seq:++S.seqN};
+    const cover=prev&&prev.owner!==me,sur=cover&&SUR.has(c.id)&&RV[prev.id][0]<v[0];
+    S.stacks[p].push(e);S.last=p;plAdd(e);
+    const st=R.st[me];if(cover)st.covers++;if(sur)st.sur++;if(!st.tracks.includes(p))st.tracks.push(p);
+    const pull=v[1]+(sur?1:0);rPull(me,pull);const lk=rCamp()===me;if(lk){R.locks[p]=me;st.locks++;}
+    R.log=`${esc(S.players[me].name)} pose ${PISTES[p]} (${v[0]} pt${v[0]>1?"s":""}) et tire de ${pull}`+(sur?" — ⚡ surenchère !":"")+(lk?" — 🔒 verrouillée !":"");
+    if(sur||lk)ropeBanner(lk?"🔒 VERROU":"⚡ SURENCHÈRE",`${esc(S.players[me].name)} ${lk?"verrouille "+PISTES[p]:"tire +1"}`,S.players[me].color);
     openCount(e);}
   else{snap();rPull(me,v[1]);R.log=`${esc(S.players[me].name)} : ${c.joker?"Joker":RNAME[c.id]}, tire de ${v[1]}`;}
   creak(.3+v[1]/10);ropeNextTurn();}
 function ropeNextTurn(){const R=S.rope;R.played.push(S.turn);
-  if(R.played.length>=S.players.length){render();return setTimeout(ropeRound,700);}
-  S.turn=(S.turn+1)%S.players.length;render();}
+  if(R.played.length>=S.players.length){pending={modal:true};render();return setTimeout(ropeRound,600);}
+  S.turn=R.order[R.played.length];render();ropeAskObj();}
+/* ordre de la manche suivante : le plus loin de la corde joue en premier (égalité : on garde l'ordre précédent) */
+function ropeOrder(){const R=S.rope;return [...R.order].sort((a,b)=>rDist(b)-rDist(a)||R.order.indexOf(a)-R.order.indexOf(b));}
 /* fin de manche */
-function ropeRound(){if(!S||!S.rope||S.ended)return;snap();const R=S.rope,n=S.players.length,gains=S.players.map(()=>0),lines=[];
-  PORDER.forEach(p=>{const t=topOf(p);if(!t)return;const pv=RV[t.id][0];gains[t.owner]+=pv;
-    lines.push(`<div><span>${FLET[p]} · ${PISTES[p]} ${DECKS[CARDS[t.id].deck].glyph}${R.locks[p]!==undefined?" 🔒":""}</span><span style="color:${S.players[t.owner].color}">${esc(S.players[t.owner].name)} +${pv}</span></div>`);});
-  const camp=rCamp();if(camp!==null){gains[camp]+=ROPE.BONUS;lines.push(`<div class="big"><span>🪢 Corde dans le camp de ${esc(S.players[camp].name)}</span><span class="mono">+${ROPE.BONUS}</span></div>`);}
-  else lines.push(`<div><span>🪢 Corde au milieu : pas de bonus</span><span></span></div>`);
-  S.players.forEach((p,i)=>{p.score+=gains[i];lines.push(`<div class="big"><span style="color:${p.color}">${esc(p.name)}</span><span class="mono">+${gains[i]} → ${p.score}</span></div>`);});
-  const last=R.round>=ROPE.ROUNDS;
-  R.x=0;R.y=0;R.locks={};R.played=[];R.round++;R.starter=(R.starter+1)%n;S.turn=R.starter;
-  R.log=last?"Fin de la partie":`Manche ${R.round} : ${esc(S.players[S.turn].name)} commence`;
-  if(last){S.ended=true;render();cheer();return showSheet("Fin du tir à la corde",lines.join("")+ranking(),"Rejouer",setup);}
-  render();cheer();showSheet(`Fin de la manche ${R.round-1}`,lines.join(""),"Manche suivante",()=>render());}
+function ropeRound(){if(!S||!S.rope||S.ended)return;pending=null;snap();const R=S.rope,n=S.players.length,fin=isFinal(),k=fin?2:1,gains=S.players.map(()=>0),notes=[];
+  const tops={};PORDER.forEach(p=>{const t=topOf(p);tops[p]=t?t.owner:null;if(t)gains[t.owner]+=RV[t.id][0]*k;});
+  S.players.forEach((_,i)=>{if(PORDER.filter(p=>tops[p]===i).length>=3)R.st[i].held3=true;});
+  const camp=rCamp();if(camp!==null){gains[camp]+=fin?ROPE.BONUS_FINAL:ROPE.BONUS;R.st[camp].ropeWins++;notes.push(`🪢 corde : ${esc(S.players[camp].name)} +${fin?ROPE.BONUS_FINAL:ROPE.BONUS}`);}
+  const all=tops.R!==null&&PORDER.every(p=>tops[p]===tops.R);
+  if(all){gains[tops.R]+=ROPE.CHOIR;notes.push(`🎶 CHŒUR ! ${esc(S.players[tops.R].name)} tient les 4 pistes +${ROPE.CHOIR}`);}
+  S.players.forEach((p,i)=>p.score+=gains[i]);
+  if(fin){R.finalCamp=camp;R.endTops=tops;const mx=Math.max(...gains);R.lastBest=gains.filter(g=>g===mx).length===1?gains.indexOf(mx):null;return ropeFinal(gains,notes);}
+  /* la pente : la corde recule de moitié ; nouvel ordre ; verrous levés */
+  R.order=ropeOrder();R.x=+(R.x/2).toFixed(3);R.y=+(R.y/2).toFixed(3);R.locks={};R.played=[];R.round++;S.turn=R.order[0];
+  if(isFinal())S.bpm=R.baseBpm+ROPE.FINAL_BPM;
+  R.log=`Manche ${R.round} : ${esc(S.players[S.turn].name)} commence (le plus loin de la corde)`;render();cheer();
+  const L=leaderOf(),lead=L.who.length>1?null:L.who[0];
+  const head=lead?`<div class="ann-crown">👑</div><b class="ann-name" style="color:${lead.color}">${esc(lead.name)}</b><div class="ann-score">${lead.score}<small>PTS</small></div>`
+    :`<b class="ann-name">ÉGALITÉ</b><div class="ann-gain">${L.who.map(p=>esc(p.name)).join(" · ")} · ${L.mx} pts</div>`;
+  const next=isFinal()?`<span class="ann-next fin">🔥 DERNIÈRE MANCHE 🔥</span><span class="ann-gain">tempo +${ROPE.FINAL_BPM} · cartes ×2 · corde +${ROPE.BONUS_FINAL}</span>`:`<span class="ann-next">MANCHE ${R.round}</span>`;
+  ropeModal(`<span class="ann-k">EN TÊTE</span>${head}${notes.map(t=>`<span class="ann-note">${t}</span>`).join("")}${next}<span class="ann-gain" style="font-size:13px">${esc(S.players[S.turn].name)} commence</span>`,ROPE.MODAL_MS,null);}
+/* fin de partie : scores, objectifs révélés */
+function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
+  const objLines=[];if(R.objOn)S.players.forEach((p,i)=>{const o=R.obj[i];if(!o)return objLines.push(`<div><span style="color:${p.color}">${esc(p.name)}</span><span>sans objectif</span></div>`);
+    const ok=OBJ[o].ok(i,R);if(ok)p.score+=OBJ[o].v;objLines.push(`<div><span style="color:${p.color}">${esc(p.name)} · ${OBJ[o].t}</span><span class="mono">${ok?"✔ +"+OBJ[o].v:"✘"}</span></div>`);});
+  render();cheer();duck(true);
+  const lines=[`<div><span>Dernière manche</span><span class="mono">${S.players.map((p,i)=>`<b style="color:${p.color}">+${gains[i]}</b>`).join(" ")}</span></div>`,...notes.map(t=>`<div><span>${t}</span><span></span></div>`)];
+  if(objLines.length)lines.push(`<div class="big"><span>🎯 Objectifs secrets</span><span></span></div>`,...objLines);
+  showSheet("Fin du tir à la corde",lines.join("")+ranking(),"Rejouer",()=>{duck(false);setup();});}
+/* modale de manche : volume à 20 %, ouverte 5 secondes, on ne joue pas pendant ce temps */
+function ropeModal(html,ms,after,noDuck){const el=$("ropeAnn");el.innerHTML=`<div class="ann-box">${html}</div>`;el.hidden=false;pending={modal:true};if(!noDuck)duck(true);
+  clearTimeout(ropeModal.t);ropeModal.t=setTimeout(()=>{el.hidden=true;if(pending&&pending.modal)pending=null;duck(false);render();if(after)after();else ropeAskObj();},ms);}
+function duck(on){if(!ctx||!window.__masterOut)return;const g=window.__masterOut.gain,t=ctx.currentTime;g.cancelScheduledValues(t);g.setTargetAtTime(on?.9*ROPE.DUCK:.9,t,.15);}
 function ropeBanner(a,b,col){const el=$("ropeBan");if(!el)return;el.innerHTML=`<b style="color:${col}">${a}</b><span>${b}</span>`;el.hidden=false;el.style.animation="none";void el.offsetWidth;el.style.animation="";
   clearTimeout(ropeBanner.t);ropeBanner.t=setTimeout(()=>el.hidden=true,2000);}
 /* ---------- rendu ---------- */
-function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],camp=rCamp();
-  $("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}</span><b>${p.score}</b></div>`).join("");
-  /* jauge des tours : un segment par joueur */
-  $("rpRound").innerHTML=`<span class="rp-k">MANCHE ${Math.min(R.round,ROPE.ROUNDS)}/${ROPE.ROUNDS}</span><div class="rp-seg">${[...Array(n)].map((_,k)=>{const who=R.played[k];
-    return `<i class="${who!==undefined?"on":k===R.played.length&&!S.ended?"now":""}" style="--pc:${who!==undefined?S.players[who].color:k===R.played.length?pl.color:"transparent"}"></i>`;}).join("")}</div>`;
+function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],camp=rCamp(),fin=isFinal();
+  $("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><b>${p.score}</b></div>`).join("");
+  /* jauge des tours : un segment par joueur, dans l'ordre de la manche */
+  $("rpRound").innerHTML=`<span class="rp-k${fin?" fin":""}">${fin?"🔥 DERNIÈRE":"MANCHE "+R.round+"/"+ROPE.ROUNDS}</span><div class="rp-seg">${R.order.map((who,k)=>{const done=k<R.played.length,now=k===R.played.length&&!S.ended;
+    return `<i class="${done?"on":now?"now":""}" style="--pc:${S.players[who].color}"></i>`;}).join("")}</div>`;
   $("rpTurn").style.setProperty("--pc",pl.color);
-  $("rpTurn").innerHTML=S.ended?`<span class="at-k">PARTIE TERMINÉE</span>`:`<span class="at-k">À TOI DE JOUER</span><div class="at-name">${esc(pl.name)}</div><div class="at-tribe">${DECKS[pl.deck].glyph} ${DECKS[pl.deck].short}</div>`;
-  /* la corde : graduée d'un cran par point de traction */
+  $("rpTurn").innerHTML=S.ended?`<span class="at-k">PARTIE TERMINÉE</span>`:`<span class="at-k">À TOI DE JOUER</span><div class="at-name">${esc(pl.name)}</div><div class="at-tribe">${DECKS[pl.deck].glyph} ${DECKS[pl.deck].short}${fin?" · cartes ×2":""}</div>`;
   const C=R.corners,col=camp!==null?S.players[camp].color:"#fff";let g="";
   if(n===2){g+=`<rect x="${-ROPE.R}" y="-1.6" width="${ROPE.R-ROPE.CAMP}" height="3.2" rx=".6" fill="${S.players[0].color}" opacity=".22"/><rect x="${ROPE.CAMP}" y="-1.6" width="${ROPE.R-ROPE.CAMP}" height="3.2" rx=".6" fill="${S.players[1].color}" opacity=".22"/>`;
     g+=`<line x1="${-ROPE.R}" y1="0" x2="${ROPE.R}" y2="0" class="rp-rope"/>`;
     for(let k=-ROPE.R;k<=ROPE.R;k++)g+=`<line x1="${k}" y1="${k%5?-.7:-1.3}" x2="${k}" y2="${k%5?.7:1.3}" class="rp-tick${k%5?"":" maj"}"/>`+(k&&k%2===0?`<text x="${k}" y="2.9" class="rp-num">${Math.abs(k)}</text>`:"");}
-  else{g+=C.map((q,i)=>{const f=(ROPE.R-ROPE.CAMP)/ROPE.R;return `<circle cx="${q.x}" cy="${q.y}" r="${ROPE.R-ROPE.CAMP}" fill="${S.players[i].color}" opacity=".16"/>`;}).join("");
+  else{g+=C.map((q,i)=>`<circle cx="${q.x}" cy="${q.y}" r="${ROPE.R-ROPE.CAMP}" fill="${S.players[i].color}" opacity=".16"/>`).join("");
     g+=`<polygon points="${C.map(q=>q.x+","+q.y).join(" ")}" class="rp-rope"/>`;
     g+=C.map(q=>{let s=`<line x1="0" y1="0" x2="${q.x}" y2="${q.y}" class="rp-tick"/>`;for(let k=1;k<ROPE.R;k++){const x=q.x*k/ROPE.R,y=q.y*k/ROPE.R;s+=`<circle cx="${x}" cy="${y}" r="${k%5?.18:.32}" class="rp-dot"/>`;}return s;}).join("");}
   g+=C.map((q,i)=>`<circle cx="${q.x}" cy="${q.y}" r="1.7" fill="${S.players[i].color}"/>`).join("");
   g+=`<line x1="0" y1="0" x2="${R.x}" y2="${R.y}" class="rp-pull" stroke="${col}"/><circle cx="${R.x}" cy="${R.y}" r="1.4" class="rp-knot" fill="${col}"/>`;
   const vb=n===2?"-11.8 -3 23.6 6.6":n===3?"-11.8 -11.8 23.6 18":"-9.2 -9.2 18.4 18.4";
   $("rpGauge").innerHTML=`<svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg><div class="rp-sub">${camp!==null?`Corde dans le camp de <b style="color:${col}">${esc(S.players[camp].name)}</b> : sa carte posée se verrouille`:"Corde au milieu"}</div>`;
-  /* les 4 pistes */
   $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),now=PL.cur&&t&&PL.cur.seq===t.seq,lk=R.locks[p]!==undefined;
     const hd=`<div class="rp-h"><b class="rp-L">${FLET[p]}</b>${now?'<span class="rp-now">♪</span>':""}${lk?'<span>🔒</span>':""}</div><div class="rp-pn">${PISTES[p]}</div>`;
     if(!t)return `<div class="rp-tr empty">${hd}<div class="rp-empty">libre</div></div>`;
     const o=S.players[t.owner],v=RV[t.id];
     return `<div class="rp-tr${now?" now":""}${lk?" lk":""}" style="--kc:${o.color}">${hd}
-      <div class="rp-card"><span class="rp-star">${v[0]}</span><span class="rp-gl">${DECKS[CARDS[t.id].deck].glyph}</span></div><div class="rp-own" style="color:${o.color}">${esc(o.name)}</div></div>`;}).join("");
+      <div class="rp-card"><span class="rp-star">${v[0]*(fin?2:1)}</span><span class="rp-gl">${DECKS[CARDS[t.id].deck].glyph}</span></div><div class="rp-own" style="color:${o.color}">${esc(o.name)}</div></div>`;}).join("");
   $("rpLog").innerHTML=R.log||"Scanne une carte.";
   $("undoBtnR").disabled=!undoStack.length;
 }
-/* petit grincement quand on tire */
 function creak(lv){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02,n=2+Math.round(lv*3);
   for(let j=0;j<n;j++){const s=ctx.createBufferSource();s.buffer=noiseBuf();const f=bq("bandpass",300+lv*500+Math.random()*200,18),g=ctx.createGain(),tt=t+j*(.07+Math.random()*.05);
     f.frequency.setValueAtTime(f.frequency.value,tt);f.frequency.exponentialRampToValueAtTime(f.frequency.value*(1.6+lv),tt+.09);
@@ -860,7 +942,7 @@ function creak(lv){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02,n=2+Math
     chain(s,f,g);g.connect(masterIn);s.start(tt,Math.random());s.stop(tt+.15);}}
 
 $("undoBtnR").onclick=()=>$("undoBtn").onclick();
-$("passR").onclick=()=>{if(!S||!S.rope||S.ended)return;snap();S.rope.log=esc(S.players[S.turn].name)+" passe";ropeNextTurn();};
+$("passR").onclick=()=>{if(!S||!S.rope||S.ended||pending)return;snap();S.rope.log=esc(S.players[S.turn].name)+" passe";ropeNextTurn();};
 $("quitR").onclick=()=>$("newBtn").click();
 
 /* ================= Mode test solo : on scanne, ça joue, sans règles ================= */
@@ -885,6 +967,9 @@ function onCode(raw){
   if(seen[id]&&now-seen[id]<1200){seen[id]=now;return;}
   seen[id]=now;
   if(!S||S.ended)return;
+  if(S.rope&&CARDS[id].kind==="obj"){flashHit();blip();return ropeObjScan(CARDS[id]);}
+  if(CARDS[id].kind==="obj"&&!S.rope){toast("Les cartes Objectif servent au mode La Corde",true);return;}
+  if(S.rope&&pending&&pending.obj){toast("Scanne d'abord ton objectif, ou choisis « Jouer sans objectif »",true);return;}
   if(pending&&!id.startsWith("XLAR"))return;
   const c=CARDS[id];
   if(S.solo){flashHit();blip();return soloScan(c);}
@@ -1428,7 +1513,7 @@ function openCount(e){const sid=e.snd||e.id,c=CARDS[e.id],D=DECKS[c.deck];
   if(PL.cur&&PL.cur.seq===e.seq)return;countId=e.seq;clearTimeout(countClose);let el=$("countModal");
   if(!el){el=document.createElement("div");el.id="countModal";document.body.appendChild(el);}
   el.style.setProperty("--dc",D.color);
-  el.innerHTML=`<div class="cm-box"><span class="cm-lab">${D.glyph} ${D.short} · ${c.joker?"Joker · ":""}${PISTES[sid[0]]}</span><b class="cm-num" id="cmNum"></b><span class="cm-sub" id="cmSub">temps avant ta boucle</span><div class="cm-dots" id="cmDots">${"<i></i>".repeat(4)}</div></div>`;
+  el.innerHTML=`<div class="cm-box"><span class="cm-lab">${D.glyph} ${D.short} · ${c.joker?"Joker · ":""}${PISTES[sid[0]]}</span><b class="cm-num" id="cmNum"></b><span class="cm-sub" id="cmSub">temps</span><div class="cm-dots" id="cmDots">${"<i></i>".repeat(4)}</div></div>`;
   el.className="";countTick(curBeat,true);}
 function countTick(b,first){
   if(!countId)return;const el=$("countModal");if(!el)return;const num=$("cmNum");
@@ -1436,8 +1521,7 @@ function countTick(b,first){
     $("cmDots").querySelectorAll("i").forEach(d=>d.className="on");countId=null;countClose=setTimeout(()=>{el.className="";},700);return;}
   if(!PL.pend.includes(countId)){countId=null;el.className="";return;}
   const left=plWait(countId),pos=b%4;
-  /* la fenêtre n'apparaît que pour les 4 derniers temps d'attente (avant, l'étiquette sur la pile suffit) */
-  if(left>4){el.className="";return;}if(!el.classList.contains("show"))el.className="show";num.textContent=left;num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");
+  if(!el.classList.contains("show"))el.className="show";num.textContent=left;num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");
   $("cmDots").querySelectorAll("i").forEach((d,i)=>d.className=i<pos?"on":i===pos?"now":"");}
 /* =========== Lecture à la suite : une seule boucle à la fois ===========
    - Une carte posée attend la fin de la boucle en cours, puis sa boucle joue.
