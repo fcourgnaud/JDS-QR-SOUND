@@ -488,7 +488,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
     <h3>Actions</h3>
     <ul><li><b>Mute</b> : la piste touchée ne marque pas à la prochaine mesure.</li><li><b>Drop</b> : la prochaine mesure compte double, puis les cartes recouvertes sont défaussées.</li><li><b>Tonalité</b> : la carte de la piste touchée vaut +2 à la prochaine mesure.</li></ul>
     <h3>La musique</h3>
-    <p>Une seule boucle joue à la fois. Quand une carte est posée, l'app finit la boucle en cours puis lance la nouvelle. Ensuite elle joue les pistes l'une après l'autre, toujours dans l'ordre A, B, C, D (Rythme, Basse, Harmonie, Mélodie), en repartant de la piste qui suit : une carte posée en Basse joue, puis Harmonie, Mélodie, Rythme, Basse… jusqu'à la prochaine carte posée. Les pistes vides ou coupées par un Mute sont sautées. La pile qui joue s'illumine.</p>
+    <p><b>Toutes les boucles jouent ensemble</b>, calées sur un cycle de 4 mesures : une carte posée démarre au début du cycle suivant, et l'ancienne boucle de la piste continue jusque-là. En mode La Corde, une piste est en vedette à chaque cycle (A, B, C, D à tour de rôle) : elle sonne un peu plus fort et s'illumine. (Ancienne règle, désactivée : Quand une carte est posée, l'app finit la boucle en cours puis lance la nouvelle. Ensuite elle joue les pistes l'une après l'autre, toujours dans l'ordre A, B, C, D (Rythme, Basse, Harmonie, Mélodie), en repartant de la piste qui suit : une carte posée en Basse joue, puis Harmonie, Mélodie, Rythme, Basse… jusqu'à la prochaine carte posée. Les pistes vides ou coupées par un Mute sont sautées. La pile qui joue s'illumine.</p>
     <h3>Tes propres sons (MP3)</h3>
     <p><b>Pioches au hasard</b> : un dossier par piste, avec deux sous-dossiers : <b>sons/Arythme/rythme-calme</b> et <b>rythme-fort</b>, <b>sons/Bbasse/basse-calme</b> et <b>basse-fort</b>, <b>sons/Charmonie/harmonie-calme</b> et <b>harmonie-fort</b>, <b>sons/Dmélodie/mélodie-calme</b> et <b>mélodie-fort</b>. Les fichiers sont numérotés sans trou : 1.mp3, 2.mp3, 3.mp3… Au premier scan d'une carte, l'app lui tire un son au hasard dans son sous-dossier et le retire de la pioche : aucune autre carte ne peut l'avoir. La carte le garde jusqu'à la fin de la partie, et tout est retiré au sort à la partie suivante. La carte « forte » d'une piste est celle des deux qui tire le plus la corde (traction), l'autre est « calme ». Si un sous-dossier est vide ou épuisé, la carte utilise son son fixe ci-dessous.</p>
     <p>Dépose les fichiers dans le dossier <b>sons</b> du site. <b>Un fichier par carte</b> : la lettre de la piste (A Rythme, B Basse, C Harmonie, D Mélodie), « tribu », le numéro de la tribu, puis <b>-1</b> ou <b>-2</b> pour la carte, par exemple <b>sons/Btribu1-1.mp3</b> et <b>sons/Btribu1-2.mp3</b> pour les deux Basses de la Tribu 1. Joker : <b>Jtribu1.mp3</b>. Sans fichier pour une carte, l'app prend le fichier commun de la piste (<b>Btribu1.mp3</b>), sinon le son synthétisé. Les noms exacts sont dans l'onglet « Sons des decks ». Les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité de <b>sons/reglages.json</b>. Sons ponctuels : <b>Action-Elan</b>, <b>Action-CoupDeReins</b>, <b>Action-Cadenas</b>, <b>Action-Projecteur</b>, <b>Action-Coupure</b>, <b>Action-Sabotage</b>, <b>Action-Mute</b>, <b>Action-Larsen</b>, <b>Action-Drop</b>, <b>Action-Tonalite</b>, <b>Objectif</b>.</p>
@@ -499,7 +499,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
     <li><b>Surenchère</b> (cartes marquées) : si elle recouvre une carte adverse qui vaut moins de points, elle tire +1.</li>
     <li>Joker : traction pure +6, 0 point, il ne se pose pas.</li>
     <li><b>Deck Action</b> (15 cartes communes : Élan ×3, Coup de reins ×2, Cadenas ×3, Projecteur ×2, Coupure ×3, Sabotage ×2). À la fin de ton tour, pioche dans ton deck <b>ou</b> une carte Action. Une carte recouverte retourne sous le deck de son propriétaire.</li>
-    <li>Pendant ton tour, <b>avant ta carte</b>, tu peux jouer une Action (une seule, +1 point) : Élan (traction +4), Coup de reins (+6), Cadenas (verrouille ta dernière carte posée), Projecteur (la piste en train de jouer marque double à cette fin de manche).</li>
+    <li>Pendant ton tour, <b>avant ta carte</b>, tu peux jouer une Action (une seule, +1 point) : Élan (traction +4), Coup de reins (+6), Cadenas (verrouille ta dernière carte posée), Projecteur (la piste en vedette marque double à cette fin de manche).</li>
     <li><b>Réactions</b>, jouées par un adversaire juste après la pose d'une carte : Coupure (la carte est annulée, retourne sous le deck de son propriétaire, la corde revient en arrière) et Sabotage (la carte ne marque pas à cette fin de manche et la corde s'éloigne de 2 de son propriétaire). Après la dernière carte d'une manche, il reste 4 secondes pour réagir.</li>
     <li><b>Fin de manche</b> (jauge des tours pleine) : chacun marque ses cartes visibles ; +3 pour le camp de la corde ; <b>Chœur</b> : +3 si tu tiens au moins 3 pistes. La corde recule d'un quart vers le centre et les verrous sautent.</li>
     <li><b>Ordre</b> : à la manche suivante, le joueur en tête au score joue en premier, le dernier au score joue en dernier.</li>
@@ -542,7 +542,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v50";
+const VERSION="v51";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -663,9 +663,9 @@ function render(){
     const isLast=S.last===p&&t,lc=isLast?S.players[t.owner].color:"transparent";
     const badges=[isLast&&'<span class="lastTag">Dernière posée</span>',zb,t&&!t.hidden&&CARDS[t.id].joker&&'<span class="badge">Joker</span>',
       S.muted[p]&&'<span class="badge red">Mute</span>',S.boost[p]&&'<span class="badge gold">+2</span>',
-      t&&PL.cur&&PL.cur.seq===t.seq&&'<span class="badge gold nowTag">♪ en lecture</span>',
-      t&&PL.pend.includes(t.seq)&&`<span class="badge waitTag" data-seq="${t.seq}">▶ dans ${plWait(t.seq)} temps</span>`].filter(Boolean).join("");
-    return `<div class="piste ${cls}${isSilent(p)?" silent":""}${isLast?" last":""}${t&&PL.cur&&PL.cur.seq===t.seq?" now":""}${picking?" pickable":""}" data-p="${p}" style="--ac:${ac};--lc:${lc}"><div class="head"><b>${PISTES[p]}</b><span class="label">${S.stacks[p].length}</span></div><div class="body">${body}</div><div class="badges">${badges}</div><i class="meter"></i></div>`;
+      t&&plIsPlaying(t.seq)&&'<span class="badge gold nowTag">♪ en lecture</span>',
+      t&&plIsPending(t.seq)&&`<span class="badge waitTag" data-seq="${t.seq}">▶ dans ${plWait(t.seq)} temps</span>`].filter(Boolean).join("");
+    return `<div class="piste ${cls}${isSilent(p)?" silent":""}${isLast?" last":""}${t&&plIsPlaying(t.seq)?" now":""}${picking?" pickable":""}" data-p="${p}" style="--ac:${ac};--lc:${lc}"><div class="head"><b>${PISTES[p]}</b><span class="label">${S.stacks[p].length}</span></div><div class="body">${body}</div><div class="badges">${badges}</div><i class="meter"></i></div>`;
   }).join("");
   $("turn").querySelector(".label").textContent=S.solo?"Solo":"À toi";
   if(S.solo){$("turnName").textContent="Mode test";$("turnDeck").textContent="Scanne une carte · touche une piste pour la vider";$("passBtn").textContent="Quitter";$("turn").style.setProperty("--pc","var(--spot)");$("dots").innerHTML="";
@@ -857,7 +857,7 @@ for(const k in OBJ)CARDS[k]={id:k,kind:"obj"};
    - jouées en RÉACTION par un adversaire sur la carte qui vient d'être posée (pas de point) : Coupure, Sabotage. */
 const RACT={ELAN:{n:"Élan",tr:4,d:"Tire la corde vers toi de 4."},REINS:{n:"Coup de reins",tr:6,d:"Tire la corde vers toi de 6."},
   CADENAS:{n:"Cadenas",d:"Verrouille ta dernière carte posée jusqu'à la fin de la manche."},
-  PROJO:{n:"Projecteur",d:"La piste en train de jouer marque double à cette fin de manche."},
+  PROJO:{n:"Projecteur",d:"La piste en vedette (mise en avant par l'app à chaque cycle) marque double à cette fin de manche."},
   COUPURE:{n:"Coupure",react:true,d:"Réaction : annule la carte qui vient d'être posée. Elle retourne sous le deck de son propriétaire et la corde revient en arrière."},
   SABOT:{n:"Sabotage",react:true,d:"Réaction : la carte qui vient d'être posée ne marque pas à cette fin de manche, et la corde s'éloigne de 2 de son propriétaire."}};
 const RACT_IDS={A01:"ELAN",A02:"ELAN",A03:"ELAN",A04:"REINS",A05:"REINS",A06:"CADENAS",A07:"CADENAS",A08:"CADENAS",
@@ -945,8 +945,8 @@ function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;const _snd=()=>pla
     if(!t||t.owner!==me){toast("Cadenas : ta dernière carte posée n'est plus sur le dessus",true);return;}
     if(R.locks[p]!==undefined){toast("Cadenas : cette carte est déjà verrouillée",true);return;}
     snap();R.locks[p]=me;R.st[me].locks++;R.log=`🔒 ${esc(p0.name)} verrouille sa ${PISTES[p]} (Cadenas)`;}
-  else if(c.act==="PROJO"){const p=PL.cur&&PL.cur.p;
-    if(!p){toast("Projecteur : aucune piste ne joue en ce moment",true);return;}
+  else if(c.act==="PROJO"){const p=PL.spot;
+    if(!p){toast("Projecteur : aucune piste n'est en vedette pour l'instant",true);return;}
     snap();R.projo[p]=true;R.log=`🔦 PROJECTEUR sur ${PISTES[p]} : elle marque double à cette fin de manche`;ropeBanner("🔦 PROJECTEUR",`${PISTES[p]} marque double`,p0.color);}
   else{snap();rPull(me,a.tr);creak(.3+a.tr/10);R.log=`${esc(p0.name)} : ${a.n}, tire de ${a.tr}`;}
   R.usedA.push(c.id);R.actUsed=true;p0.score+=1;R.log+=" · +1 point";_snd();render();}
@@ -1025,7 +1025,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
   g+=`<line x1="0" y1="0" x2="${R.x}" y2="${R.y}" class="rp-pull" stroke="${col}"/><circle cx="${R.x}" cy="${R.y}" r="1.4" class="rp-knot" fill="${col}"/>`;
   const vb=n===2?"-11.8 -3 23.6 6.6":n===3?"-11.8 -11.8 23.6 18":"-9.2 -9.2 18.4 18.4";
   $("rpGauge").innerHTML=`<svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg><div class="rp-sub">${camp!==null?`Corde dans le camp de <b style="color:${col}">${esc(S.players[camp].name)}</b> : sa carte posée se verrouille`:"Corde au milieu"}</div>`;
-  $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),now=PL.cur&&t&&PL.cur.seq===t.seq,lk=R.locks[p]!==undefined;
+  $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),now=PL.spot===p&&t&&plIsPlaying(t.seq),lk=R.locks[p]!==undefined;
     const hd=`<div class="rp-h"><b class="rp-L">${FLET[p]}</b>${now?'<span class="rp-now">♪</span>':""}${lk?'<span>🔒</span>':""}${R.projo[p]?'<span>🔦</span>':""}${t&&t.sab?'<span>🚫</span>':""}</div><div class="rp-pn">${PISTES[p]}</div>`;
     if(!t)return `<div class="rp-tr empty">${hd}<div class="rp-empty">libre</div></div>`;
     const o=S.players[t.owner],v=RV[t.id];
@@ -1646,77 +1646,78 @@ function showBeat(b){curBeat=b;const el=$("cycle");if(!el)return;
 /* fenêtre animée : décompte des temps jusqu'à la prochaine mesure, après le scan d'une carte à boucle MP3 */
 let countId=null,countClose=null;
 function openCount(e){const sid=e.snd||e.id,c=CARDS[e.id],D=DECKS[c.deck];
-  if(PL.cur&&PL.cur.seq===e.seq)return;countId=e.seq;clearTimeout(countClose);let el=$("countModal");
+  if(plIsPlaying(e.seq))return;countId=e.seq;clearTimeout(countClose);let el=$("countModal");
   if(!el){el=document.createElement("div");el.id="countModal";document.body.appendChild(el);}
   el.style.setProperty("--dc",D.color);
   el.innerHTML=`<div class="cm-box"><span class="cm-lab">${D.glyph} ${D.short} · ${c.joker?"Joker · ":""}${PISTES[sid[0]]}</span><b class="cm-num" id="cmNum"></b><span class="cm-sub" id="cmSub">temps</span><div class="cm-dots" id="cmDots">${"<i></i>".repeat(4)}</div></div>`;
   el.className="";countTick(curBeat,true);}
 function countTick(b,first){
   if(!countId)return;const el=$("countModal");if(!el)return;const num=$("cmNum");
-  if(PL.cur&&PL.cur.seq===countId){num.textContent="▶";$("cmSub").textContent="c'est parti !";el.classList.add("go");
+  if(plIsPlaying(countId)){num.textContent="▶";$("cmSub").textContent="c'est parti !";el.classList.add("go");
     $("cmDots").querySelectorAll("i").forEach(d=>d.className="on");countId=null;countClose=setTimeout(()=>{el.className="";},700);return;}
-  if(!PL.pend.includes(countId)){countId=null;el.className="";return;}
+  if(!plIsPending(countId)){countId=null;el.className="";return;}
   const left=plWait(countId),pos=b%4;
   if(!el.classList.contains("show"))el.className="show";num.textContent=left;num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");
   $("cmDots").querySelectorAll("i").forEach((d,i)=>d.className=i<pos?"on":i===pos?"now":"");}
-/* =========== Lecture à la suite : une seule boucle à la fois ===========
-   - Une carte posée attend la fin de la boucle en cours, puis sa boucle joue.
-   - Ensuite l'app joue les pistes l'une après l'autre, toujours dans l'ordre A, B, C, D (Rythme, Basse, Harmonie, Mélodie),
-     en repartant de la piste qui suit celle qui vient de jouer : carte posée en B → B, puis C, D, A, B…
-   - Chaque boucle dure 16 temps (ou la durée de son MP3). */
-const PL={cur:null,len:16,beat:0,ptr:3,pend:[]};
-function plReset(){if(PL.cur&&PL.cur.ref&&SMP[PL.cur.ref])stopSample(PL.cur.ref);Object.assign(PL,{cur:null,len:16,beat:0,ptr:3,pend:[]});}
-function plAdd(e){poolAssign(e.id);PL.pend=PL.pend.filter(q=>q!==e.seq);PL.pend.push(e.seq);}
+/* =========== Toutes les boucles en même temps ===========
+   - Chaque piste joue la boucle de sa carte du dessus ; toutes les boucles sont calées sur un cycle commun de 4 mesures (16 temps).
+   - Une carte posée attend le début du cycle suivant ; l'ancienne boucle de la piste continue jusque-là, sans blanc.
+   - Si rien ne joue encore, la première carte démarre à la mesure suivante et le cycle repart d'elle.
+   - Mode La Corde : à chaque cycle, une piste est « en vedette » (A, B, C, D à tour de rôle) : un peu plus forte, et c'est elle que vise le Projecteur. */
+const PL={tr:{R:null,B:null,H:null,M:null},spot:null,cyc:0};let ABS=0;
 const sndOf=e=>e.snd||e.id;
-function plLen(e){const r=SREF(sndOf(e));return SAMPLES[r]&&smpOn(r)?SMP[r].D.beats:16;}
-function plVisible(){if(!S||S.ended)return[];
-  return PORDER.map(p=>{const t=topOf(p);return t&&!t.hidden&&!isSilent(p)&&t.seq?{p,t}:null;}).filter(Boolean).sort((a,b)=>a.t.seq-b.t.seq);}
+function plReset(){for(const p of PORDER){const c=PL.tr[p];if(c&&c.ref&&SMP[c.ref])stopSample(c.ref);PL.tr[p]=null;}PL.spot=null;PL.cyc=0;}
+function plAdd(e){poolAssign(e.id);}
 function plFind(seq){if(!S)return null;for(const p of PORDER)for(const e of S.stacks[p])if(e.seq===seq)return{p,t:e};return null;}
+function plVisible(){if(!S||S.ended)return[];return PORDER.map(p=>{const t=topOf(p);return t&&!t.hidden&&!isSilent(p)&&t.seq?{p,t}:null;}).filter(Boolean);}
+const plIdle=()=>PORDER.every(p=>!PL.tr[p]);
+const plIsPlaying=seq=>PORDER.some(p=>PL.tr[p]&&PL.tr[p].seq===seq);
+const plIsPending=seq=>!plIsPlaying(seq)&&plVisible().some(v=>v.t.seq===seq);
 /* nombre de temps avant que la carte n° seq ne commence */
-function plWait(seq){let w=PL.cur?PL.len-PL.beat:(16-curBeat%16)%16||16;
-  for(const q of PL.pend){if(q===seq)break;const f=plFind(q);if(f)w+=plLen(f.t);}return w;}
-function plNext(){const vis=plVisible();
-  while(PL.pend.length){const q=PL.pend.shift(),f=vis.find(v=>v.t.seq===q);if(f){PL.ptr=PORDER.indexOf(f.p);return f;}}
-  /* ensuite, toujours dans l'ordre des pistes A, B, C, D, à partir de la piste qui suit la dernière jouée */
-  for(let k=1;k<=4;k++){const p=PORDER[(PL.ptr+k)%4],f=vis.find(v=>v.p===p);if(f){PL.ptr=PORDER.indexOf(p);return f;}}
-  return null;}
-function plStopAt(t){const c=PL.cur;PL.cur=null;if(c&&c.ref&&SMP[c.ref]&&SMP[c.ref].playing){const s=SMP[c.ref];
-  (s.srcs||[]).forEach(x=>{try{x.stop(t+.003);}catch(e){}});s.src=null;s.playing=false;}}
-function plStart(n,t){const id=sndOf(n.t),r=SREF(id),mp3=!!(SAMPLES[r]&&smpOn(r)),prev=PL.cur;
-  const same=prev&&prev.ref===r&&mp3&&SMP[r].playing;
-  if(prev&&!same)plStopAt(t);
-  PL.cur={seq:n.t.seq,id,p:n.p,ref:mp3?r:null};PL.len=mp3?SMP[r].D.beats:16;PL.beat=0;
-  if(mp3){const s=SMP[r];s.at=n.p;
-    if(same){const p=samplePos(s,t),d=Math.min(p,s.loopDur-p);if(d>.004||s.bpm!==Math.round(curBpm)||(s.rate!==1&&s.cache[s.bpm]))startSample(r,t,0);}
-    else startSample(r,t,0);}
-  const d=Math.max(0,(t-ctx.currentTime)*1000);setTimeout(()=>{if(S)render();},d);}
-/* appelé à chaque pas, avant de le jouer ; renvoie le pas (remis à 0 au début de chaque boucle) */
+function plWait(seq){if(plIdle())return (4-curBeat%4)%4||4;return (16-curBeat%16)%16||16;}
+function plStopTrack(p,t){const c=PL.tr[p];PL.tr[p]=null;if(!c||!c.ref||!SMP[c.ref])return;const s=SMP[c.ref];
+  if(PORDER.some(q=>PL.tr[q]&&PL.tr[q].ref===c.ref))return;
+  (s.srcs||[]).forEach(x=>{try{x.stop(t+.003);}catch(e){}});s.src=null;s.playing=false;}
+function plStartTrack(p,v,t){const id=sndOf(v.t),r=SREF(id),mp3=!!(SAMPLES[r]&&smpOn(r));
+  if(PL.tr[p])plStopTrack(p,t);
+  if(mp3){const s=SMP[r];s.at=p;startSample(r,t,0);s.absStart=ABS;}
+  PL.tr[p]={seq:v.t.seq,id,ref:mp3?r:null,p};}
+function plSpotGain(t){for(const p of PORDER){const c=PL.tr[p];if(!c||!c.ref)continue;const s=SMP[c.ref];const k=S&&S.rope&&PL.spot===p?1.35:1;
+  try{s.g.gain.cancelScheduledValues(t);s.g.gain.setTargetAtTime((s.norm||1)*k,t,.05);}catch(e){}}}
+/* appelé à chaque pas, avant de le jouer ; renvoie le pas (remis à 0 quand le cycle repart) */
 function plTick(st,t){
   if(st%4)return st;
-  if(preview||!S||S.ended||!soundOn){if(PL.cur)plStopAt(t);return st;}
-  if(PL.cur){
-    if(!plFind(PL.cur.seq)){plStopAt(t);}                          /* carte annulée (Larsen, retour arrière) */
-    else{PL.beat++;if(PL.beat<PL.len)return st;}
-  }
-  if(!PL.cur&&st%16)return st;                                     /* rien ne joue : on démarre au début d'une mesure */
-  const n=plNext();
-  if(!n){if(PL.cur)plStopAt(t);const d=Math.max(0,(t-ctx.currentTime)*1000);setTimeout(()=>{if(S)render();},d);return st;}
-  plStart(n,t);return 0;
+  ABS++;
+  if(preview||!S||S.ended||!soundOn){for(const p of PORDER)if(PL.tr[p])plStopTrack(p,t);return st;}
+  for(const p of PORDER){const c=PL.tr[p];if(c&&!plFind(c.seq))plStopTrack(p,t);}   /* carte annulée (Coupure, Larsen, retour arrière) */
+  const want={};plVisible().forEach(v=>want[v.p]=v);
+  const idle=plIdle(),any=Object.keys(want).length;
+  let start=false;
+  if(idle){if(any&&st%16===0)start=true;else return st;}
+  else if(st===0)start=true;
+  if(!start)return st;
+  for(const p of PORDER){const w=want[p],c=PL.tr[p];
+    if(!w){if(c)plStopTrack(p,t);continue;}
+    if(!c||c.seq!==w.t.seq||c.id!==sndOf(w.t))plStartTrack(p,w,t);}
+  PL.spot=S.rope?PORDER[PL.cyc%4]:null;PL.cyc++;plSpotGain(t);
+  setTimeout(()=>{if(S)render();},Math.max(0,(t-ctx.currentTime)*1000));
+  return 0;
 }
 function sampleStep(st,t){
-  /* tonalité : si une boucle MP3 tonale est en jeu, tout le monde suit sa tonalité */
-  const vis=plVisible();  tonalOn=vis.some(v=>{const r=SREF(sndOf(v.t));return SAMPLES[r]&&smpOn(r)&&SAMPLES[r].tonal;});KEY=tonalOn?SAMPLE_KEY:0;
+  const vis=plVisible();tonalOn=vis.some(v=>{const r=SREF(sndOf(v.t));return SAMPLES[r]&&smpOn(r)&&SAMPLES[r].tonal;});KEY=tonalOn?SAMPLE_KEY:0;
   if(preview){const r=SREF(preview.id);if(SAMPLES[r]&&smpOn(r)){const s=SMP[r];s.at=preview.piste;
       if(!s.playing&&st===0)startSample(r,t,0);else if(s.playing&&st%4===0&&s.bpm!==Math.round(curBpm))startSample(r,t,(st/4)%16);return[r];}}
-  else if(PL.cur&&PL.cur.ref&&st%4===0){const s=SMP[PL.cur.ref];if(s.playing&&s.bpm!==Math.round(curBpm))startSample(PL.cur.ref,t,PL.beat);}
+  else if(st%4===0)for(const p of PORDER){const c=PL.tr[p];if(!c||!c.ref)continue;const s=SMP[c.ref];
+    if(s.playing&&s.bpm!==Math.round(curBpm))startSample(c.ref,t,((ABS-(s.absStart||0))%s.D.beats+s.D.beats)%s.D.beats);}
   if(st%4===0){const b=st/4;setTimeout(()=>showBeat(b),Math.max(0,(t-ctx.currentTime)*1000));}
-  return PL.cur&&PL.cur.ref?[PL.cur.ref]:[];
+  return PORDER.map(p=>PL.tr[p]&&PL.tr[p].ref).filter(Boolean);
 }
 /* ---------- séquenceur ---------- */
 function progNow(){
   if(tonalOn)return prog(SAMPLE_PROG);
-  const id=preview?preview.id:PL.cur?PL.cur.id:null;
-  return prog(id&&INFO[id].prog||DEFAULT_PROG);
+  if(preview){const p=INFO[preview.id].prog;return prog(p||DEFAULT_PROG);}
+  for(const q of ["H","M"]){const c=PL.tr[q];if(c&&INFO[c.id]&&INFO[c.id].prog)return prog(INFO[c.id].prog);}
+  return prog(DEFAULT_PROG);
 }
 function playStep(st,t){
   if(!soundOn){stopAllSamples();return;}
@@ -1726,10 +1727,10 @@ function playStep(st,t){
     if(ctx.currentTime>preview.until){preview=null;markPlaying(null);return;}
     if(!smp.includes(SREF(preview.id))){curGain=CG[preview.id]||1;VOICE[preview.id]({...info,p:preview.piste});curGain=1;}return;
   }
-  if(!S||S.ended||!PL.cur)return;
-  const c=PL.cur;if(st%4===0)pulseLater(c.p,t);
-  if(c.ref)return;                       /* boucle MP3 : elle joue toute seule */
-  curGain=CG[c.id]||1;VOICE[c.id]({...info,p:c.p});curGain=1;
+  if(!S||S.ended)return;
+  for(const p of PORDER){const c=PL.tr[p];if(!c)continue;if(st%4===0)pulseLater(p,t);
+    if(c.ref)continue;                   /* boucle MP3 : elle joue toute seule */
+    curGain=(CG[c.id]||1)*(S.rope&&PL.spot===p?1.3:1);VOICE[c.id]({...info,p});curGain=1;}
 }
 /* Sons des cartes Action */
 function sfx(id){
