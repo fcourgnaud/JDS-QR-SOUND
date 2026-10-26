@@ -542,7 +542,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v51";
+const VERSION="v52";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1520,22 +1520,47 @@ function decode(ab){return new Promise((res,rej)=>{const p=ctx.decodeAudioData(a
 async function getFile(url){try{const r=await fetch(url,{cache:"no-cache"});return r.ok?r:null;}catch(e){return null;}}
 /* les fichiers sont téléchargés dès l'ouverture de la page ; le décodage se fait au lancement (il faut l'audio) */
 let PRE=null,mp3Info="";
+/* liste des fichiers du dépôt GitHub qui héberge la page (une seule requête, sans compte) ; null si indisponible */
+async function listRepo(){try{const h=location.hostname;if(!/\.github\.io$/i.test(h))return null;const owner=h.split(".")[0];
+    const seg=location.pathname.split("/").filter(Boolean);const repo=seg.length&&!/\.html?$/i.test(seg[0])?seg[0]:owner+".github.io";
+    for(const br of ["HEAD","main","master"]){const r=await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/git/trees/"+br+"?recursive=1");
+      if(!r.ok)continue;const j=await r.json();if(!j.tree)continue;
+      return j.tree.filter(x=>x.type==="blob"&&/^sons\//.test(x.path)).map(x=>x.path);}
+  }catch(e){}return null;}
 function preloadSons(){
   if(PRE)return PRE;
   if(location.protocol==="file:"){mp3Info="MP3 : ouvre la page depuis GitHub pour charger le dossier sons";return PRE=Promise.resolve({set:null,files:{}});}
   PRE=(async()=>{const out={set:null,files:{}};const rg=await getFile("sons/reglages.json");
     if(rg){try{out.set=await rg.json();}catch(e){out.setErr=true;}}
     const cards=Object.keys(CARDS).filter(id=>CARDS[id].kind==="inst"),ids=cards.filter(id=>!CARDS[id].joker),refs=[...new Set(ids.map(i=>i.slice(0,2)))];
-    const tryF=async names=>{for(const n of names){const r=await getFile("sons/"+n+".mp3");if(r){try{return await r.arrayBuffer();}catch(e){}}}return null;};
+    /* liste des fichiers du dépôt (GitHub Pages) : on ne demande que les fichiers qui existent, avec leur nom exact
+       (un Mac écrit « é » en deux caractères : sans cette liste, le dossier Dmélodie était introuvable) */
+    const TREE=await listRepo();
+    const norm=x=>x.normalize("NFC").toLowerCase(),bare=x=>x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    const real=n=>{if(!TREE)return null;const a=norm("sons/"+n+".mp3"),b=bare("sons/"+n+".mp3");return TREE.find(p=>norm(p)===a)||TREE.find(p=>bare(p)===b)||false;};
+    const tryF=async names=>{for(const n of names){let url;
+        if(TREE){const r=real(n);if(!r)continue;url=r.split("/").map(encodeURIComponent).join("/");}
+        else url="sons/"+n+".mp3";
+        const r=await getFile(url);if(r){try{return await r.arrayBuffer();}catch(e){}}}return null;};
     /* 1) un fichier par carte : Atribu1-1.mp3 (ou Atribue1-1.mp3), Jtribu1.mp3 pour le Joker */
     await Promise.all(cards.map(async id=>{const f=CFILE(id),ab=await tryF([f,f.replace("tribu","tribue")]);if(ab){out.files[id]=ab;SNDKEY[id]=id;}}));
     /* 2) à défaut, le fichier commun de la piste : Atribu1.mp3, puis les anciens noms (RF.mp3, RF2.mp3, RF4.mp3) */
     await Promise.all(refs.map(async ref=>{if(ids.filter(i=>i.slice(0,2)===ref).every(i=>SNDKEY[i]))return;
       const ab=await tryF([FNAME(ref),FNAME(ref).replace("tribu","tribue"),ref,...ids.filter(i=>i.slice(0,2)===ref)]);if(ab)out.files[ref]=ab;}));
     /* 3) sons ponctuels (Actions, Objectif) */
-    /* 4) pioches : sons/Bbasse/basse-fort/1.mp3, 2.mp3… jusqu'au premier numéro manquant */
-    out.pools={};await Promise.all(Object.keys(FOLD).flatMap(p=>["calme","fort"].map(async m=>{const lst=[];
-      for(let n=1;n<=POOLMAX;n++){const dir=poolPath(p,m),ab=await tryF([dir+"/"+n,dir.normalize("NFD").replace(/[\u0300-\u036f]/g,"")+"/"+n]);if(!ab)break;const key="P"+p+":"+m+":"+n;out.files[key]=ab;lst.push(key);}
+    /* 4) pioches : sons/Bbasse/basse-fort/<numéro>.mp3 — les numéros peuvent avoir des trous (1, 4, 7, 23…) */
+    out.pools={};await Promise.all(Object.keys(FOLD).flatMap(p=>["calme","fort"].map(async m=>{const dir=poolPath(p,m);let nums=[];
+      if(TREE){const a=norm("sons/"+dir+"/"),b=bare("sons/"+dir+"/");
+        nums=TREE.filter(x=>(norm(x).startsWith(a)||bare(x).startsWith(b))&&/^\d+\.mp3$/i.test(x.split("/").pop())).map(x=>parseInt(x.split("/").pop(),10));}
+      else nums=Array.from({length:POOLMAX},(_,i)=>i+1);
+      const found=[];
+      if(TREE)await Promise.all(nums.map(async n=>{const ab=await tryF([dir+"/"+n]);if(ab)found.push([n,ab]);}));
+      else{/* sans la liste : on essaie les numéros par paquets de 10, avec les 3 écritures possibles du dossier ; on s'arrête après un paquet vide */
+        const vars=[dir,dir.normalize("NFD"),bare(dir)];let v=null;
+        for(let s0=1;s0<=POOLMAX;s0+=10){let got=0;
+          await Promise.all(nums.slice(s0-1,s0+9).map(async n=>{for(const d of v?[v]:vars){const r=await getFile("sons/"+d+"/"+n+".mp3");if(r){try{found.push([n,await r.arrayBuffer()]);got++;v=v||d;}catch(e){}break;}}}));
+          if(!got&&s0>1)break;}}
+      found.sort((x,y)=>x[0]-y[0]);const lst=[];for(const [n,ab] of found){const key="P"+p+":"+m+":"+n;out.files[key]=ab;lst.push(key);}
       out.pools[p+":"+m]=lst;})));
     out.one={};await Promise.all([...new Set(Object.values(ONEFILE))].map(async f=>{const ab=await tryF([f]);if(ab)out.one[f]=ab;}));
     const pz=Object.entries(out.pools).filter(([,l])=>l.length).map(([q,l])=>poolPath(q[0],q.slice(2))+" ("+l.length+")");
@@ -1568,11 +1593,16 @@ async function initSamples(){
   for(const id in SMP){const s=SMP[id],D=s.D,len=s.raw.duration-smpOffset,fits=(b,n)=>{const L=n*60/b;return len-L>-.04&&len-L<.13;};
     if(!fits(D.bpm,D.beats)){let found=null;
       for(const n of [D.beats,16,32,8,64]){if(found)break;let bestB=null;
-        for(let b=60;b<=200;b++)if(fits(b,n)&&(bestB===null||Math.abs(b-D.bpm)<Math.abs(bestB-D.bpm)))bestB=b;
+        /* plusieurs tempos possibles (le MP3 ajoute un peu de silence) : on préfère un tempo rond (120 plutôt que 119) */
+        const rk=b=>b%10===0?0:b%5===0?1:b%2===0?2:3;
+        for(let b=60;b<=200;b++)if(fits(b,n)&&(bestB===null||rk(b)<rk(bestB)||rk(b)===rk(bestB)&&Math.abs(b-D.bpm)<Math.abs(bestB-D.bpm)))bestB=b;
         if(bestB)found={bpm:bestB,beats:n};}
       if(found){s.D=SAMPLES[id]=Object.assign({},D,found);fixes.push(KFILE(id)+".mp3 : "+found.beats+" temps à "+found.bpm+" BPM");}
       else fixes.push(KFILE(id)+".mp3 dure "+len.toFixed(2)+" s (attendu "+(D.beats*60/D.bpm).toFixed(2)+" s)");}}
-  if(fixes.length){toast("Durée différente de reglages.json → "+fixes.join(" · "),true);console.warn("MP3",fixes);mp3Info+=" · ⚠ "+fixes.join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
+  if(fixes.length>3){const g={};fixes.forEach(f=>{const k=f.split(" : ")[1]||f;g[k]=(g[k]||0)+1;});
+    toast(fixes.length+" MP3 ne correspondent pas à reglages.json → "+Object.entries(g).map(([k,n])=>n+" × "+k).join(" · ")+" (corrigé automatiquement)",true);console.warn("MP3",fixes);
+    mp3Info+=" · ⚠ "+Object.entries(g).map(([k,n])=>n+" × "+k).join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
+  else if(fixes.length){toast("Durée différente de reglages.json → "+fixes.join(" · "),true);console.warn("MP3",fixes);mp3Info+=" · ⚠ "+fixes.join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
   for(const id in SMP){const s=SMP[id];s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm);s.cache[s.D.bpm]=s.base;
     /* volume : chaque boucle est ramenée au niveau des autres sons */
     let ss=0;const d=s.base.getChannelData(0);for(let i=0;i<d.length;i+=4)ss+=d[i]*d[i];const rms=Math.sqrt(ss/(d.length/4))||.1;s.norm=Math.min(1.5,.1/rms);s.g.gain.value=s.norm;
@@ -1667,7 +1697,7 @@ function countTick(b,first){
 const PL={tr:{R:null,B:null,H:null,M:null},spot:null,cyc:0};let ABS=0;
 const sndOf=e=>e.snd||e.id;
 function plReset(){for(const p of PORDER){const c=PL.tr[p];if(c&&c.ref&&SMP[c.ref])stopSample(c.ref);PL.tr[p]=null;}PL.spot=null;PL.cyc=0;}
-function plAdd(e){poolAssign(e.id);}
+function plAdd(e){poolAssign(e.id);if(e.snd)poolAssign(e.snd);}   /* Joker : il prend le son tiré pour la carte de sa tribu sur cette piste */
 function plFind(seq){if(!S)return null;for(const p of PORDER)for(const e of S.stacks[p])if(e.seq===seq)return{p,t:e};return null;}
 function plVisible(){if(!S||S.ended)return[];return PORDER.map(p=>{const t=topOf(p);return t&&!t.hidden&&!isSilent(p)&&t.seq?{p,t}:null;}).filter(Boolean);}
 const plIdle=()=>PORDER.every(p=>!PL.tr[p]);
