@@ -360,6 +360,9 @@ body.mp3t{background:var(--arc-bg);background-image:none}
 body.rope{background:var(--arc-bg);background-image:none}
 #rope{position:relative;min-height:100dvh;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 18px;display:flex;flex-direction:column;gap:10px;font-family:var(--arc-t);color:#fff;max-width:640px;margin:0 auto}
 .rp-log{display:none!important}
+.rp-lat{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;padding:8px;border-radius:12px;border:1px solid rgba(255,255,255,.12);font-size:13px;color:#cfcbe8}
+.rp-lat button{font:inherit;font-size:15px;color:#fff;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);border-radius:10px;padding:6px 14px}
+.rp-lat b{font-family:var(--mono);color:var(--gold);min-width:64px;text-align:center}
 .rp-sim{display:flex;flex-direction:column;gap:10px;margin-top:4px}.rp-sim[hidden]{display:none!important}
 .sim-g{border-radius:14px;padding:8px 10px;border:2px dashed color-mix(in srgb,var(--pc,#fff) 40%,transparent);background:rgba(255,255,255,.03)}
 .sim-g.on{border-style:solid;border-color:var(--pc);box-shadow:0 0 12px color-mix(in srgb,var(--pc) 45%,transparent)}
@@ -632,6 +635,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
   <section class="rp-gauge" id="rpGauge"><div class="rp-cd" id="rpCd"></div></section>
   <section class="rp-tracks" id="rpTracks"></section>
   <section class="rp-sim" id="rpSim" hidden></section>
+  <section class="rp-lat"><span>🎧 Décalage du son</span><button id="latM" aria-label="moins 10 ms">◀</button><b id="latV"></b><button id="latP" aria-label="plus 10 ms">▶</button></section>
   <div class="rp-log" id="rpLog"></div>
   <div class="rp-react" id="rpReact" hidden></div>
   <div class="rp-ban" id="ropeBan" hidden></div>
@@ -642,7 +646,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v75";
+const VERSION="v76";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1204,6 +1208,9 @@ function renderSim(){const el=$("rpSim");if(!el)return;el.hidden=!(S&&S.sim);if(
   h+=`<div class="sim-g act"><h4>⚡ Deck Action <small>une carte = un exemplaire</small></h4><div class="sim-row">${Object.keys(RACT_IDS).map(k=>{const a=RACT[RACT_IDS[k]];
     return card(k,a.n,a.react?"réaction":a.tr?"+"+a.tr:"action",(a.react?"re ":"")+(R.usedA.includes(k)?"used":""),R.usedA.includes(k)?"disabled":"");}).join("")}</div></div>`;
   el.innerHTML=h;}
+/* décalage du son réglable pendant la partie (enregistré, appliqué tout de suite) */
+function latSet(v){USERLAT=Math.max(0,Math.min(700,Math.round(+v||0)));try{localStorage.setItem("ts-lat",USERLAT);}catch(e){}const e=$("latV");if(e)e.textContent=USERLAT+" ms";}
+$("latM").onclick=()=>latSet(USERLAT-10);$("latP").onclick=()=>latSet(USERLAT+10);
 $("rpSim").onclick=e=>{const b=e.target.closest("button[data-id]");if(!b||b.disabled||!S||!S.sim)return;startAudio();seen[b.dataset.id]=0;onCode("BOUCLE:"+b.dataset.id);};
 /* ============ Test des MP3 : écouter les boucles des dossiers, une par piste, ensemble et calées comme en partie ============ */
 function setMp3(on){document.body.classList.toggle("mp3t",!!on);$("mp3t").hidden=!on;}
@@ -1302,7 +1309,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
       <div class="rp-card"><span class="rp-star">${t.sab?0:v[0]*(fin?2:1)*(R.projo[p]?2:1)}</span><span class="rp-gl">${DECKS[CARDS[t.id].deck].glyph}</span></div><div class="rp-own" style="color:${o.color}">${esc(o.name)}</div></div>`;}).join("");
   $("rpLog").innerHTML=(R.log||"Scanne une carte.")+(S.ended?"":`<small class="rp-hint">${R.actUsed?"Action jouée ce tour":"Action possible avant ta carte"} · fin de tour : pioche ton deck <b>ou</b> une Action · carte recouverte : sous le deck de son propriétaire</small>`);
   $("undoBtnR").disabled=!undoStack.length;
-  renderSim();$("rpTitle").textContent=S.sim?"🧪 ESSAI":"🪢 LA CORDE";
+  renderSim();$("latV").textContent=USERLAT+" ms";$("rpTitle").textContent=S.sim?"🧪 ESSAI":"🪢 LA CORDE";
 }
 function creak(lv){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02,n=2+Math.round(lv*3);
   for(let j=0;j<n;j++){const s=ctx.createBufferSource();s.buffer=noiseBuf();const f=bq("bandpass",300+lv*500+Math.random()*200,18),g=ctx.createGain(),tt=t+j*(.07+Math.random()*.05);
