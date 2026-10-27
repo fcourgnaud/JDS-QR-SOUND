@@ -128,6 +128,7 @@ body.arcade{background:var(--arc-bg);background-image:none}
 /* annonce de fin de manche */
 .arc-ann{position:fixed;inset:0;z-index:14;display:flex;align-items:center;justify-content:center;background:rgba(7,6,26,.78);pointer-events:none;animation:cmIn .3s ease-out}
 .arc-ann[hidden]{display:none}
+#ropeAnn{cursor:pointer;pointer-events:auto}
 .ann-box{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;animation:annBox .6s cubic-bezier(.2,1.5,.4,1)}
 @keyframes annBox{from{transform:scale(.4) rotate(-6deg);opacity:0}}
 .ann-k{font-family:var(--arc-d);font-size:15px;letter-spacing:.12em;color:var(--neon2);text-shadow:0 0 10px var(--neon2)}
@@ -486,6 +487,9 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 #rpKnot.beat{animation:rpknot .32s ease-out}#rpKnot.beat.last{animation:rpknot2 .45s ease-out}
 @keyframes rpknot{0%{transform:scale(1.9);filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px var(--gold));stroke:var(--gold)}100%{transform:scale(1);filter:none}}
 @keyframes rpknot2{0%{transform:scale(2.5);filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 3px var(--gold));stroke:#fff}100%{transform:scale(1);filter:none}}
+.rp-kn{font-family:var(--arc-d);font-size:1.8px;text-anchor:middle;fill:var(--gold);paint-order:stroke;stroke:#2a1a00;stroke-width:.32;pointer-events:none;opacity:0;transform-box:fill-box;transform-origin:center}
+.rp-kn.go{animation:rpkn .48s ease-out forwards}
+@keyframes rpkn{0%{opacity:1;transform:scale(1.5)}70%{opacity:1;transform:scale(1)}100%{opacity:0}}
 .rp-ring{fill:none;stroke:var(--gold);stroke-width:.35;transform-box:fill-box;transform-origin:center;opacity:0}
 .rp-ring.go{animation:rpring .5s ease-out}
 @keyframes rpring{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(3.4)}}
@@ -583,7 +587,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
     <h3>Actions</h3>
     <ul><li><b>Mute</b> : la piste touchée ne marque pas à la prochaine mesure.</li><li><b>Drop</b> : la prochaine mesure compte double, puis les cartes recouvertes sont défaussées.</li><li><b>Tonalité</b> : la carte de la piste touchée vaut +2 à la prochaine mesure.</li></ul>
     <h3>La musique</h3>
-    <p><b>Toutes les boucles jouent ensemble</b>, calées sur un cycle de 4 mesures : une carte posée démarre au début du cycle suivant, et l'ancienne boucle de la piste continue jusque-là. En mode La Corde, une piste est en vedette à chaque cycle (A, B, C, D à tour de rôle) : elle sonne un peu plus fort et s'illumine. (Ancienne règle, désactivée : Quand une carte est posée, l'app finit la boucle en cours puis lance la nouvelle. Ensuite elle joue les pistes l'une après l'autre, toujours dans l'ordre A, B, C, D (Rythme, Basse, Harmonie, Mélodie), en repartant de la piste qui suit : une carte posée en Basse joue, puis Harmonie, Mélodie, Rythme, Basse… jusqu'à la prochaine carte posée. Les pistes vides ou coupées par un Mute sont sautées. La pile qui joue s'illumine.</p>
+    <p><b>Toutes les boucles jouent ensemble</b>, calées sur un cycle de 4 mesures : une carte posée démarre au début du cycle suivant, et l'ancienne boucle de la piste continue jusque-là. Toutes les pistes qui jouent s'allument ensemble. (Ancienne règle, désactivée : Quand une carte est posée, l'app finit la boucle en cours puis lance la nouvelle. Ensuite elle joue les pistes l'une après l'autre, toujours dans l'ordre A, B, C, D (Rythme, Basse, Harmonie, Mélodie), en repartant de la piste qui suit : une carte posée en Basse joue, puis Harmonie, Mélodie, Rythme, Basse… jusqu'à la prochaine carte posée. Les pistes vides ou coupées par un Mute sont sautées. La pile qui joue s'illumine.</p>
     <h3>Tes propres sons (MP3)</h3>
     <p><b>Pioches au hasard</b> : un dossier par piste, avec deux sous-dossiers : <b>sons/Arythme/rythme-calme</b> et <b>rythme-fort</b>, <b>sons/Bbasse/basse-calme</b> et <b>basse-fort</b>, <b>sons/Charmonie/harmonie-calme</b> et <b>harmonie-fort</b>, <b>sons/Dmélodie/mélodie-calme</b> et <b>mélodie-fort</b>. Les fichiers sont numérotés sans trou : 1.mp3, 2.mp3, 3.mp3… Au premier scan d'une carte, l'app lui tire un son au hasard dans son sous-dossier et le retire de la pioche : aucune autre carte ne peut l'avoir. La carte le garde jusqu'à la fin de la partie, et tout est retiré au sort à la partie suivante. La carte « forte » d'une piste est celle des deux qui tire le plus la corde (traction), l'autre est « calme ». Si un sous-dossier est vide ou épuisé, la carte utilise son son fixe ci-dessous.</p>
     <p>Dépose les fichiers dans le dossier <b>sons</b> du site. <b>Un fichier par carte</b> : la lettre de la piste (A Rythme, B Basse, C Harmonie, D Mélodie), « tribu », le numéro de la tribu, puis <b>-1</b> ou <b>-2</b> pour la carte, par exemple <b>sons/Btribu1-1.mp3</b> et <b>sons/Btribu1-2.mp3</b> pour les deux Basses de la Tribu 1. Joker : <b>Jtribu1.mp3</b>. Sans fichier pour une carte, l'app prend le fichier commun de la piste (<b>Btribu1.mp3</b>), sinon le son synthétisé. Les noms exacts sont dans l'onglet « Sons des decks ». Les boucles font 4 mesures de 4 temps, au tempo et dans la tonalité de <b>sons/reglages.json</b>. Sons ponctuels : <b>Action-Elan</b>, <b>Action-CoupDeReins</b>, <b>Action-Cadenas</b>, <b>Action-Projecteur</b>, <b>Action-Coupure</b>, <b>Action-Sabotage</b>, <b>Action-Mute</b>, <b>Action-Larsen</b>, <b>Action-Drop</b>, <b>Action-Tonalite</b>, <b>Objectif</b>.</p>
@@ -594,7 +598,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
     <li><b>Surenchère</b> (cartes marquées) : si elle recouvre une carte adverse qui vaut moins de points, elle tire +1.</li>
     <li>Joker : traction pure +6, 0 point, il ne se pose pas.</li>
     <li><b>Deck Action</b> (15 cartes communes : Élan ×3, Coup de reins ×2, Cadenas ×3, Projecteur ×2, Coupure ×3, Sabotage ×2). À la fin de ton tour, pioche dans ton deck <b>ou</b> une carte Action. Une carte recouverte retourne sous le deck de son propriétaire.</li>
-    <li>Pendant ton tour, <b>avant ta carte</b>, tu peux jouer une Action (une seule, +1 point) : Élan (traction +4), Coup de reins (+6), Cadenas (verrouille ta dernière carte posée), Projecteur (la piste en vedette marque double à cette fin de manche).</li>
+    <li>Pendant ton tour, <b>avant ta carte</b>, tu peux jouer une Action (une seule, +1 point) : Élan (traction +4), Coup de reins (+6), Cadenas (verrouille ta dernière carte posée), Projecteur (la carte que tu poses ce tour marque double à cette fin de manche).</li>
     <li><b>Réactions</b>, jouées par un adversaire juste après la pose d'une carte : Coupure (la carte est annulée, retourne sous le deck de son propriétaire, la corde revient en arrière) et Sabotage (la carte ne marque pas à cette fin de manche et la corde s'éloigne de 2 de son propriétaire). Après la dernière carte d'une manche, il reste 4 secondes pour réagir.</li>
     <li><b>Fin de manche</b> (jauge des tours pleine) : chacun marque ses cartes visibles ; +3 pour le camp de la corde ; <b>Chœur</b> : +3 si tu tiens au moins 3 pistes. La corde recule d'un quart vers le centre et les verrous sautent.</li>
     <li><b>Ordre</b> : à la manche suivante, le joueur en tête au score joue en premier, le dernier au score joue en dernier.</li>
@@ -646,7 +650,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v76";
+const VERSION="v77";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -832,7 +836,10 @@ function drawStart(){
     el.classList.remove("rb-tick","rb-win");void el.offsetWidth;el.classList.add(final?"rb-win":"rb-tick");
     if(final&&ctx){const tt=ctx.currentTime;beepT(784,tt,.1,.1,"triangle");beepT(1175,tt+.1,.1,.1,"triangle");beepT(1568,tt+.2,.22,.1,"triangle");}}
 }
-function setup(){stopEverything();S=null;RWAIT=null;setRope(false);setMp3(false);   /* plus aucune partie en mémoire : rien ne rejoue en fond */
+let WAKE=null;
+function wakeOn(){try{if(navigator.wakeLock&&!WAKE)navigator.wakeLock.request("screen").then(w=>{WAKE=w;w.addEventListener("release",()=>{WAKE=null;});}).catch(()=>{});}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S&&S.rope&&!S.ended)wakeOn();});
+function setup(){stopEverything();try{if(WAKE)WAKE.release();}catch(e){}S=null;RWAIT=null;setRope(false);setMp3(false);   /* plus aucune partie en mémoire : rien ne rejoue en fond */
   let n=2;const pls=[{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"},{name:"Joueur 3",deck:"E"},{name:"Joueur 4",deck:"S"}];
   const save=()=>{for(let i=0;i<n;i++){const e=$("pn"+i);if(e)pls[i].name=e.value;}};
   const draw=()=>{if(modeChoice!=="corde"&&n>3)n=3;
@@ -971,7 +978,7 @@ for(const k in OBJ)CARDS[k]={id:k,kind:"obj"};
    - jouées en RÉACTION par un adversaire sur la carte qui vient d'être posée (pas de point) : Coupure, Sabotage. */
 const RACT={ELAN:{n:"Élan",tr:4,d:"Tire la corde vers toi de 4."},REINS:{n:"Coup de reins",tr:6,d:"Tire la corde vers toi de 6."},
   CADENAS:{n:"Cadenas",d:"Verrouille ta dernière carte posée jusqu'à la fin de la manche."},
-  PROJO:{n:"Projecteur",d:"La piste en vedette (mise en avant par l'app à chaque cycle) marque double à cette fin de manche."},
+  PROJO:{n:"Projecteur",d:"La carte que tu poses ce tour marque double à cette fin de manche (perdu si elle est recouverte)."},
   COUPURE:{n:"Coupure",react:true,d:"Réaction : annule la carte qui vient d'être posée. Elle retourne sous le deck de son propriétaire et la corde revient en arrière."},
   SABOT:{n:"Sabotage",react:true,d:"Réaction : la carte qui vient d'être posée ne marque pas à cette fin de manche, et la corde s'éloigne de 2 de son propriétaire."}};
 const RACT_IDS={A01:"ELAN",A02:"ELAN",A03:"ELAN",A04:"REINS",A05:"REINS",A06:"CADENAS",A07:"CADENAS",A08:"CADENAS",
@@ -991,7 +998,7 @@ function startRope(players,sim){
     actUsed:false,lastPlace:null,lastBy:players.map(()=>null),projo:{},closing:false,usedA:[]};
   if(n===2)rPull(first,ROPE.START2);
   S.bpm=S.rope.baseBpm;S.turn=first;undoStack=[];picking=null;pending=null;plReset();poolReset();
-  S.sim=!!sim;setArcade(false);setRope(true);$("layer").innerHTML="";startAudio();if(!S.sim)startCamera();
+  S.sim=!!sim;wakeOn();setArcade(false);setRope(true);$("layer").innerHTML="";startAudio();if(!S.sim)startCamera();
   S.rope.log=`🎲 ${esc(S.players[first].name)} commence`;render();
   if(S.rope.objOn)ropeObjRound(0);else ropeStartAnn();}
 function ropeStartAnn(){const first=S.rope.order[0];
@@ -1059,6 +1066,7 @@ function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope;
     snap();const prev=topOf(p),e={id:c.id,owner:me,hidden:false,tempoDone:true,seq:++S.seqN},before={br:R.br,d:R.d};
     const cover=prev&&prev.owner!==me,sur=cover&&SUR.has(c.id)&&RV[prev.id][0]<v[0];
     S.stacks[p].push(e);S.last=p;plAdd(e);
+    delete R.projo[p];if(R.projoNext===me){R.projo[p]=true;R.projoNext=null;}   /* Projecteur : seulement la carte posée ce tour, perdu si elle est recouverte */
     const st=R.st[me];if(cover)st.covers++;if(sur)st.sur++;if(!st.tracks.includes(p))st.tracks.push(p);
     const pull=v[1]+(sur?1:0);rPull(me,pull);const lk=rCamp()===me;if(lk){R.locks[p]=me;st.locks++;}
     R.lastPlace={p,seq:e.seq,owner:me,before,cover,sur,lk};R.lastBy[me]=p;
@@ -1101,9 +1109,7 @@ function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;const _snd=()=>pla
     if(!t||t.owner!==me){toast("Cadenas : ta dernière carte posée n'est plus sur le dessus",true);return;}
     if(R.locks[p]!==undefined){toast("Cadenas : cette carte est déjà verrouillée",true);return;}
     snap();R.locks[p]=me;R.st[me].locks++;R.log=`🔒 ${esc(p0.name)} verrouille sa ${PISTES[p]} (Cadenas)`;}
-  else if(c.act==="PROJO"){const p=PL.spot;
-    if(!p){toast("Projecteur : aucune piste n'est en vedette pour l'instant",true);return;}
-    snap();R.projo[p]=true;R.log=`🔦 PROJECTEUR sur ${PISTES[p]} : elle marque double à cette fin de manche`;ropeBanner("🔦 PROJECTEUR",`${PISTES[p]} marque double`,p0.color);}
+  else if(c.act==="PROJO"){snap();R.projoNext=me;R.log=`🔦 PROJECTEUR : la carte que ${esc(p0.name)} pose ce tour marquera double`;ropeBanner("🔦 PROJECTEUR",`la prochaine carte de ${esc(p0.name)} marque double`,p0.color);}
   else{snap();rPull(me,a.tr);creak(.3+a.tr/10);R.log=`${esc(p0.name)} : ${a.n}, tire de ${a.tr}`;}
   R.usedA.push(c.id);R.actUsed=true;p0.score+=1;R.log+=" · +1 point";_snd();render();}
 function ropeNextTurn(){const R=S.rope;R.played.push(S.turn);R.actUsed=false;
@@ -1113,11 +1119,12 @@ function ropeNextTurn(){const R=S.rope;R.played.push(S.turn);R.actUsed=false;
   S.turn=R.order[R.played.length];render();ropeAskObj();}
 /* fenêtre de réaction après la dernière carte de la manche : 10 s, ou bouton « Pas de réaction » ; une réaction jouée la referme 2 s plus tard */
 function ropeReactWindow(){const el=$("rpReact");if(!el)return;const t0=Date.now(),me=S;el.hidden=false;let end=t0+ROPE_REACT_MS;
-  const close=()=>{if(RREACT!==tk)return;RREACT=null;el.hidden=true;if(S!==me||!S.rope)return;S.rope.closing=false;ropeRound();};
+  const close=()=>{if(RREACT!==tk)return;RREACT=null;el.hidden=true;el.onclick=null;if(S!==me||!S.rope)return;S.rope.closing=false;ropeRound();};
   const tk={hurry(){end=Math.min(end,Date.now()+2000);},close};RREACT=tk;
   el.classList.add("full");
   el.innerHTML=`<span class="rr-k">FIN DE MANCHE</span><div class="rr-q">Dernière carte : <b>Coupure</b> ou <b>Sabotage</b> ?</div><b class="rr-num" id="rrN"></b><div class="rr-bar"><i id="rrBar"></i></div><button class="btn" id="rrSkip">Pas de réaction ▶</button>`;
-  $("rrSkip").onclick=()=>close();
+  $("rrSkip").onclick=e=>{e.stopPropagation();close();};
+  el.onclick=e=>{if(e.target.closest("button"))return;if(Date.now()-t0>400)close();};   /* toucher l'écran = pas de réaction */
   (function tick(){if(RREACT!==tk)return;const k=Math.max(0,end-Date.now()),n=$("rrN"),b=$("rrBar");
     if(n){const v=Math.ceil(k/1000);if(n.textContent!==String(v)){n.textContent=v;n.classList.toggle("gold",v<=3);}}if(b)b.style.width=(k/ROPE_REACT_MS*100)+"%";
     if($("sabWho")){end+=200;}   /* le saboteur se désigne : on attend */
@@ -1134,7 +1141,7 @@ function ropeRound(){if(!S||!S.rope||S.ended)return;if($("sabWho"))return setTim
   S.players.forEach((p,i)=>p.score+=gains[i]);
   if(fin){R.finalCamp=camp;R.endTops=tops;const mx=Math.max(...gains);R.lastBest=gains.filter(g=>g===mx).length===1?gains.indexOf(mx):null;return ropeFinal(gains,notes);}
   /* la pente : la corde recule de moitié ; nouvel ordre ; verrous levés */
-  R.projo={};R.lastPlace=null;R.actUsed=false;
+  R.projo={};R.projoNext=null;R.lastPlace=null;R.actUsed=false;
   R.order=ropeOrder();R.d=+(R.d*ROPE.PENTE).toFixed(3);rSync();R.locks={};R.played=[];R.round++;S.turn=R.order[0];
   if(isFinal())S.bpm=R.baseBpm+ROPE.FINAL_BPM;
   R.log=`Manche ${R.round} : ${esc(S.players[S.turn].name)} commence (en tête au score)`;render();cheer();
@@ -1167,7 +1174,9 @@ function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
   $("layer").querySelector(".fin-ov").appendChild(fx);}
 /* modale de manche : volume à 20 %, ouverte 5 secondes, on ne joue pas pendant ce temps */
 function ropeModal(html,ms,after,noDuck){const el=$("ropeAnn");el.innerHTML=`<div class="ann-box">${html}</div>`;el.hidden=false;pending={modal:true};
-  clearTimeout(ropeModal.t);ropeModal.t=setTimeout(()=>{el.hidden=true;if(pending&&pending.modal)pending=null;render();if(after)after();else ropeAskObj();},ms);}
+  const done=()=>{clearTimeout(ropeModal.t);el.onclick=null;if(el.hidden)return;el.hidden=true;if(pending&&pending.modal)pending=null;render();if(after)after();};
+  clearTimeout(ropeModal.t);ropeModal.t=setTimeout(done,ms);
+  setTimeout(()=>{el.onclick=done;},350);}   /* un clic sur l'écran le ferme (après un court instant, pour éviter un double clic) */
 function duck(on){if(!ctx||!window.__masterOut)return;const g=window.__masterOut.gain,t=ctx.currentTime;g.cancelScheduledValues(t);g.setTargetAtTime(typeof on==="number"?.9*on:on?.9*ROPE.DUCK:.9,t,.15);}
 /* Sabotage à 3-4 joueurs quand la corde repasse le centre : elle part vers le saboteur, qui se désigne */
 function sabWho(L,o){const R=S.rope,keep=pending;pending={sab:true};
@@ -1194,7 +1203,7 @@ function ropeAnimate(){if(RANIM)return;let last=performance.now();
       else{/* mauvaise branche : on redescend vers le centre */
         if(RVIEW.d<=step){step-=RVIEW.d;RVIEW.d=0;RVIEW.br=R.br===null?null:R.br;if(R.br===null)step=0;}else{RVIEW.d-=step;step=0;}}}
     if(RVIEW.d<=0&&R.br===null)RVIEW.br=null;
-    const p=ropeXY(RVIEW.br,RVIEW.d),k=$("rpKnot"),l=$("rpPullL");if(k){k.setAttribute("cx",p.x);k.setAttribute("cy",p.y);}const rg=$("rpRing");if(rg){rg.setAttribute("cx",p.x);rg.setAttribute("cy",p.y);}if(l){l.setAttribute("x2",p.x);l.setAttribute("y2",p.y);}
+    const p=ropeXY(RVIEW.br,RVIEW.d),k=$("rpKnot"),l=$("rpPullL");if(k){k.setAttribute("cx",p.x);k.setAttribute("cy",p.y);}const rg=$("rpRing");if(rg){rg.setAttribute("cx",p.x);rg.setAttribute("cy",p.y);}const kn=$("rpKnotN");if(kn){kn.setAttribute("x",p.x);kn.setAttribute("y",(p.y+.62).toFixed(3));}if(l){l.setAttribute("x2",p.x);l.setAttribute("y2",p.y);}
     if(RVIEW.br===R.br&&Math.abs(RVIEW.d-R.d)<1e-6||R.br===null&&RVIEW.d<=0){RANIM=0;return;}
     RANIM=requestAnimationFrame(f);})(last);}
 let LKSEEN={S:null,k:new Set()};
@@ -1219,7 +1228,7 @@ function startMp3Test(){calStop();plReset();poolReset();
   setArcade(false);setRope(false);setMp3(true);$("layer").innerHTML="";startAudio();render();}
 function mtToggle(p,key){const top=topOf(p);
   if(top&&top.snd===key){S.stacks[p]=[];}
-  else{SNDKEY[key]=key;S.stacks[p]=[{id:p+"F2",snd:key,owner:0,seq:++S.seqN,hidden:false,tempoDone:true}];}
+  else{SNDKEY[key]=key;ensureSample(key);S.stacks[p]=[{id:p+"F2",snd:key,owner:0,seq:++S.seqN,hidden:false,tempoDone:true}];}
   render();}
 function renderMp3(){$("mtBpm").textContent="♩ "+Math.round(S.bpm)+" BPM";
   const fixed=Object.keys(SAMPLES).filter(k=>!(k[0]==="P"&&k[2]===":"));
@@ -1236,7 +1245,7 @@ document.querySelector(".mt-tempo").onclick=e=>{const b=e.target.closest("button
 /* ============ Fond de la corde : ondes sonores dans la brume ============
    Brume : grandes nappes floues qui dérivent lentement et s'éclairent sur les coups de basse.
    Ondes : la forme d'onde de la musique, lissée, en trois lignes lumineuses superposées. Couleur du joueur actif. */
-let SPC=null,SPRAF=0,SPLAST=0,SPBASS=0,SPAVG=0,SPEN=0,SPT=0;
+let SPC=null,SPRAF=0,SPLAST=0,SPBASS=0,SPAVG=0,SPEN=0,SPT=0,SPF=null,SPTD=null;
 function spiralCanvas(){if(!SPC){SPC=document.createElement("canvas");SPC.className="rp-spiral";}return SPC;}
 function spiralStart(){if(!SPRAF)SPRAF=requestAnimationFrame(spiralFrame);}
 function spiralFrame(now){SPRAF=0;
@@ -1247,8 +1256,8 @@ function spiralFrame(now){SPRAF=0;
   if(SPC.width!==W||SPC.height!==H){SPC.width=W;SPC.height=H;}
   const c=SPC.getContext("2d");c.clearRect(0,0,W,H);
   let bass=0,mid=0,T=null;const A=window.__ana;
-  if(A&&soundOn){const F=new Uint8Array(A.frequencyBinCount);A.getByteFrequencyData(F);for(let k=1;k<6;k++)bass+=F[k];bass/=5*255;for(let k=6;k<60;k++)mid+=F[k];mid/=54*255;
-    T=new Uint8Array(A.fftSize);A.getByteTimeDomainData(T);}
+  if(A&&soundOn){const F=SPF&&SPF.length===A.frequencyBinCount?SPF:(SPF=new Uint8Array(A.frequencyBinCount));A.getByteFrequencyData(F);for(let k=1;k<6;k++)bass+=F[k];bass/=5*255;for(let k=6;k<60;k++)mid+=F[k];mid/=54*255;
+    T=SPTD&&SPTD.length===A.fftSize?SPTD:(SPTD=new Uint8Array(A.fftSize));A.getByteTimeDomainData(T);}
   SPAVG+=(bass-SPAVG)*.03;const kick=Math.max(0,Math.min(1,(bass-SPAVG)*6));SPBASS+=(kick-SPBASS)*(kick>SPBASS?.6:.08);SPEN+=((bass+mid)/2-SPEN)*.05;
   SPT+=dt*(.35+SPEN*.6);
   const col=S.players[S.turn].color;
@@ -1292,7 +1301,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
 ;}).join("");
   const bonTxt=C.map((q,i)=>`<text x="${q.x}" y="${(q.y+cr*.36).toFixed(3)}" class="rp-bon${camp===i?" on":""}" style="font-size:${(cr*.95).toFixed(2)}px">${bon}</text>`).join("");
   const V=ropeViewPos();
-  g+=`<line id="rpPullL" x1="0" y1="0" x2="${V.x}" y2="${V.y}" class="rp-pull" stroke="${col}"/><circle id="rpRing" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-ring"/><circle id="rpKnot" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-knot" fill="${col}"/>`+bonTxt;
+  g+=`<line id="rpPullL" x1="0" y1="0" x2="${V.x}" y2="${V.y}" class="rp-pull" stroke="${col}"/><circle id="rpRing" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-ring"/><circle id="rpKnot" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-knot" fill="${col}"/><text id="rpKnotN" x="${V.x}" y="${(V.y+.62).toFixed(3)}" class="rp-kn"></text>`+bonTxt;
   const vb=n===2?"-11.9 -2.4 23.8 6.2":n===3?"-11.6 -11.9 23.2 18.8":"-9.4 -9.4 18.8 18.8";
   $("rpGauge").style.setProperty("--pc",pl.color);$("rpGauge").classList.toggle("act",!S.ended);
   $("rpBpm").textContent="♩ "+Math.round(S.bpm)+" BPM";
@@ -1301,7 +1310,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
   ropeAnimate();
   const LKN=new Set(PORDER.filter(p=>R.locks[p]!==undefined&&!(LKSEEN.S===S&&LKSEEN.k.has(p+":"+R.round))));
   LKSEEN={S,k:new Set(PORDER.filter(p=>R.locks[p]!==undefined).map(p=>p+":"+R.round))};
-  $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),now=PL.spot===p&&t&&plIsPlaying(t.seq),lk=R.locks[p]!==undefined;
+  $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),now=!!(t&&plIsPlaying(t.seq)),lk=R.locks[p]!==undefined;
     const hd=`<div class="rp-h"><b class="rp-L">${FLET[p]}</b>${now?'<span class="rp-now">♪</span>':""}${R.projo[p]?'<span>🔦</span>':""}${t&&t.sab?'<span>🚫</span>':""}</div><div class="rp-pn">${PISTES[p]}</div>`;
     if(!t)return `<div class="rp-tr empty">${hd}<div class="rp-empty">libre</div></div>`;
     const o=S.players[t.owner],v=RV[t.id];
@@ -1802,9 +1811,9 @@ const poolPath=(p,m)=>FOLD[p][0]+"/"+FOLD[p][1]+"-"+m;
 function moodOf(id){const o=id.slice(0,2)+(id[2]==="2"?"4":"2");const a=(typeof RV!=="undefined"&&RV[id])?RV[id][1]:0,b=(typeof RV!=="undefined"&&RV[o])?RV[o][1]:0;return a>b?"fort":"calme";}
 function poolReset(){ASSIGN={};POOLUSED=new Set();}
 function poolAssign(id){const c=CARDS[id];if(!c||c.kind!=="inst"||c.joker||ASSIGN[id])return;
-  const keys=(POOL[c.piste+":"+moodOf(id)]||[]).filter(k=>!POOLUSED.has(k)&&SMP[k]&&SMP[k].ready);
+  const keys=(POOL[c.piste+":"+moodOf(id)]||[]).filter(k=>!POOLUSED.has(k)&&SMP[k]);
   if(!keys.length)return;   /* pioche vide : la carte garde son son fixe (Btribu1-1.mp3, fichier commun ou son synthétisé) */
-  const k=keys[Math.floor(Math.random()*keys.length)];POOLUSED.add(k);ASSIGN[id]=k;}
+  const k=keys[Math.floor(Math.random()*keys.length)];POOLUSED.add(k);ASSIGN[id]=k;ensureSample(k);}
 const FLET={R:"A",B:"B",H:"C",M:"D",J:"J"},FNUM={F:1,N:2,E:3,S:4};
 const FNAME=ref=>FLET[ref[0]]+"tribu"+FNUM[ref[1]];
 const CFILE=id=>id[0]==="J"?"Jtribu"+FNUM[id[1]]:FLET[id[0]]+"tribu"+FNUM[id[1]]+"-"+(id[2]==="2"?1:2);
@@ -1821,7 +1830,13 @@ async function getFile(url){try{const r=await fetch(url,{cache:"no-cache"});retu
 /* les fichiers sont téléchargés dès l'ouverture de la page ; le décodage se fait au lancement (il faut l'audio) */
 let PRE=null,mp3Info="";
 /* liste des fichiers du dépôt GitHub qui héberge la page (une seule requête, sans compte) ; null si indisponible */
-async function listRepo(){try{const h=location.hostname;if(!/\.github\.io$/i.test(h))return null;const owner=h.split(".")[0];
+async function listRepo(){
+  let cached=null;try{cached=JSON.parse(localStorage.getItem("ts-tree")||"null");}catch(e){}
+  if(cached&&Date.now()-cached.t<20*60e3&&Array.isArray(cached.list))return cached.list;
+  const fresh=await listRepoNet();
+  if(fresh){try{localStorage.setItem("ts-tree",JSON.stringify({t:Date.now(),list:fresh}));}catch(e){}return fresh;}
+  return cached&&Array.isArray(cached.list)?cached.list:null;}
+async function listRepoNet(){try{const h=location.hostname;if(!/\.github\.io$/i.test(h))return null;const owner=h.split(".")[0];
     const seg=location.pathname.split("/").filter(Boolean);const repo=seg.length&&!/\.html?$/i.test(seg[0])?seg[0]:owner+".github.io";
     for(const br of ["HEAD","main","master"]){const r=await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/git/trees/"+br+"?recursive=1");
       if(!r.ok)continue;const j=await r.json();if(!j.tree)continue;
@@ -1877,41 +1892,55 @@ async function initSamples(){
   while(SAMPLE_PROG.split(" ").length<4)SAMPLE_PROG+=" "+SAMPLE_PROG.split(" ")[0];
   for(const q in (pre.pools||{}))POOL[q]=pre.pools[q];
   await Promise.all(Object.keys(pre.one||{}).map(async f=>{try{ONE[f]=await decode(pre.one[f].slice(0));}catch(e){}}));
-  await Promise.all(Object.keys(pre.files).map(async id=>{
-    try{const raw=await decode(pre.files[id].slice(0));const c=id[0]==="P"&&id[2]===":"?{piste:id[1]}:CARDS[id]||CARDS[Object.keys(CARDS).find(i=>i.slice(0,2)===id)];
-      SAMPLES[id]={piste:c.joker?"M":c.piste,bpm:+SET.bpm||100,beats:+SET.temps||16,tonal:c.piste!=="R"};
-      const g=ctx.createGain();SMP[id]={D:SAMPLES[id],g,raw,ready:false,playing:false,cache:{}};}catch(e){console.error(id,e);toast("sons/"+KFILE(id)+".mp3 n'a pas pu être lu",true);}}));
+  /* Mémoire : un MP3 décodé pèse ~3 Mo (8 s stéréo). On ne décode tout de suite qu'un échantillon pour l'analyse (silence d'encodeur, calage des temps)
+     et les fichiers fixes ; les sons des pioches sont décodés au moment où une carte les tire (quelques dizaines de ms). */
+  const isPool=id=>id[0]==="P"&&id[2]===":";
+  for(const id of Object.keys(pre.files)){const c=isPool(id)?{piste:id[1]}:CARDS[id]||CARDS[Object.keys(CARDS).find(i=>i.slice(0,2)===id)];
+    SAMPLES[id]={piste:c.joker?"M":c.piste,bpm:+SET.bpm||100,beats:+SET.temps||16,tonal:c.piste!=="R"};
+    SMP[id]={D:SAMPLES[id],g:ctx.createGain(),ab:pre.files[id],raw:null,ready:false,playing:false,cache:{}};}
+  const pools=Object.keys(SMP).filter(isPool),first=[...Object.keys(SMP).filter(id=>!isPool(id)),...pools.filter(k=>k[1]==="R").slice(0,10),...pools.filter(k=>k[1]!=="R").slice(0,6)];
+  await Promise.all(first.map(async id=>{try{SMP[id].raw=await decode(SMP[id].ab.slice(0));}catch(e){console.error(id,e);}}));
+  const an=first.filter(id=>SMP[id].raw);
   /* silence ajouté par l'encodeur MP3 au début : le plus petit décalage trouvé, commun à des boucles exportées ensemble */
   smpOffset=0;let best=Infinity;
-  for(const id in SMP){const d=SMP[id].raw.getChannelData(0),sr=SMP[id].raw.sampleRate,lim=Math.min(d.length,sr*.08);
+  for(const id of an){const d=SMP[id].raw.getChannelData(0),sr=SMP[id].raw.sampleRate,lim=Math.min(d.length,sr*.08);
     for(let i=0;i<lim;i++)if(Math.abs(d[i])>.01){best=Math.min(best,i/sr);break;}}
   best=Math.min(best,.03);   /* le silence d'encodeur ne dépasse pas ~30 ms : au-delà, c'est un silence voulu dans la boucle */
   if(isFinite(best))smpOffset=best;
   /* contrôle de la durée : si un fichier ne fait pas la durée prévue par reglages.json, on retrouve son tempo (et son nombre de temps)
      d'après sa durée, sinon il se décalerait de la grille et laisserait un blanc à chaque tour */
-  const fixes=[];
-  for(const id in SMP){const s=SMP[id],D=s.D,len=s.raw.duration-smpOffset,fits=(b,n)=>{const L=n*60/b;return len-L>-.04&&len-L<.13;};
-    if(!fits(D.bpm,D.beats)){let found=null;
-      for(const n of [D.beats,16,32,8,64]){if(found)break;let bestB=null;
-        /* plusieurs tempos possibles (le MP3 ajoute un peu de silence) : on préfère un tempo rond (120 plutôt que 119) */
-        const rk=b=>b%10===0?0:b%5===0?1:b%2===0?2:3;
-        for(let b=60;b<=200;b++)if(fits(b,n)&&(bestB===null||rk(b)<rk(bestB)||rk(b)===rk(bestB)&&Math.abs(b-D.bpm)<Math.abs(bestB-D.bpm)))bestB=b;
-        if(bestB)found={bpm:bestB,beats:n};}
-      if(found){s.D=SAMPLES[id]=Object.assign({},D,found);fixes.push(KFILE(id)+".mp3 : "+found.beats+" temps à "+found.bpm+" BPM");}
-      else fixes.push(KFILE(id)+".mp3 dure "+len.toFixed(2)+" s (attendu "+(D.beats*60/D.bpm).toFixed(2)+" s)");}}
+  const fixes=[];for(const id of an){const f=fitDur(id);if(f)fixes.push(f);}
   if(fixes.length>3){const g={};fixes.forEach(f=>{const k=f.split(" : ")[1]||f;g[k]=(g[k]||0)+1;});
     toast(fixes.length+" MP3 ne correspondent pas à reglages.json → "+Object.entries(g).map(([k,n])=>n+" × "+k).join(" · ")+" (corrigé automatiquement)",true);console.warn("MP3",fixes);
     mp3Info+=" · ⚠ "+Object.entries(g).map(([k,n])=>n+" × "+k).join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
   else if(fixes.length){toast("Durée différente de reglages.json → "+fixes.join(" · "),true);console.warn("MP3",fixes);mp3Info+=" · ⚠ "+fixes.join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
-  GRIDFRAC=gridPhase();
-  for(const id in SMP){const s=SMP[id];s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm,GRIDFRAC*60/s.D.bpm);s.cache[s.D.bpm]=s.base;
-    /* volume : chaque boucle est ramenée au niveau des autres sons */
-    let ss=0;const d=s.base.getChannelData(0);for(let i=0;i<d.length;i+=4)ss+=d[i]*d[i];const rms=Math.sqrt(ss/(d.length/4))||.1;s.norm=Math.min(1.5,.1/rms);s.g.gain.value=s.norm;
-    s.ready=true;}
-  const n=Object.keys(SMP).filter(id=>SMP[id].ready).length;if(n)toast(n+" boucle"+(n>1?"s":"")+" MP3 chargée"+(n>1?"s":"")+" depuis le dossier sons");
+  GRIDFRAC=gridPhase(an);
+  for(const id of an)finishSample(id);
+  const n=Object.keys(SMP).length;if(n)toast(n+" boucle"+(n>1?"s":"")+" MP3 chargée"+(n>1?"s":"")+" depuis le dossier sons");
   $("arcCam").dataset.mp3=n?"🎵"+n:"";
   cardButtons($("sons"));prepTempo(targetBpm());if(S&&S.mp3t)render();
 }
+/* durée du fichier ≠ reglages.json : on retrouve son tempo (et son nombre de temps) d'après sa durée */
+function fitDur(id){const s=SMP[id],D=s.D,len=s.raw.duration-smpOffset,fits=(b,n)=>{const L=n*60/b;return len-L>-.04&&len-L<.13;};
+  if(fits(D.bpm,D.beats))return null;let found=null;
+  for(const n of [D.beats,16,32,8,64]){if(found)break;let bestB=null;
+    /* plusieurs tempos possibles (le MP3 ajoute un peu de silence) : on préfère un tempo rond (120 plutôt que 119) */
+    const rk=b=>b%10===0?0:b%5===0?1:b%2===0?2:3;
+    for(let b=60;b<=200;b++)if(fits(b,n)&&(bestB===null||rk(b)<rk(bestB)||rk(b)===rk(bestB)&&Math.abs(b-D.bpm)<Math.abs(bestB-D.bpm)))bestB=b;
+    if(bestB)found={bpm:bestB,beats:n};}
+  if(found){s.D=SAMPLES[id]=Object.assign({},D,found);return KFILE(id)+".mp3 : "+found.beats+" temps à "+found.bpm+" BPM";}
+  return KFILE(id)+".mp3 dure "+len.toFixed(2)+" s (attendu "+(D.beats*60/D.bpm).toFixed(2)+" s)";}
+/* boucle prête : découpe calée sur la grille, volume normalisé ; le fichier brut est libéré */
+function finishSample(id){const s=SMP[id];if(!s.raw)return;
+  s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm,GRIDFRAC*60/s.D.bpm);s.cache[s.D.bpm]=s.base;
+  let ss=0;const d=s.base.getChannelData(0);for(let i=0;i<d.length;i+=4)ss+=d[i]*d[i];const rms=Math.sqrt(ss/(d.length/4))||.1;s.norm=Math.min(1.5,.1/rms);s.g.gain.value=s.norm;
+  s.raw=null;s.ab=null;s.ready=true;}
+/* décode un son à la demande (carte qui tire ce son, test) ; then = appelé quand il est prêt */
+function ensureSample(id,then){const s=SMP[id];if(!s)return;if(s.ready){if(then)then();return;}
+  if(!s.loading)s.loading=decode(s.ab.slice(0)).then(raw=>{s.raw=raw;fitDur(id);finishSample(id);
+      if(S&&S.rope)prepTempo(ROPE.BPM+ROPE.FINAL_BPM,[id]);   /* version « dernière manche » préparée d'avance */
+      if(S&&S.mp3t)render();}).catch(e=>{console.error(id,e);toast("sons/"+KFILE(id)+".mp3 n'a pas pu être lu",true);});
+  if(then)s.loading.then(then);}
 /* extrait exactement les 16 temps de la boucle */
 /* rot : la boucle est « tournée » de rot secondes, pour que le premier temps de la musique tombe pile au début (la fin repasse devant) */
 function cutLoop(buf,off,dur,rot){const sr=buf.sampleRate,a=Math.round(off*sr),n=Math.round(dur*sr),r=Math.round((rot||0)*sr)%n,out=ctx.createBuffer(buf.numberOfChannels,n,sr);
@@ -1920,10 +1949,10 @@ function cutLoop(buf,off,dur,rot){const sr=buf.sampleRate,a=Math.round(off*sr),n
    la musique était alors en retard sur les visuels. On repère la position des attaques (coups de batterie, notes) dans chaque temps,
    sur l'ensemble des boucles, et on recale toutes les boucles sur ce point. Réglable à la main dans reglages.json : "decalage_ms". */
 let GRIDFRAC=0;
-function gridPhase(){
+function gridPhase(an){
   if(SET.decalage_ms!==undefined&&isFinite(+SET.decalage_ms))return (+SET.decalage_ms/1000)*(+SET.bpm||120)/60;
   const NB=48,bins=new Float64Array(NB);let used=0;
-  const ids=Object.keys(SMP).sort((x,y)=>(SMP[y].D.piste==="R")-(SMP[x].D.piste==="R")).slice(0,40);
+  const ids=(an||[]).filter(id=>SMP[id].raw).sort((x,y)=>(SMP[y].D.piste==="R")-(SMP[x].D.piste==="R")).slice(0,40);
   for(const id of ids){const s=SMP[id],D=s.D,buf=s.raw,sr=buf.sampleRate,d=buf.getChannelData(0),a=Math.round(smpOffset*sr),beat=60/D.bpm*sr,n=Math.min(d.length-a,Math.round(D.beats*beat)),hop=128;
     let prev=0;for(let i=0;i+hop<=n;i+=hop){let e=0;for(let k=0;k<hop;k++){const v=d[a+i+k];e+=v*v;}const le=Math.log(e+1e-7);if(i>0){const on=le-prev;if(on>0)bins[Math.floor(((i+hop/2)%beat)/beat*NB)%NB]+=on*(D.piste==="R"?2:1);}prev=le;}
     used++;}
@@ -1934,7 +1963,7 @@ function gridPhase(){
   const l=bins[(best+NB-1)%NB],r=bins[(best+1)%NB],c=bins[best],dd=(l-r)/(2*(l-2*c+r)||1);
   let fr=((best+.5+(isFinite(dd)?dd:0))/NB+1)%1;
   if(fr>.85)fr=0;   /* temps à peine en avance : on laisse */
-  const b0=SMP[ids[0]].D.bpm;console.log("Calage des boucles : premier temps à",Math.round(fr*60/b0*1000),"ms");return fr;}
+  const b0=ids.length?SMP[ids[0]].D.bpm:120;console.log("Calage des boucles : premier temps à",Math.round(fr*60/b0*1000),"ms");return fr;}
 /* WSOLA : change la durée sans changer la hauteur. ratio = durée finale / durée d'origine */
 function* wsola(buf,ratio){   /* WSOLA circulaire : la fin de la boucle s'enchaîne sans coupure sur son début. Générateur pour ne pas bloquer la musique. */
   const sr=buf.sampleRate,C=buf.numberOfChannels,inL=buf.length,outL=Math.round(inL*ratio);
@@ -1957,13 +1986,17 @@ function* wsola(buf,ratio){   /* WSOLA circulaire : la fin de la boucle s'encha�
 function runGen(g){let r;do{r=g.next();}while(!r.done);return r.value;}
 /* prépare en tâche de fond les boucles au tempo demandé */
 let prepQueue=[];
-function prepTempo(bpm){bpm=Math.round(bpm);for(const id in SMP){const s=SMP[id];if(s.ready&&!s.cache[bpm]&&!prepQueue.some(q=>q[0]===id&&q[1]===bpm))prepQueue.push([id,bpm]);}
+function prepTempo(bpm,only){bpm=Math.round(bpm);
+  const inUse=new Set(PORDER.map(p=>PL.tr[p]&&PL.tr[p].ref).filter(Boolean));
+  const want=only||(S&&S.rope?[...new Set([...Object.values(ASSIGN),...inUse,...Object.keys(SMP).filter(k=>!(k[0]==="P"&&k[2]===":"))])]:Object.keys(SMP));
+  for(const id of want){const s=SMP[id];if(s&&s.ready&&!s.cache[bpm]&&!prepQueue.some(q=>q[0]===id&&q[1]===bpm))prepQueue.push([id,bpm]);}
+  prepQueue.sort((a,b)=>inUse.has(b[0])-inUse.has(a[0]));
   if(prepQueue.length&&!prepTempo.busy){prepTempo.busy=true;let job=null;
     setTimeout(function run(){const t0=performance.now();
       while(performance.now()-t0<5){
         if(!job){const q=prepQueue.shift();if(!q)break;const s=SMP[q[0]];if(s.cache[q[1]])continue;job={q,s,g:wsola(s.base,s.D.bpm/q[1])};}
         const r=job.g.next();if(r.done){const c=job.s.cache;c[job.q[1]]=r.value;const ks=Object.keys(c).map(Number).filter(k=>k!==job.s.D.bpm);
-          if(ks.length>4){ks.sort((a,b)=>Math.abs(a-curBpm)-Math.abs(b-curBpm));ks.slice(4).forEach(k=>delete c[k]);}job=null;}}
+          if(ks.length>2){ks.sort((a,b)=>Math.abs(a-curBpm)-Math.abs(b-curBpm));ks.slice(2).forEach(k=>delete c[k]);}job=null;}}
       if(job||prepQueue.length)setTimeout(run,12);else prepTempo.busy=false;},12);}}
 const smpOn=id=>SMP[id]&&SMP[id].ready;
 /* beat = temps de la boucle (0 à 15) où la lecture démarre.
@@ -1997,7 +2030,7 @@ function ropeBeat(b){mtBeat(b);const rc=$("rpCycle");if(rc)rc.querySelectorAll("
   const last=b===15,k=$("rpKnot"),rg=$("rpRing"),cd=$("rpCd");
   if(k){k.classList.remove("beat","last");void k.getBoundingClientRect();k.classList.add("beat");if(last)k.classList.add("last");}
   if(rg){rg.classList.remove("go");void rg.getBoundingClientRect();rg.classList.add("go");}
-  if(cd){cd.textContent=16-b;cd.classList.remove("go");void cd.offsetWidth;cd.classList.add("go");}}
+  const kn=$("rpKnotN");if(kn){kn.textContent=16-b;kn.classList.remove("go");void kn.getBoundingClientRect();kn.classList.add("go");}}
 function showBeat(b){curBeat=b;ropeBeat(b);const el=$("cycle");if(!el)return;
   el.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar":"");});
   document.querySelectorAll(".waitTag").forEach(w=>w.textContent="▶ dans "+plWait(+w.dataset.seq)+" temps");
@@ -2030,7 +2063,7 @@ function countTick(b,first){
    - Chaque piste joue la boucle de sa carte du dessus ; toutes les boucles sont calées sur un cycle commun de 4 mesures (16 temps).
    - Une carte posée attend le début du cycle suivant ; l'ancienne boucle de la piste continue jusque-là, sans blanc.
    - Si rien ne joue encore, la première carte démarre à la mesure suivante et le cycle repart d'elle.
-   - Mode La Corde : à chaque cycle, une piste est « en vedette » (A, B, C, D à tour de rôle) : un peu plus forte, et c'est elle que vise le Projecteur. */
+   - Toutes les pistes qui jouent s'allument ensemble. */
 const PL={tr:{R:null,B:null,H:null,M:null},spot:null,cyc:0};let ABS=0;
 const sndOf=e=>e.snd||e.id;
 function plReset(){for(const p of PORDER){const c=PL.tr[p];if(c&&c.ref&&SMP[c.ref])stopSample(c.ref);PL.tr[p]=null;}PL.spot=null;PL.cyc=0;}
@@ -2049,8 +2082,6 @@ function plStartTrack(p,v,t){const id=sndOf(v.t),r=SREF(id),mp3=!!(SAMPLES[r]&&s
   if(PL.tr[p])plStopTrack(p,t);
   if(mp3){const s=SMP[r];s.at=p;startSample(r,t,0);s.absStart=ABS;}
   PL.tr[p]={seq:v.t.seq,id,ref:mp3?r:null,p,t0:t};}
-function plSpotGain(t){for(const p of PORDER){const c=PL.tr[p];if(!c||!c.ref)continue;const s=SMP[c.ref];const k=S&&S.rope&&PL.spot===p?1.35:1;
-  try{s.g.gain.cancelScheduledValues(t);s.g.gain.setTargetAtTime((s.norm||1)*k,t,.05);}catch(e){}}}
 /* appelé à chaque pas, avant de le jouer ; renvoie le pas (remis à 0 quand le cycle repart) */
 function plTick(st,t){
   if(st%4)return st;
@@ -2066,8 +2097,8 @@ function plTick(st,t){
   if(!start)return st;
   for(const p of PORDER){const w=want[p],c=PL.tr[p];
     if(!w){if(c)plStopTrack(p,t);continue;}
-    if(!c||c.seq!==w.t.seq||c.id!==sndOf(w.t))plStartTrack(p,w,t);}
-  PL.spot=S.rope?PORDER[PL.cyc%4]:null;PL.cyc++;plSpotGain(t);
+    if(!c||c.seq!==w.t.seq||c.id!==sndOf(w.t)){const r=SREF(sndOf(w.t));if(SMP[r]&&!SMP[r].ready){ensureSample(r);continue;}plStartTrack(p,w,t);}}
+  PL.spot=null;PL.cyc++;
   visAt(t,()=>{if(S)render();});
   return 0;
 }
@@ -2098,7 +2129,7 @@ function playStep(st,t){
   if(!S||S.ended&&!S.rope)return;
   for(const p of PORDER){const c=PL.tr[p];if(!c)continue;if(st%4===0)pulseLater(p,t);
     if(c.ref)continue;                   /* boucle MP3 : elle joue toute seule */
-    curGain=(CG[c.id]||1)*(S.rope&&PL.spot===p?1.3:1);VOICE[c.id]({...info,p});curGain=1;}
+    curGain=CG[c.id]||1;VOICE[c.id]({...info,p});curGain=1;}
 }
 /* Sons des cartes Action */
 function sfx(id){
