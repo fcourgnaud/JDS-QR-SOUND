@@ -360,6 +360,16 @@ body.mp3t{background:var(--arc-bg);background-image:none}
 body.rope{background:var(--arc-bg);background-image:none}
 #rope{position:relative;min-height:100dvh;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 18px;display:flex;flex-direction:column;gap:10px;font-family:var(--arc-t);color:#fff;max-width:640px;margin:0 auto}
 .rp-log{display:none!important}
+.rp-sim{display:flex;flex-direction:column;gap:10px;margin-top:4px}.rp-sim[hidden]{display:none!important}
+.sim-g{border-radius:14px;padding:8px 10px;border:2px dashed color-mix(in srgb,var(--pc,#fff) 40%,transparent);background:rgba(255,255,255,.03)}
+.sim-g.on{border-style:solid;border-color:var(--pc);box-shadow:0 0 12px color-mix(in srgb,var(--pc) 45%,transparent)}
+.sim-g h4{margin:0 0 6px;font-size:14px;color:var(--pc,#fff);display:flex;gap:8px;align-items:baseline}.sim-g h4 small{color:#cfcbe8;font-weight:400}
+.sim-g.act{--pc:#ffd23f}
+.sim-row{display:flex;flex-wrap:wrap;gap:5px}
+.sim-c{font:inherit;color:#fff;border:1px solid color-mix(in srgb,var(--pc,#fff) 45%,transparent);background:rgba(255,255,255,.06);border-radius:10px;padding:5px 8px;display:flex;flex-direction:column;align-items:center;min-width:52px;line-height:1.1}
+.sim-c b{font-size:13px}.sim-c small{font-size:11px;color:#cfcbe8}
+.sim-c.re{border-color:#ff5468}.sim-c.used,.sim-c:disabled{opacity:.35}
+.sim-c:active{transform:scale(.95)}
 #rope[hidden],#mp3t[hidden]{display:none!important}
 .rp-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .rp-top .t{font-family:var(--arc-d);font-size:18px;color:var(--neon2);text-shadow:0 0 10px var(--neon2)}
@@ -614,13 +624,14 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
   <div id="mtList"></div>
 </div>
 <div id="rope" hidden>
-  <div class="rp-top"><span class="t">🪢 LA CORDE</span><span class="rp-btns"><button id="undoBtnR" title="Annuler">↶</button><button id="passR">Passer</button><button id="quitR" title="Quitter">✕</button></span></div>
+  <div class="rp-top"><span class="t" id="rpTitle">🪢 LA CORDE</span><span class="rp-btns"><button id="undoBtnR" title="Annuler">↶</button><button id="passR">Passer</button><button id="quitR" title="Quitter">✕</button></span></div>
   <section class="rp-scores" id="rpScores"></section>
   <section class="rp-round" id="rpRound"></section>
   <section class="rp-turn" id="rpTurn"></section>
   <section class="rp-cycle" id="rpCycle"><span class="rc-bpm" id="rpBpm"></span><b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></b></section>
   <section class="rp-gauge" id="rpGauge"><div class="rp-cd" id="rpCd"></div></section>
   <section class="rp-tracks" id="rpTracks"></section>
+  <section class="rp-sim" id="rpSim" hidden></section>
   <div class="rp-log" id="rpLog"></div>
   <div class="rp-react" id="rpReact" hidden></div>
   <div class="rp-ban" id="ropeBan" hidden></div>
@@ -631,7 +642,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v74";
+const VERSION="v75";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -823,19 +834,19 @@ function setup(){stopEverything();S=null;RWAIT=null;setRope(false);setMp3(false)
   const draw=()=>{if(modeChoice!=="corde"&&n>3)n=3;
     $("layer").innerHTML=`<div class="overlay"><div class="sheet">
       <h2>Nouvelle partie <small class="ver">${VERSION}</small></h2>
-      <div><span class="label">Version du jeu</span><div class="mode"><button data-m="corde" class="${modeChoice==="corde"?"sel":""}">🪢 La Corde<small>tir à la corde musical, 2 à 4</small></button><button data-m="mp3" class="${modeChoice==="mp3"?"sel":""}">🎧 Test des MP3<small>écouter et mélanger les boucles</small></button></div></div>
-      ${modeChoice==="mp3"?"":`<div><span class="label">Nombre de musiciens</span><div class="count">${(modeChoice==="corde"?[2,3,4]:[2,3]).map(k=>`<button data-n="${k}" class="${k===n?"sel":""}">${k}</button>`).join("")}</div></div>`}
-      ${modeChoice==="corde"?`<label class="objopt"><input type="checkbox" id="objOpt" ${ropeObjOpt?"checked":""}> 🎯 Objectifs secrets <small>tour de table avant la partie : chaque joueur scanne une carte Objectif</small></label>`:""}
-      ${(modeChoice==="mp3"?[]:pls.slice(0,n)).map((p,i)=>`<div class="pl" style="--pc:${DECKS[p.deck].color}">
+      <div><span class="label">Version du jeu</span><div class="mode"><button data-m="corde" class="${modeChoice==="corde"?"sel":""}">🪢 La Corde<small>tir à la corde musical, 2 à 4</small></button><button data-m="mp3" class="${modeChoice==="mp3"?"sel":""}">🧪 Essai<small>la partie, avec les decks à l'écran (sans scanner)</small></button></div></div>
+      ${false?"":`<div><span class="label">Nombre de musiciens</span><div class="count">${(modeChoice==="corde"?[2,3,4]:[2,3]).map(k=>`<button data-n="${k}" class="${k===n?"sel":""}">${k}</button>`).join("")}</div></div>`}
+      ${true?`<label class="objopt"><input type="checkbox" id="objOpt" ${ropeObjOpt?"checked":""}> 🎯 Objectifs secrets <small>tour de table avant la partie : chaque joueur scanne une carte Objectif</small></label>`:""}
+      ${pls.slice(0,n).map((p,i)=>`<div class="pl" style="--pc:${DECKS[p.deck].color}">
         <input type="text" id="pn${i}" value="${esc(p.name)}" aria-label="Nom du joueur ${i+1}">
         <div class="decks">${Object.keys(DECKS).map(d=>`<button data-i="${i}" data-d="${d}" class="${p.deck===d?"sel":""}" style="--dc:${DECKS[d].color}">${DECKS[d].glyph} ${DECKS[d].short}</button>`).join("")}</div></div>`).join("")}
       <div class="calib"><div class="cal-h"><b>🎧 Décalage du son</b><span id="calV">${USERLAT} ms</span></div>
         <div class="cal-sl"><button class="chip" id="calM" aria-label="moins 10 ms">◀</button><input type="range" id="calR" min="0" max="700" step="10" value="${USERLAT}"><button class="chip" id="calP" aria-label="plus 10 ms">▶</button></div>
         <div class="cal-row"><button class="chip" data-lat="0">Haut-parleur</button><button class="chip" data-lat="250">Bluetooth</button><button class="chip" id="calTest">▶ Tester</button><i id="calDot"></i></div>
         <small>Enceinte Bluetooth : lance le test et règle jusqu'à ce que le rond clignote pile sur le bip.</small></div>
-      <p class="note" style="margin:0">${modeChoice==="mp3"?"Touche les boucles pour les écouter ensemble, calées sur le tempo comme en partie.":"Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale."}</p>
+      <p class="note" style="margin:0">${modeChoice==="mp3"?"Chaque joueur choisit sa tribu. Les cartes de chacun s'affichent sous le jeu : touche-les pour simuler un scan.":"Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale."}</p>
       <p class="note" id="mp3Status" style="margin:0">${mp3Info||"Recherche des boucles MP3…"}</p>
-      <button class="btn main" id="go">${modeChoice==="mp3"?"Ouvrir le test des MP3":"Lancer le concert"}</button></div></div>`;
+      <button class="btn main" id="go">${modeChoice==="mp3"?"Lancer l'essai":"Lancer le concert"}</button></div></div>`;
     document.querySelectorAll(".count button").forEach(b=>b.onclick=()=>{save();n=+b.dataset.n;draw();});
     document.querySelectorAll(".mode button").forEach(b=>b.onclick=()=>{save();modeChoice=b.dataset.m;try{localStorage.setItem("ts-mode",modeChoice);}catch(e){}draw();});
     document.querySelectorAll(".decks button").forEach(b=>b.onclick=()=>{save();const i=+b.dataset.i,d=b.dataset.d,j=pls.findIndex(p=>p.deck===d);
@@ -847,8 +858,7 @@ function setup(){stopEverything();S=null;RWAIT=null;setRope(false);setMp3(false)
     $("calTest").onclick=()=>{if(CALT)calStop();else calStart();};
     const oo=$("objOpt");if(oo)oo.onchange=()=>{ropeObjOpt=oo.checked;try{localStorage.setItem("ts-obj",oo.checked?"1":"0");}catch(e){}};
     $("go").onclick=()=>{calStop();save();stopLarsen();clearTimeout(mesureTimer);
-      if(modeChoice==="mp3")return startMp3Test();
-      if(modeChoice==="corde")return startRope(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));
+      if(modeChoice==="corde"||modeChoice==="mp3")return startRope(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})),modeChoice==="mp3");
       S=fresh(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));plReset();poolReset();undoStack=[];picking=null;pending=null;
       layoutZones(S.players.map(p=>p.deck));S.arcade=modeChoice==="arcade";setArcade(S.arcade);
       $("layer").innerHTML="";startAudio();startCamera();drawStart();};
@@ -969,7 +979,7 @@ function setRope(on){document.body.classList.toggle("rope",!!on);$("rope").hidde
 function ropeCorners(n){if(n===2)return[{x:-ROPE.R,y:0},{x:ROPE.R,y:0}];
   const a0=n===3?-90:-135;return [...Array(n)].map((_,i)=>{const a=(a0+i*360/n)*Math.PI/180;return{x:+(ROPE.R*Math.cos(a)).toFixed(3),y:+(ROPE.R*Math.sin(a)).toFixed(3)};});}
 let ropeObjOpt=false;try{ropeObjOpt=localStorage.getItem("ts-obj")==="1";}catch(e){}
-function startRope(players){
+function startRope(players,sim){
   const n=players.length,first=Math.floor(Math.random()*n);
   S=fresh(players);S.rope={corners:ropeCorners(n),x:0,y:0,br:null,d:0,locks:{},played:[],round:1,log:"",baseBpm:ROPE.BPM,
     order:[...Array(n)].map((_,k)=>(first+k)%n),objOn:ropeObjOpt,obj:players.map(()=>null),objAsked:players.map(()=>false),
@@ -977,7 +987,7 @@ function startRope(players){
     actUsed:false,lastPlace:null,lastBy:players.map(()=>null),projo:{},closing:false,usedA:[]};
   if(n===2)rPull(first,ROPE.START2);
   S.bpm=S.rope.baseBpm;S.turn=first;undoStack=[];picking=null;pending=null;plReset();poolReset();
-  setArcade(false);setRope(true);$("layer").innerHTML="";startAudio();startCamera();
+  S.sim=!!sim;setArcade(false);setRope(true);$("layer").innerHTML="";startAudio();if(!S.sim)startCamera();
   S.rope.log=`🎲 ${esc(S.players[first].name)} commence`;render();
   if(S.rope.objOn)ropeObjRound(0);else ropeStartAnn();}
 function ropeStartAnn(){const first=S.rope.order[0];
@@ -989,8 +999,10 @@ function ropeObjRound(k){const R=S.rope,n=S.players.length;
   $("layer").innerHTML=`<div class="overlay" style="align-items:center"><div class="sheet" style="text-align:center;--dc:${p.color}"><span class="note" style="margin:0">Tour de table · ${k+1}/${n}</span><h2>🎯 Objectif secret</h2>
     <p style="margin:0"><b style="color:${p.color}">${esc(p.name)}</b>, pioche une carte Objectif au hasard, regarde-la sans la montrer, puis scanne son QR code.</p>
     <div class="obj-scan">📷</div><p class="note" style="margin:0">L'objectif reste secret : il sera révélé et compté à la fin de la partie.</p>
+    ${S.sim?`<div class="sim-row" id="simObj" style="justify-content:center">${Object.keys(OBJ).filter(o=>!R.obj.includes(o)).map(o=>`<button class="sim-c" data-id="${o}" style="--pc:${p.color}"><b>${o}</b><small>${OBJ[o].t.slice(0,22)}…</small></button>`).join("")}</div>`:""}
     <button class="btn" id="objSkip">Jouer sans objectif</button></div></div>`;
-  $("objSkip").onclick=()=>{$("layer").innerHTML="";ropeObjRound(k+1);};}
+  $("objSkip").onclick=()=>{$("layer").innerHTML="";ropeObjRound(k+1);};
+  const so=$("simObj");if(so)so.onclick=e=>{const b=e.target.closest("button[data-id]");if(!b)return;seen[b.dataset.id]=0;onCode("BOUCLE:"+b.dataset.id);};}
 /* La corde avance sur des rails : une branche graduée par joueur, partant du centre (à 2 joueurs : une seule ligne).
    Position = branche (br, null au centre) + distance au centre (d, de 0 à ROPE.R). Pour passer chez un autre joueur, le nœud repasse par le centre. */
 function rSync(){const R=S.rope;if(R.br===null||R.br===undefined||R.d<=1e-6){R.br=null;R.d=0;R.x=0;R.y=0;return;}
@@ -1182,6 +1194,17 @@ function ropeAnimate(){if(RANIM)return;let last=performance.now();
     if(RVIEW.br===R.br&&Math.abs(RVIEW.d-R.d)<1e-6||R.br===null&&RVIEW.d<=0){RANIM=0;return;}
     RANIM=requestAnimationFrame(f);})(last);}
 let LKSEEN={S:null,k:new Set()};
+/* ============ Essai : les decks des joueurs à l'écran, chaque carte simule un scan ============ */
+function renderSim(){const el=$("rpSim");if(!el)return;el.hidden=!(S&&S.sim);if(el.hidden)return;const R=S.rope,fin=isFinal();
+  const card=(id,lab,sub,cls,st)=>`<button class="sim-c ${cls||""}" data-id="${id}" ${st||""}><b>${lab}</b><small>${sub}</small></button>`;
+  let h="";
+  h+=S.players.map((p,i)=>{const d=p.deck,ids=[...PORDER.flatMap(q=>["2","4"].map(v=>q+d+v)),"J"+d+"2"];
+    return `<div class="sim-g${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><h4>${esc(p.name)} <small>${DECKS[d].short}${i===S.turn&&!S.ended?" · à toi":""}</small></h4><div class="sim-row">${ids.map(id=>{const v=RV[id];
+      return id[0]==="J"?card(id,"Joker","+"+v[1]):card(id,FLET[id[0]]+" ★"+v[0]*(fin?2:1),"+"+v[1]+(SUR.has(id)?" ⚡":""));}).join("")}</div></div>`;}).join("");
+  h+=`<div class="sim-g act"><h4>⚡ Deck Action <small>une carte = un exemplaire</small></h4><div class="sim-row">${Object.keys(RACT_IDS).map(k=>{const a=RACT[RACT_IDS[k]];
+    return card(k,a.n,a.react?"réaction":a.tr?"+"+a.tr:"action",(a.react?"re ":"")+(R.usedA.includes(k)?"used":""),R.usedA.includes(k)?"disabled":"");}).join("")}</div></div>`;
+  el.innerHTML=h;}
+$("rpSim").onclick=e=>{const b=e.target.closest("button[data-id]");if(!b||b.disabled||!S||!S.sim)return;startAudio();seen[b.dataset.id]=0;onCode("BOUCLE:"+b.dataset.id);};
 /* ============ Test des MP3 : écouter les boucles des dossiers, une par piste, ensemble et calées comme en partie ============ */
 function setMp3(on){document.body.classList.toggle("mp3t",!!on);$("mp3t").hidden=!on;}
 function startMp3Test(){calStop();plReset();poolReset();
@@ -1279,6 +1302,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
       <div class="rp-card"><span class="rp-star">${t.sab?0:v[0]*(fin?2:1)*(R.projo[p]?2:1)}</span><span class="rp-gl">${DECKS[CARDS[t.id].deck].glyph}</span></div><div class="rp-own" style="color:${o.color}">${esc(o.name)}</div></div>`;}).join("");
   $("rpLog").innerHTML=(R.log||"Scanne une carte.")+(S.ended?"":`<small class="rp-hint">${R.actUsed?"Action jouée ce tour":"Action possible avant ta carte"} · fin de tour : pioche ton deck <b>ou</b> une Action · carte recouverte : sous le deck de son propriétaire</small>`);
   $("undoBtnR").disabled=!undoStack.length;
+  renderSim();$("rpTitle").textContent=S.sim?"🧪 ESSAI":"🪢 LA CORDE";
 }
 function creak(lv){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02,n=2+Math.round(lv*3);
   for(let j=0;j<n;j++){const s=ctx.createBufferSource();s.buffer=noiseBuf();const f=bq("bandpass",300+lv*500+Math.random()*200,18),g=ctx.createGain(),tt=t+j*(.07+Math.random()*.05);
