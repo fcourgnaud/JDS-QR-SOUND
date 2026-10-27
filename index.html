@@ -186,7 +186,7 @@ body.arcade .pickbar{flex-direction:column;align-items:stretch;top:50%;bottom:au
 #countModal.mini.out{animation:mcOut .35s ease-in forwards}@keyframes mcOut{to{opacity:0}}
 .mc-box{display:flex;flex-direction:column;align-items:center;gap:22px}
 .mc-num{font-family:var(--arc-d);font-size:120px;line-height:1;height:120px;color:#fff;text-shadow:0 0 22px var(--dc),0 0 6px var(--dc)}
-.mc-num.pop{animation:cmPop .4s ease-out}
+.mc-num.pop{animation:cmPop .4s ease-out}.mc-num.gold{color:var(--gold);text-shadow:0 0 24px var(--gold),0 0 6px #fff}
 .mc-dots{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;width:min(300px,78vw)}
 .mc-dots i{height:12px;border-radius:3px;background:rgba(255,255,255,.08)}
 .mc-dots i.bar{box-shadow:inset 3px 0 0 rgba(255,255,255,.35)}
@@ -391,6 +391,13 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .rp-hint{display:block;font-size:11px;color:#9a96bf;margin-top:4px}
 .rp-react{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:25;background:#2a0f1a;border:2px solid #ff5468;border-radius:16px;padding:10px 16px;font-weight:700;box-shadow:0 0 20px rgba(255,84,104,.5);white-space:nowrap}
 .rp-react{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(92vw,420px);text-align:center}
+.rp-react.full{inset:0;left:0;right:0;bottom:0;top:0;transform:none;width:auto;border:0;border-radius:0;box-shadow:none;background:rgba(3,3,10,.72);justify-content:center;gap:20px;z-index:30;padding:20px}
+.rp-react.full[hidden]{display:none}
+.rr-k{font-weight:700;font-size:13px;letter-spacing:.3em;color:#ff5468}
+.rr-q{font-size:16px;color:#e8e4ff}.rr-q b{color:#ff8a9a}
+.rr-num{font-family:var(--arc-d);font-size:120px;line-height:1;color:#fff;text-shadow:0 0 22px #ff5468,0 0 6px #ff5468}
+.rr-num.gold{color:var(--gold);text-shadow:0 0 24px var(--gold),0 0 6px #fff}
+.rp-react.full .rr-bar{width:min(300px,78vw)}
 .rr-bar{width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}.rr-bar i{display:block;height:100%;background:#ff5468;transition:width .2s linear}
 .rp-react .btn{padding:8px 16px;font-size:14px}
 .rp-react span{font-family:var(--arc-d);color:#ffd23f;margin-left:6px}.rp-react[hidden]{display:none}
@@ -559,7 +566,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
     <li><b>Fin de manche</b> (jauge des tours pleine) : chacun marque ses cartes visibles ; +3 pour le camp de la corde ; <b>Chœur</b> : +3 si tu tiens au moins 3 pistes. La corde recule d'un quart vers le centre et les verrous sautent.</li>
     <li><b>Ordre</b> : à la manche suivante, le joueur en tête au score joue en premier, le dernier au score joue en dernier.</li>
     <li><b>Dernière manche</b> (8e) : tempo +20, cartes ×2, corde +5.</li>
-    <li><b>Objectifs secrets</b> (option) : à son premier tour, chacun pioche une carte Objectif et scanne son QR. Révélés et comptés à la fin.</li></ul>
+    <li><b>Objectifs secrets</b> (option) : avant la partie, tour de table : chacun pioche une carte Objectif et scanne son QR. Révélés et comptés à la fin.</li></ul>
     <h3>Fin</h3>
     <ul><li>Après la 8e mesure, le meilleur score gagne. La musique s'arrête.</li><li>Égalité : celui qui contrôle le plus de pistes l'emporte.</li></ul>
   </div>
@@ -598,7 +605,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v66";
+const VERSION="v68";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -790,7 +797,7 @@ function setup(){stopEverything();setRope(false);
       <h2>Nouvelle partie <small class="ver">${VERSION}</small></h2>
       <div><span class="label">Version du jeu</span><div class="mode"><button data-m="arcade" class="${modeChoice==="arcade"?"sel":""}">🕹️ Arcade<small>écran épuré, tempo + bonus</small></button><button data-m="classic" class="${modeChoice==="classic"?"sel":""}">📋 Classique<small>tout le détail à l'écran</small></button><button data-m="corde" class="${modeChoice==="corde"?"sel":""}">🪢 La Corde<small>tir à la corde musical, 2 à 4</small></button></div></div>
       <div><span class="label">Nombre de musiciens</span><div class="count">${(modeChoice==="corde"?[2,3,4]:[2,3]).map(k=>`<button data-n="${k}" class="${k===n?"sel":""}">${k}</button>`).join("")}</div></div>
-      ${modeChoice==="corde"?`<label class="objopt"><input type="checkbox" id="objOpt" ${ropeObjOpt?"checked":""}> 🎯 Objectifs secrets <small>chaque joueur scanne une carte Objectif à son premier tour</small></label>`:""}
+      ${modeChoice==="corde"?`<label class="objopt"><input type="checkbox" id="objOpt" ${ropeObjOpt?"checked":""}> 🎯 Objectifs secrets <small>tour de table avant la partie : chaque joueur scanne une carte Objectif</small></label>`:""}
       ${pls.slice(0,n).map((p,i)=>`<div class="pl" style="--pc:${DECKS[p.deck].color}">
         <input type="text" id="pn${i}" value="${esc(p.name)}" aria-label="Nom du joueur ${i+1}">
         <div class="decks">${Object.keys(DECKS).map(d=>`<button data-i="${i}" data-d="${d}" class="${p.deck===d?"sel":""}" style="--dc:${DECKS[d].color}">${DECKS[d].glyph} ${DECKS[d].short}</button>`).join("")}</div></div>`).join("")}
@@ -935,7 +942,18 @@ function startRope(players){
   S.bpm=S.rope.baseBpm;S.turn=first;undoStack=[];picking=null;pending=null;plReset();poolReset();
   setArcade(false);setRope(true);$("layer").innerHTML="";startAudio();startCamera();
   S.rope.log=`🎲 ${esc(S.players[first].name)} commence`;render();
-  ropeModal(`<span class="ann-k">🪢 LA CORDE · MANCHE 1</span><b class="ann-name" style="color:${S.players[first].color}">${esc(S.players[first].name)}</b><span class="ann-gain">commence</span>`,2500,ropeAskObj);}
+  if(S.rope.objOn)ropeObjRound(0);else ropeStartAnn();}
+function ropeStartAnn(){const first=S.rope.order[0];
+  ropeModal(`<span class="ann-k">🪢 LA CORDE · MANCHE 1</span><b class="ann-name" style="color:${S.players[first].color}">${esc(S.players[first].name)}</b><span class="ann-gain">commence</span>`,2500,()=>{});}
+/* objectifs secrets : tour de table avant la partie, dans l'ordre de jeu ; chacun scanne son objectif (ou joue sans) */
+function ropeObjRound(k){const R=S.rope,n=S.players.length;
+  if(k>=n){R.objPhase=false;R.objCur=null;pending=null;$("layer").innerHTML="";render();return ropeStartAnn();}
+  const i=R.order[k],p=S.players[i];R.objPhase=true;R.objCur=i;R.objK=k;pending={obj:true};
+  $("layer").innerHTML=`<div class="overlay" style="align-items:center"><div class="sheet" style="text-align:center;--dc:${p.color}"><span class="note" style="margin:0">Tour de table · ${k+1}/${n}</span><h2>🎯 Objectif secret</h2>
+    <p style="margin:0"><b style="color:${p.color}">${esc(p.name)}</b>, pioche une carte Objectif au hasard, regarde-la sans la montrer, puis scanne son QR code.</p>
+    <div class="obj-scan">📷</div><p class="note" style="margin:0">L'objectif reste secret : il sera révélé et compté à la fin de la partie.</p>
+    <button class="btn" id="objSkip">Jouer sans objectif</button></div></div>`;
+  $("objSkip").onclick=()=>{$("layer").innerHTML="";ropeObjRound(k+1);};}
 /* La corde avance sur des rails : une branche graduée par joueur, partant du centre (à 2 joueurs : une seule ligne).
    Position = branche (br, null au centre) + distance au centre (d, de 0 à ROPE.R). Pour passer chez un autre joueur, le nœud repasse par le centre. */
 function rSync(){const R=S.rope;if(R.br===null||R.br===undefined||R.d<=1e-6){R.br=null;R.d=0;R.x=0;R.y=0;return;}
@@ -960,19 +978,20 @@ function rPush(i,f,vers){const R=S.rope;if(!f)return;
 const rPushCross=(i,f)=>{const R=S.rope;return R.br===null||R.br===i&&f>R.d;};
 const isFinal=()=>S.rope.round>=ROPE.ROUNDS;
 /* objectif : invitation au premier tour de chaque joueur */
-function ropeAskObj(){const R=S.rope;if(!R.objOn||R.round!==1||S.ended)return;const i=S.turn;if(R.obj[i]||R.objAsked[i])return;
+function ropeAskObj(){return;   /* les objectifs se valident maintenant avant la partie (ropeObjRound) */
+  const R=S.rope;if(!R.objOn||R.round!==1||S.ended)return;const i=S.turn;if(R.obj[i]||R.objAsked[i])return;
   R.objAsked[i]=true;const p=S.players[i];pending={obj:true};
   $("layer").innerHTML=`<div class="overlay" style="align-items:center"><div class="sheet" style="text-align:center;--dc:${p.color}"><h2>🎯 Objectif secret</h2>
     <p style="margin:0"><b style="color:${p.color}">${esc(p.name)}</b>, pioche une carte Objectif au hasard, regarde-la sans la montrer, puis scanne son QR code.</p>
     <div class="obj-scan">📷</div><p class="note" style="margin:0">L'objectif reste secret : il sera révélé et compté à la fin de la partie.</p>
     <button class="btn" id="objSkip">Jouer sans objectif</button></div></div>`;
   $("objSkip").onclick=()=>{pending=null;$("layer").innerHTML="";render();};}
-function ropeObjScan(c){const R=S.rope,i=S.turn;
-  if(!R.objOn||R.round!==1){toast("Les objectifs se scannent au premier tour",true);return;}
+function ropeObjScan(c){const R=S.rope,i=R.objCur;
+  if(!R.objOn||!R.objPhase||i===null||i===undefined){toast("Les objectifs se scannent avant le début de la partie",true);return;}
   if(R.obj[i]){toast("Tu as déjà un objectif",true);return;}
   if(R.obj.includes(c.id)){toast("Cet objectif est déjà pris : pioches-en un autre",true);return;}
-  R.obj[i]=c.id;playOne("OBJ");pending=null;$("layer").innerHTML="";R.log=`🎯 ${esc(S.players[i].name)} a un objectif secret`;render();
-  ropeModal(`<span class="ann-k">🎯 OBJECTIF ENREGISTRÉ</span><b class="ann-name" style="color:${S.players[i].color}">${esc(S.players[i].name)}</b><span class="ann-gain">garde ta carte face cachée</span>`,1500,null,true);}
+  R.obj[i]=c.id;playOne("OBJ");$("layer").innerHTML="";R.objCur=null;const k=R.objK;render();
+  ropeModal(`<span class="ann-k">🎯 OBJECTIF ENREGISTRÉ</span><b class="ann-name" style="color:${S.players[i].color}">${esc(S.players[i].name)}</b><span class="ann-gain">garde ta carte face cachée</span>`,1500,()=>ropeObjRound(k+1),true);}
 function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope;
   if(c.kind==="obj")return ropeObjScan(c);
   if(c.kind==="ract")return ropeAction(c);
@@ -1042,10 +1061,11 @@ function ropeNextTurn(){const R=S.rope;R.played.push(S.turn);R.actUsed=false;
 function ropeReactWindow(){const el=$("rpReact");if(!el)return;const t0=Date.now(),me=S;el.hidden=false;let end=t0+ROPE_REACT_MS;
   const close=()=>{if(RREACT!==tk)return;RREACT=null;el.hidden=true;if(S!==me||!S.rope)return;S.rope.closing=false;ropeRound();};
   const tk={hurry(){end=Math.min(end,Date.now()+2000);},close};RREACT=tk;
-  el.innerHTML=`<div class="rr-t">⏳ Dernière carte : <b>Coupure</b> ou <b>Sabotage</b> ? <span id="rrN"></span></div><div class="rr-bar"><i id="rrBar"></i></div><button class="btn" id="rrSkip">Pas de réaction ▶</button>`;
+  el.classList.add("full");
+  el.innerHTML=`<span class="rr-k">FIN DE MANCHE</span><div class="rr-q">Dernière carte : <b>Coupure</b> ou <b>Sabotage</b> ?</div><b class="rr-num" id="rrN"></b><div class="rr-bar"><i id="rrBar"></i></div><button class="btn" id="rrSkip">Pas de réaction ▶</button>`;
   $("rrSkip").onclick=()=>close();
   (function tick(){if(RREACT!==tk)return;const k=Math.max(0,end-Date.now()),n=$("rrN"),b=$("rrBar");
-    if(n)n.textContent=Math.ceil(k/1000);if(b)b.style.width=(k/ROPE_REACT_MS*100)+"%";
+    if(n){const v=Math.ceil(k/1000);if(n.textContent!==String(v)){n.textContent=v;n.classList.toggle("gold",v<=3);}}if(b)b.style.width=(k/ROPE_REACT_MS*100)+"%";
     if($("sabWho")){end+=200;}   /* le saboteur se désigne : on attend */
     if(k<=0)return close();setTimeout(tick,200);})();}
 /* ordre de la manche suivante : le meneur au score joue en premier, le dernier au score en dernier (égalité : on garde l'ordre précédent) */
@@ -1072,7 +1092,7 @@ function ropeRound(){if(!S||!S.rope||S.ended)return;if($("sabWho"))return setTim
 /* fin de partie : podium animé, dernière manche, objectifs révélés */
 function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
   const before=S.players.map(p=>p.score),obj=S.players.map((p,i)=>{const o=R.objOn?R.obj[i]:null;if(!o)return null;const ok=OBJ[o].ok(i,R);if(ok)p.score+=OBJ[o].v;return{o,ok,v:OBJ[o].v};});
-  render();cheer();duck(.5);
+  render();cheer();duck(.2);
   const rank=S.players.map((p,i)=>({p,i})).sort((a,b)=>b.p.score-a.p.score||PORDER.filter(k=>topOf(k)&&topOf(k).owner===b.i).length-PORDER.filter(k=>topOf(k)&&topOf(k).owner===a.i).length);
   const top=rank[0].p.score,tie=rank.length>1&&rank[1].p.score===top;
   const podOrder=rank.length>=3?[rank[1],rank[0],rank[2]]:rank.length===2?[rank[1],rank[0]]:rank;
@@ -1098,7 +1118,7 @@ function duck(on){if(!ctx||!window.__masterOut)return;const g=window.__masterOut
 /* Sabotage à 3-4 joueurs quand la corde repasse le centre : elle part vers le saboteur, qui se désigne */
 function sabWho(L,o){const R=S.rope,keep=pending;pending={sab:true};
   const others=S.players.map((p,i)=>i).filter(i=>i!==L.owner);
-  const el=document.createElement("div");el.className="overlay";el.style.alignItems="center";el.id="sabWho";
+  const el=document.createElement("div");el.className="overlay";el.style.alignItems="center";el.style.zIndex="40";el.id="sabWho";
   el.innerHTML=`<div class="sheet" style="text-align:center"><h2>🚫 Sabotage</h2><p style="margin:0">La corde repasse le centre et part vers le saboteur. <b>Qui a joué le Sabotage ?</b></p>
     <div class="sab-row">${others.map(i=>`<button class="btn" data-i="${i}" style="--pc:${S.players[i].color};border-color:${S.players[i].color};color:${S.players[i].color}">${esc(S.players[i].name)}</button>`).join("")}</div></div>`;
   $("layer").appendChild(el);
@@ -1841,7 +1861,11 @@ function stopAllSamples(){for(const id in SMP)stopSample(id);}
 /* indicateur de position dans le cycle : 4 mesures × 4 temps */
 let curBeat=0;
 function ropeBeat(b){const rc=$("rpCycle");if(rc)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});
-}
+  if(b<12||!S||!S.rope||S.ended||plIdle())return;
+  const last=b===15,k=$("rpKnot"),rg=$("rpRing"),cd=$("rpCd");
+  if(k){k.classList.remove("beat","last");void k.getBoundingClientRect();k.classList.add("beat");if(last)k.classList.add("last");}
+  if(rg){rg.classList.remove("go");void rg.getBoundingClientRect();rg.classList.add("go");}
+  if(cd){cd.textContent=16-b;cd.classList.remove("go");void cd.offsetWidth;cd.classList.add("go");}}
 function showBeat(b){curBeat=b;ropeBeat(b);const el=$("cycle");if(!el)return;
   el.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar":"");});
   document.querySelectorAll(".waitTag").forEach(w=>w.textContent="▶ dans "+plWait(+w.dataset.seq)+" temps");
@@ -1862,7 +1886,7 @@ function countTick(b,first){
   if(mini){
     if(plIsPlaying(countId)||!plIsPending(countId)){countId=null;el.classList.add("out");countClose=setTimeout(()=>{el.className="mini";},350);return;}
     const left=plWait(countId);el.classList.add("show");
-    num.textContent=left<=4?left:"";if(left<=4){num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");}
+    num.textContent=left;num.classList.toggle("gold",left<=4);num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");
     const b0=curBeat%16;$("cmDots").querySelectorAll("i").forEach((d,i)=>d.className=(i===b0?"now ":"")+(i<b0?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":""));return;}
   if(plIsPlaying(countId)){num.textContent="▶";$("cmSub").textContent="c'est parti !";el.classList.add("go");
     $("cmDots").querySelectorAll("i").forEach(d=>d.className="on");countId=null;countClose=setTimeout(()=>{el.className="";},700);return;}
