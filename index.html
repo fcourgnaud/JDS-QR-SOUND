@@ -346,9 +346,21 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 .jk-grid button[disabled]{opacity:.25;border-color:transparent;cursor:default}
 .piste.now{box-shadow:0 0 0 3px var(--ac),0 0 22px var(--ac)}
 /* ===== mode La Corde ===== */
-body.rope .wrap{display:none}
+body.rope .wrap,body.mp3t .wrap{display:none}
+body.mp3t{background:var(--arc-bg);background-image:none}
+#mp3t{position:relative;min-height:100dvh;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 18px;display:flex;flex-direction:column;gap:12px;font-family:var(--arc-t);color:#fff;max-width:640px;margin:0 auto}
+.mt-tempo{display:flex;gap:6px}.mt-tempo button,.mt-f button{font:inherit;color:#fff;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);border-radius:10px;padding:7px 10px}
+.mt-tempo button{flex:1}
+.mt-tr{border-radius:14px;padding:8px 10px;border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);display:flex;flex-direction:column;gap:6px}
+.mt-tr h3{margin:0;font-size:15px;display:flex;justify-content:space-between;align-items:center}.mt-tr h3 small{font-weight:400;color:#cfcbe8;font-size:12px}
+.mt-f{display:flex;flex-wrap:wrap;gap:5px;align-items:center}.mt-f>span{font-size:12px;color:#cfcbe8;min-width:44px}
+.mt-f button{min-width:38px;padding:6px 8px;font-family:var(--mono);font-size:13px}
+.mt-f button.wait{border-color:var(--gold);color:var(--gold);animation:rpblink .5s infinite alternate}
+.mt-f button.on{background:var(--neon2);border-color:var(--neon2);color:#0b0a1e;box-shadow:0 0 10px var(--neon2);font-weight:700}
 body.rope{background:var(--arc-bg);background-image:none}
 #rope{position:relative;min-height:100dvh;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 18px;display:flex;flex-direction:column;gap:10px;font-family:var(--arc-t);color:#fff;max-width:640px;margin:0 auto}
+.rp-log{display:none!important}
+#rope[hidden],#mp3t[hidden]{display:none!important}
 .rp-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .rp-top .t{font-family:var(--arc-d);font-size:18px;color:var(--neon2);text-shadow:0 0 10px var(--neon2)}
 .rp-btns{display:flex;gap:6px;flex-shrink:0}.rp-top .t{white-space:nowrap}
@@ -393,7 +405,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .rp-react{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(92vw,420px);text-align:center}
 .rp-react.full{inset:0;left:0;right:0;bottom:0;top:0;transform:none;width:auto;border:0;border-radius:0;box-shadow:none;background:rgba(3,3,10,.72);justify-content:center;gap:20px;z-index:30;padding:20px}
 .rp-react.full[hidden]{display:none}
-.rr-k{font-weight:700;font-size:13px;letter-spacing:.3em;color:#ff5468}
+.rr-k{font-family:var(--arc-d);font-size:clamp(34px,11vw,56px);line-height:1.05;letter-spacing:.06em;color:#ff5468;text-shadow:0 0 18px #ff5468;text-align:center}
 .rr-q{font-size:16px;color:#e8e4ff}.rr-q b{color:#ff8a9a}
 .rr-num{font-family:var(--arc-d);font-size:120px;line-height:1;color:#fff;text-shadow:0 0 22px #ff5468,0 0 6px #ff5468}
 .rr-num.gold{color:var(--gold);text-shadow:0 0 24px var(--gold),0 0 6px #fff}
@@ -470,6 +482,14 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .rp-seg i em{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.35)}
 .rp-k.fin{color:#ff8a3d;text-shadow:0 0 10px #ff5468}
 .obj-scan{font-size:54px;margin:6px 0;animation:crown .8s infinite alternate}
+.calib{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;border:1px solid var(--line)}
+.cal-h{display:flex;justify-content:space-between;align-items:center}.cal-h span{font-family:var(--mono);color:var(--gold)}
+.calib input[type=range]{width:100%}.calib small{color:var(--muted)}
+.cal-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#calDot{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.12);margin-left:auto}
+#calDot.on{animation:calf .25s ease-out}#calDot.big{animation:calf2 .3s ease-out}
+@keyframes calf{0%{background:#fff;box-shadow:0 0 14px #fff}100%{background:rgba(255,255,255,.12)}}
+@keyframes calf2{0%{background:var(--gold);box-shadow:0 0 18px var(--gold);transform:scale(1.4)}100%{background:rgba(255,255,255,.12);transform:scale(1)}}
 .objopt{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-weight:700;padding:10px 12px;border-radius:12px;border:1px solid var(--line)}
 .objopt small{flex-basis:100%;font-weight:400;color:var(--muted)}.objopt input{width:20px;height:20px}
 .rp-round{display:flex;align-items:center;gap:10px}.rp-k{font-family:var(--arc-d);font-size:14px;color:var(--gold);white-space:nowrap}
@@ -587,6 +607,12 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
   <div class="arc-burst" id="arcBurst" hidden></div>
   <div class="arc-ann" id="arcAnn" hidden></div>
 </div>
+<div id="mp3t" hidden>
+  <div class="rp-top"><span class="t">🎧 TEST DES MP3</span><span class="rp-btns"><button id="mtStop">■ Tout arrêter</button><button id="mtQuit" title="Quitter">✕</button></span></div>
+  <section class="rp-cycle" id="mtCycle"><span class="rc-bpm" id="mtBpm"></span><b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></b></section>
+  <div class="mt-tempo"><button data-b="-5">−5</button><button data-b="120">120</button><button data-b="140">140</button><button data-b="5">+5</button></div>
+  <div id="mtList"></div>
+</div>
 <div id="rope" hidden>
   <div class="rp-top"><span class="t">🪢 LA CORDE</span><span class="rp-btns"><button id="undoBtnR" title="Annuler">↶</button><button id="passR">Passer</button><button id="quitR" title="Quitter">✕</button></span></div>
   <section class="rp-scores" id="rpScores"></section>
@@ -605,7 +631,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v70";
+const VERSION="v73";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -699,6 +725,7 @@ function applyTempo(id){const x=INFO[id].tempo,b=S.bpm;S.bpm=x==="home"?DECKS[CA
 /* ================= Rendu ================= */
 const pct=b=>((b-BPM_MIN)/(BPM_MAX-BPM_MIN)*100).toFixed(2)+"%";
 function render(){
+  if(S&&S.mp3t)return renderMp3();
   if(S&&S.rope)return renderRope();
   $("mesure").textContent=S.solo?"Test":Math.min(S.mesure,S.max)+" / "+S.max;
   /* tempo */
@@ -744,7 +771,8 @@ function render(){
 }
 
 /* ================= Mise en place : un deck par joueur ================= */
-let modeChoice="arcade";try{modeChoice=localStorage.getItem("ts-mode")||"arcade";}catch(e){}
+let modeChoice="corde";try{modeChoice=localStorage.getItem("ts-mode")||"corde";}catch(e){}
+if(!["corde","mp3"].includes(modeChoice))modeChoice="corde";   /* Arcade et Classique sont mis de côté (code conservé, plus proposés) */
 function setArcade(on){document.body.classList.toggle("arcade",!!on);$("arcade").hidden=!on;if(!on){$("arcBonus").hidden=true;$("arcAnn").hidden=true;bonusOn=false;}}
 /* arrêt complet : musique, boucles, caméra, minuteries (en quittant une partie) */
 let camStream=null;
@@ -789,28 +817,36 @@ function drawStart(){
     el.classList.remove("rb-tick","rb-win");void el.offsetWidth;el.classList.add(final?"rb-win":"rb-tick");
     if(final&&ctx){const tt=ctx.currentTime;beepT(784,tt,.1,.1,"triangle");beepT(1175,tt+.1,.1,.1,"triangle");beepT(1568,tt+.2,.22,.1,"triangle");}}
 }
-function setup(){stopEverything();setRope(false);
+function setup(){stopEverything();setRope(false);setMp3(false);
   let n=2;const pls=[{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"},{name:"Joueur 3",deck:"E"},{name:"Joueur 4",deck:"S"}];
   const save=()=>{for(let i=0;i<n;i++){const e=$("pn"+i);if(e)pls[i].name=e.value;}};
   const draw=()=>{if(modeChoice!=="corde"&&n>3)n=3;
     $("layer").innerHTML=`<div class="overlay"><div class="sheet">
       <h2>Nouvelle partie <small class="ver">${VERSION}</small></h2>
-      <div><span class="label">Version du jeu</span><div class="mode"><button data-m="arcade" class="${modeChoice==="arcade"?"sel":""}">🕹️ Arcade<small>écran épuré, tempo + bonus</small></button><button data-m="classic" class="${modeChoice==="classic"?"sel":""}">📋 Classique<small>tout le détail à l'écran</small></button><button data-m="corde" class="${modeChoice==="corde"?"sel":""}">🪢 La Corde<small>tir à la corde musical, 2 à 4</small></button></div></div>
-      <div><span class="label">Nombre de musiciens</span><div class="count">${(modeChoice==="corde"?[2,3,4]:[2,3]).map(k=>`<button data-n="${k}" class="${k===n?"sel":""}">${k}</button>`).join("")}</div></div>
+      <div><span class="label">Version du jeu</span><div class="mode"><button data-m="corde" class="${modeChoice==="corde"?"sel":""}">🪢 La Corde<small>tir à la corde musical, 2 à 4</small></button><button data-m="mp3" class="${modeChoice==="mp3"?"sel":""}">🎧 Test des MP3<small>écouter et mélanger les boucles</small></button></div></div>
+      ${modeChoice==="mp3"?"":`<div><span class="label">Nombre de musiciens</span><div class="count">${(modeChoice==="corde"?[2,3,4]:[2,3]).map(k=>`<button data-n="${k}" class="${k===n?"sel":""}">${k}</button>`).join("")}</div></div>`}
       ${modeChoice==="corde"?`<label class="objopt"><input type="checkbox" id="objOpt" ${ropeObjOpt?"checked":""}> 🎯 Objectifs secrets <small>tour de table avant la partie : chaque joueur scanne une carte Objectif</small></label>`:""}
-      ${pls.slice(0,n).map((p,i)=>`<div class="pl" style="--pc:${DECKS[p.deck].color}">
+      ${(modeChoice==="mp3"?[]:pls.slice(0,n)).map((p,i)=>`<div class="pl" style="--pc:${DECKS[p.deck].color}">
         <input type="text" id="pn${i}" value="${esc(p.name)}" aria-label="Nom du joueur ${i+1}">
         <div class="decks">${Object.keys(DECKS).map(d=>`<button data-i="${i}" data-d="${d}" class="${p.deck===d?"sel":""}" style="--dc:${DECKS[d].color}">${DECKS[d].glyph} ${DECKS[d].short}</button>`).join("")}</div></div>`).join("")}
-      <p class="note" style="margin:0">Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale.</p>
+      <div class="calib"><div class="cal-h"><b>🎧 Décalage du son</b><span id="calV">${USERLAT} ms</span></div>
+        <input type="range" id="calR" min="0" max="700" step="10" value="${USERLAT}">
+        <div class="cal-row"><button class="chip" data-lat="0">Haut-parleur</button><button class="chip" data-lat="250">Bluetooth</button><button class="chip" id="calTest">▶ Tester</button><i id="calDot"></i></div>
+        <small>Enceinte Bluetooth : lance le test et règle jusqu'à ce que le rond clignote pile sur le bip.</small></div>
+      <p class="note" style="margin:0">${modeChoice==="mp3"?"Touche les boucles pour les écouter ensemble, calées sur le tempo comme en partie.":"Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale."}</p>
       <p class="note" id="mp3Status" style="margin:0">${mp3Info||"Recherche des boucles MP3…"}</p>
-      <button class="btn main" id="go">Lancer le concert</button><button class="btn" id="goSolo">🎧 Tester un deck en solo (sans règles)</button></div></div>`;
+      <button class="btn main" id="go">${modeChoice==="mp3"?"Ouvrir le test des MP3":"Lancer le concert"}</button></div></div>`;
     document.querySelectorAll(".count button").forEach(b=>b.onclick=()=>{save();n=+b.dataset.n;draw();});
     document.querySelectorAll(".mode button").forEach(b=>b.onclick=()=>{save();modeChoice=b.dataset.m;try{localStorage.setItem("ts-mode",modeChoice);}catch(e){}draw();});
     document.querySelectorAll(".decks button").forEach(b=>b.onclick=()=>{save();const i=+b.dataset.i,d=b.dataset.d,j=pls.findIndex(p=>p.deck===d);
       if(j>=0&&j!==i)pls[j].deck=pls[i].deck;pls[i].deck=d;draw();});
-    $("goSolo").onclick=startSolo;
+    const setLat=v=>{USERLAT=Math.max(0,Math.min(700,Math.round(+v||0)));try{localStorage.setItem("ts-lat",USERLAT);}catch(e){}$("calV").textContent=USERLAT+" ms";$("calR").value=USERLAT;};
+    $("calR").oninput=e=>setLat(e.target.value);
+    document.querySelectorAll(".calib [data-lat]").forEach(b=>b.onclick=()=>setLat(b.dataset.lat));
+    $("calTest").onclick=()=>{if(CALT)calStop();else calStart();};
     const oo=$("objOpt");if(oo)oo.onchange=()=>{ropeObjOpt=oo.checked;try{localStorage.setItem("ts-obj",oo.checked?"1":"0");}catch(e){}};
-    $("go").onclick=()=>{save();stopLarsen();clearTimeout(mesureTimer);
+    $("go").onclick=()=>{calStop();save();stopLarsen();clearTimeout(mesureTimer);
+      if(modeChoice==="mp3")return startMp3Test();
       if(modeChoice==="corde")return startRope(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));
       S=fresh(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));plReset();poolReset();undoStack=[];picking=null;pending=null;
       layoutZones(S.players.map(p=>p.deck));S.arcade=modeChoice==="arcade";setArcade(S.arcade);
@@ -1021,7 +1057,8 @@ function ropeWaitStart(seq){
   const w={seq,S0:S,t0:Date.now(),max:(16*60/S.bpm+2)*1000};RWAIT=w;render();
   (function poll(){if(RWAIT!==w)return;
     if(S!==w.S0){RWAIT=null;render();return;}                 /* retour arrière : la pose est annulée */
-    if(!plFind(seq)||plIsPlaying(seq)||!soundOn||Date.now()-w.t0>w.max){RWAIT=null;return ropeNextTurn();}   /* boucle lancée (ou carte coupée) */
+    const tr=PORDER.map(q=>PL.tr[q]).find(c=>c&&c.seq===seq),heard=tr&&heardNow()>=tr.t0;
+    if(!plFind(seq)||heard||!soundOn||Date.now()-w.t0>w.max+USERLAT){RWAIT=null;return ropeNextTurn();}   /* boucle lancée (ou carte coupée) */
     setTimeout(poll,60);})();}
 /* cartes du deck Action */
 function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;const _snd=()=>playOne(c.act);
@@ -1144,6 +1181,27 @@ function ropeAnimate(){if(RANIM)return;let last=performance.now();
     if(RVIEW.br===R.br&&Math.abs(RVIEW.d-R.d)<1e-6||R.br===null&&RVIEW.d<=0){RANIM=0;return;}
     RANIM=requestAnimationFrame(f);})(last);}
 let LKSEEN={S:null,k:new Set()};
+/* ============ Test des MP3 : écouter les boucles des dossiers, une par piste, ensemble et calées comme en partie ============ */
+function setMp3(on){document.body.classList.toggle("mp3t",!!on);$("mp3t").hidden=!on;}
+function startMp3Test(){calStop();plReset();poolReset();
+  S=fresh(PORDER.map((p,i)=>({name:"Test",deck:Object.keys(DECKS)[i%Object.keys(DECKS).length]})));S.mp3t=true;S.bpm=ROPE.BPM;undoStack=[];picking=null;pending=null;
+  setArcade(false);setRope(false);setMp3(true);$("layer").innerHTML="";startAudio();render();}
+function mtToggle(p,key){const top=topOf(p);
+  if(top&&top.snd===key){S.stacks[p]=[];}
+  else{SNDKEY[key]=key;S.stacks[p]=[{id:p+"F2",snd:key,owner:0,seq:++S.seqN,hidden:false,tempoDone:true}];}
+  render();}
+function renderMp3(){$("mtBpm").textContent="♩ "+Math.round(S.bpm)+" BPM";
+  const fixed=Object.keys(SAMPLES).filter(k=>!(k[0]==="P"&&k[2]===":"));
+  $("mtList").innerHTML=PORDER.map(p=>{const top=topOf(p),cur=top&&top.snd;
+    const row=(lab,keys)=>keys.length?`<div class="mt-f"><span>${lab}</span>${keys.map(k=>{const st=cur===k?(plIsPlaying(top.seq)?"on":"wait"):"";
+      return `<button class="${st}" data-p="${p}" data-k="${k}">${k[0]==="P"&&k[2]===":"?k.split(":")[2]:KFILE(k)}</button>`;}).join("")}</div>`:"";
+    const rows=row("calme",POOL[p+":calme"]||[])+row("fort",POOL[p+":fort"]||[])+row("fixes",fixed.filter(k=>SAMPLES[k].piste===p));
+    return `<div class="mt-tr"><h3>${FLET[p]} · ${PISTES[p]}<small>${cur?(cur[0]==="P"&&cur[2]===":"?FOLD[p][1]+"-"+cur.split(":")[1]+" / "+cur.split(":")[2]+".mp3":KFILE(cur)+".mp3"):"—"}</small></h3>${rows||`<div class="mt-f"><span>${Object.keys(SMP).length?"aucun MP3":"chargement…"}</span></div>`}</div>`;}).join("");}
+$("mtList").onclick=e=>{const b=e.target.closest("button[data-k]");if(!b||!S||!S.mp3t)return;startAudio();mtToggle(b.dataset.p,b.dataset.k);};
+$("mtStop").onclick=()=>{if(!S||!S.mp3t)return;PORDER.forEach(p=>S.stacks[p]=[]);render();};
+$("mtQuit").onclick=()=>setup();
+document.querySelector(".mt-tempo").onclick=e=>{const b=e.target.closest("button[data-b]");if(!b||!S||!S.mp3t)return;const v=+b.dataset.b;
+  S.bpm=Math.abs(v)<=10?Math.max(60,Math.min(200,S.bpm+v)):v;render();};
 /* ============ Fond de la corde : ondes sonores dans la brume ============
    Brume : grandes nappes floues qui dérivent lentement et s'éclairent sur les coups de basse.
    Ondes : la forme d'onde de la musique, lissée, en trois lignes lumineuses superposées. Couleur du joueur actif. */
@@ -1442,9 +1500,18 @@ function makeDrive(piste,level){
    Le son sort des haut-parleurs avec un retard (souvent 50 à 300 ms sur téléphone, plus en Bluetooth).
    Les visuels (temps, décompte, corde) sont donc déclenchés quand l'instant t est réellement entendu, à l'image près. */
 const VISQ=[];let VISRAF=0;
-function heardNow(){if(!ctx)return 0;
-  try{if(ctx.getOutputTimestamp){const o=ctx.getOutputTimestamp();if(o&&o.contextTime>0&&o.performanceTime>0)return o.contextTime+(performance.now()-o.performanceTime)/1000;}}catch(e){}
-  return ctx.currentTime-(ctx.outputLatency||ctx.baseLatency||0);}
+/* USERLAT : retard en plus, réglé à la main (enceinte Bluetooth : le téléphone ne le signale pas toujours) */
+let USERLAT=0;try{USERLAT=+localStorage.getItem("ts-lat")||0;}catch(e){}
+function heardNow(){if(!ctx)return 0;const u=USERLAT/1000;
+  try{if(ctx.getOutputTimestamp){const o=ctx.getOutputTimestamp();if(o&&o.contextTime>0&&o.performanceTime>0)return o.contextTime+(performance.now()-o.performanceTime)/1000-u;}}catch(e){}
+  return ctx.currentTime-(ctx.outputLatency||ctx.baseLatency||0)-u;}
+/* test de calage : un bip par temps (120 BPM) et un rond qui clignote ; on règle le retard jusqu'à ce qu'ils tombent ensemble */
+let CALT=null,CALN=0;
+function calStop(){clearInterval(CALT);CALT=null;const b=$("calTest");if(b)b.textContent="▶ Tester";}
+function calStart(){startAudio();if(ctx.state!=="running")ctx.resume();let t=ctx.currentTime+.2;CALN=0;
+  CALT=setInterval(()=>{if(!$("calDot")){calStop();return;}while(t<ctx.currentTime+.3){const k=CALN++%4;beepT(k?880:1320,t,.05,k?.12:.18,"square");
+      visAt(t,()=>{const d=$("calDot");if(!d)return;d.classList.remove("on","big");void d.offsetWidth;d.classList.add("on");if(k===0)d.classList.add("big");});t+=.5;}},50);
+  const b=$("calTest");if(b)b.textContent="■ Arrêter";}
 function visAt(t,fn){VISQ.push({t,fn});if(!VISRAF)VISRAF=requestAnimationFrame(visRun);}
 function visRun(){VISRAF=0;const h=heardNow()+.008;
   for(let i=0;i<VISQ.length;){if(VISQ[i].t<=h||document.hidden){const f=VISQ[i].fn;VISQ.splice(i,1);try{f();}catch(e){console.error(e);}}else i++;}
@@ -1811,7 +1878,7 @@ async function initSamples(){
     s.ready=true;}
   const n=Object.keys(SMP).filter(id=>SMP[id].ready).length;if(n)toast(n+" boucle"+(n>1?"s":"")+" MP3 chargée"+(n>1?"s":"")+" depuis le dossier sons");
   $("arcCam").dataset.mp3=n?"🎵"+n:"";
-  cardButtons($("sons"));prepTempo(targetBpm());
+  cardButtons($("sons"));prepTempo(targetBpm());if(S&&S.mp3t)render();
 }
 /* extrait exactement les 16 temps de la boucle */
 /* rot : la boucle est « tournée » de rot secondes, pour que le premier temps de la musique tombe pile au début (la fin repasse devant) */
@@ -1892,7 +1959,8 @@ function stopSample(id){const s=SMP[id];if(!s||!s.playing)return;(s.srcs||[]).fo
 function stopAllSamples(){for(const id in SMP)stopSample(id);}
 /* indicateur de position dans le cycle : 4 mesures × 4 temps */
 let curBeat=0;
-function ropeBeat(b){const rc=$("rpCycle");if(rc)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});
+function mtBeat(b){const rc=$("mtCycle");if(rc&&S&&S.mp3t)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});}
+function ropeBeat(b){mtBeat(b);const rc=$("rpCycle");if(rc)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});
   if(b<12||!S||!S.rope||S.ended||plIdle())return;
   const last=b===15,k=$("rpKnot"),rg=$("rpRing"),cd=$("rpCd");
   if(k){k.classList.remove("beat","last");void k.getBoundingClientRect();k.classList.add("beat");if(last)k.classList.add("last");}
@@ -1948,7 +2016,7 @@ function plStopTrack(p,t){const c=PL.tr[p];PL.tr[p]=null;if(!c||!c.ref||!SMP[c.r
 function plStartTrack(p,v,t){const id=sndOf(v.t),r=SREF(id),mp3=!!(SAMPLES[r]&&smpOn(r));
   if(PL.tr[p])plStopTrack(p,t);
   if(mp3){const s=SMP[r];s.at=p;startSample(r,t,0);s.absStart=ABS;}
-  PL.tr[p]={seq:v.t.seq,id,ref:mp3?r:null,p};}
+  PL.tr[p]={seq:v.t.seq,id,ref:mp3?r:null,p,t0:t};}
 function plSpotGain(t){for(const p of PORDER){const c=PL.tr[p];if(!c||!c.ref)continue;const s=SMP[c.ref];const k=S&&S.rope&&PL.spot===p?1.35:1;
   try{s.g.gain.cancelScheduledValues(t);s.g.gain.setTargetAtTime((s.norm||1)*k,t,.05);}catch(e){}}}
 /* appelé à chaque pas, avant de le jouer ; renvoie le pas (remis à 0 quand le cycle repart) */
