@@ -378,6 +378,9 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .mode{flex-wrap:wrap}
 .rp-hint{display:block;font-size:11px;color:#9a96bf;margin-top:4px}
 .rp-react{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:25;background:#2a0f1a;border:2px solid #ff5468;border-radius:16px;padding:10px 16px;font-weight:700;box-shadow:0 0 20px rgba(255,84,104,.5);white-space:nowrap}
+.rp-react{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(92vw,420px);text-align:center}
+.rr-bar{width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}.rr-bar i{display:block;height:100%;background:#ff5468;transition:width .2s linear}
+.rp-react .btn{padding:8px 16px;font-size:14px}
 .rp-react span{font-family:var(--arc-d);color:#ffd23f;margin-left:6px}.rp-react[hidden]{display:none}
 /* fenêtre finale de La Corde */
 .fin-ov{align-items:center;background:rgba(5,4,20,.86);backdrop-filter:blur(4px);overflow:auto}
@@ -423,7 +426,14 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .rp-cycle i.last{background:rgba(255,200,60,.25)}
 .rp-cycle i.last.done{background:rgba(255,200,60,.55)}
 .rp-cycle i.last.now{background:var(--gold);box-shadow:0 0 14px var(--gold),0 0 4px #fff}
-.rp-gauge{position:relative}
+.rp-end{transition:fill .3s}.rp-end.on{opacity:1;stroke:#fff;stroke-width:.3}
+.rp-bon{pointer-events:none;text-anchor:middle;font-family:var(--arc-d);font-weight:800;fill:rgba(255,255,255,.6)}
+.rp-bon.on{fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.35);stroke-width:.15}
+.rp-halo{fill:none;stroke-width:.5;transform-box:fill-box;transform-origin:center;animation:rphalo 1.2s ease-out infinite}
+@keyframes rphalo{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+.rp-spiral{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;opacity:.9}
+.rp-gauge>svg,.rp-gauge>.rp-sub,.rp-gauge>.rp-cd{position:relative}
+.rp-gauge{position:relative;transition:border-color .3s,box-shadow .3s}.rp-gauge.act{border-color:var(--pc)!important;box-shadow:0 0 14px color-mix(in srgb,var(--pc) 55%,transparent)}
 .rp-cd{position:absolute;right:12px;top:6px;font-family:var(--arc-d);font-size:44px;line-height:1;color:var(--gold);text-shadow:0 0 18px var(--gold);opacity:0;pointer-events:none}
 .rp-cd.go{animation:rpcd .5s ease-out}
 @keyframes rpcd{0%{opacity:1;transform:scale(1.6)}60%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9)}}
@@ -575,7 +585,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v59";
+const VERSION="v62";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -896,7 +906,7 @@ const RACT={ELAN:{n:"Élan",tr:4,d:"Tire la corde vers toi de 4."},REINS:{n:"Cou
 const RACT_IDS={A01:"ELAN",A02:"ELAN",A03:"ELAN",A04:"REINS",A05:"REINS",A06:"CADENAS",A07:"CADENAS",A08:"CADENAS",
   A09:"COUPURE",A10:"COUPURE",A11:"COUPURE",A13:"SABOT",A14:"SABOT",A15:"PROJO",A16:"PROJO"};
 for(const k in RACT_IDS)CARDS[k]={id:k,kind:"ract",act:RACT_IDS[k]};
-const ROPE_REACT_MS=4000;
+const ROPE_REACT_MS=10000;let RREACT=null;
 function topOwnerEnd(R,p){return R.endTops?R.endTops[p]:null;}
 function setRope(on){document.body.classList.toggle("rope",!!on);$("rope").hidden=!on;if(!on)duck(false);}
 function ropeCorners(n){if(n===2)return[{x:-ROPE.R,y:0},{x:ROPE.R,y:0}];
@@ -984,10 +994,10 @@ function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;const _snd=()=>pla
       R.log=`✂️ COUPURE ! La carte ${PISTES[L.p]} de ${esc(o.name)} est annulée : ${esc(o.name)}, glisse-la sous ton deck`;
       ropeBanner("✂️ COUPURE",`${esc(o.name)} reprend sa carte ${PISTES[L.p]} sous son deck`,"#ff5468");}
     else{const t2=topOf(L.p);t2.sab=true;
-      if(S.players.length>2&&rPushCross(L.owner,2)){R.lastPlace=null;if(!_snd())sfx("XMUTE");sabWho(L,o);render();return;}
+      if(S.players.length>2&&rPushCross(L.owner,2)){R.lastPlace=null;if(!_snd())sfx("XMUTE");if(RREACT)RREACT.hurry();sabWho(L,o);render();return;}
       rPush(L.owner,2);R.log=`🚫 SABOTAGE ! La carte ${PISTES[L.p]} de ${esc(o.name)} ne marquera pas cette manche, et la corde s'éloigne de lui de 2`;
       ropeBanner("🚫 SABOTAGE",`${PISTES[L.p]} de ${esc(o.name)} ne marque pas`,"#ff5468");}
-    R.lastPlace=null;if(!_snd())sfx("XMUTE");render();return;}
+    R.lastPlace=null;if(!_snd())sfx("XMUTE");if(RREACT)RREACT.hurry();render();return;}
   if(R.closing||pending){toast("Attends ton tour pour jouer cette carte",true);return;}
   if(R.actUsed){toast("Une seule carte Action par tour (avant ta carte)",true);return;}
   const p0=S.players[me];
@@ -1002,11 +1012,19 @@ function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;const _snd=()=>pla
   R.usedA.push(c.id);R.actUsed=true;p0.score+=1;R.log+=" · +1 point";_snd();render();}
 function ropeNextTurn(){const R=S.rope;R.played.push(S.turn);R.actUsed=false;
   if(R.played.length>=S.players.length){R.closing=true;render();
-    if(R.lastPlace){ropeReactWindow();return setTimeout(()=>{R.closing=false;ropeRound();},ROPE_REACT_MS);}
+    if(R.lastPlace){ropeReactWindow();return;}
     return setTimeout(()=>{R.closing=false;ropeRound();},600);}
   S.turn=R.order[R.played.length];render();ropeAskObj();}
-function ropeReactWindow(){const el=$("rpReact");if(!el)return;const t0=Date.now();el.hidden=false;
-  (function tick(){const k=Math.max(0,ROPE_REACT_MS-(Date.now()-t0));el.innerHTML=`⏳ Dernière carte : <b>Coupure</b> ou <b>Sabotage</b> ? <span>${Math.ceil(k/1000)}</span>`;if(k>0&&S&&S.rope&&S.rope.closing)setTimeout(tick,200);else el.hidden=true;})();}
+/* fenêtre de réaction après la dernière carte de la manche : 10 s, ou bouton « Pas de réaction » ; une réaction jouée la referme 2 s plus tard */
+function ropeReactWindow(){const el=$("rpReact");if(!el)return;const t0=Date.now(),me=S;el.hidden=false;let end=t0+ROPE_REACT_MS;
+  const close=()=>{if(RREACT!==tk)return;RREACT=null;el.hidden=true;if(S!==me||!S.rope)return;S.rope.closing=false;ropeRound();};
+  const tk={hurry(){end=Math.min(end,Date.now()+2000);},close};RREACT=tk;
+  el.innerHTML=`<div class="rr-t">⏳ Dernière carte : <b>Coupure</b> ou <b>Sabotage</b> ? <span id="rrN"></span></div><div class="rr-bar"><i id="rrBar"></i></div><button class="btn" id="rrSkip">Pas de réaction ▶</button>`;
+  $("rrSkip").onclick=()=>close();
+  (function tick(){if(RREACT!==tk)return;const k=Math.max(0,end-Date.now()),n=$("rrN"),b=$("rrBar");
+    if(n)n.textContent=Math.ceil(k/1000);if(b)b.style.width=(k/ROPE_REACT_MS*100)+"%";
+    if($("sabWho")){end+=200;}   /* le saboteur se désigne : on attend */
+    if(k<=0)return close();setTimeout(tick,200);})();}
 /* ordre de la manche suivante : le meneur au score joue en premier, le dernier au score en dernier (égalité : on garde l'ordre précédent) */
 function ropeOrder(){const R=S.rope;return [...R.order].sort((a,b)=>S.players[b].score-S.players[a].score||R.order.indexOf(a)-R.order.indexOf(b));}
 /* fin de manche */
@@ -1083,6 +1101,43 @@ function ropeAnimate(){if(RANIM)return;let last=performance.now();
     if(RVIEW.br===R.br&&Math.abs(RVIEW.d-R.d)<1e-6||R.br===null&&RVIEW.d<=0){RANIM=0;return;}
     RANIM=requestAnimationFrame(f);})(last);}
 let LKSEEN={S:null,k:new Set()};
+/* ============ Spirale lumineuse derrière la corde ============
+   Deux bras en spirale autour du centre de la corde, à la couleur du joueur actif.
+   Les basses la font gonfler, les médiums et aigus la font onduler le long des bras ; elle tourne au tempo. Discrète : en fond. */
+let SPC=null,SPRAF=0,SPROT=0,SPLAST=0,SPBASS=0,SPAVG=0,SPEN=0;
+function spiralCanvas(){if(!SPC){SPC=document.createElement("canvas");SPC.className="rp-spiral";}return SPC;}
+function spiralStart(){if(!SPRAF)SPRAF=requestAnimationFrame(spiralFrame);}
+function spiralFrame(now){SPRAF=0;
+  const g=$("rpGauge"),svg=g&&g.querySelector("svg");if(!S||!S.rope||$("rope").hidden||!svg||!SPC||!SPC.isConnected)return;
+  SPRAF=requestAnimationFrame(spiralFrame);if(document.hidden)return;
+  const dt=Math.min(.1,(now-(SPLAST||now))/1000);SPLAST=now;
+  const gr=g.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(gr.width*dpr),H=Math.round(gr.height*dpr);
+  if(SPC.width!==W||SPC.height!==H){SPC.width=W;SPC.height=H;}
+  const c=SPC.getContext("2d");c.clearRect(0,0,W,H);
+  /* centre de la corde (0,0 du dessin) en pixels */
+  const sr=svg.getBoundingClientRect(),vb=svg.viewBox.baseVal,sc=Math.min(sr.width/vb.width,sr.height/vb.height);
+  const ox=sr.left+(sr.width-vb.width*sc)/2-gr.left,oy=sr.top+(sr.height-vb.height*sc)/2-gr.top;
+  const cx=(ox-vb.x*sc)*dpr,cy=(oy-vb.y*sc)*dpr,Rmax=Math.max(W,H)*.62;
+  /* spectre */
+  let bass=0,mid=0,hi=0,F=null;const A=window.__ana;
+  if(A&&soundOn){F=new Uint8Array(A.frequencyBinCount);A.getByteFrequencyData(F);const n=F.length;
+    for(let k=1;k<6;k++)bass+=F[k];bass/=5*255;for(let k=6;k<40;k++)mid+=F[k];mid/=34*255;for(let k=40;k<120;k++)hi+=F[k];hi/=80*255;}
+  /* les basses comptent par rapport à leur niveau moyen : la spirale « tape » sur les coups au lieu de rester gonflée */
+  SPAVG+=(bass-SPAVG)*.03;const kick=Math.max(0,Math.min(1,(bass-SPAVG)*6));SPBASS+=(kick-SPBASS)*(kick>SPBASS?.6:.1);SPEN+=((bass+mid)/2-SPEN)*.05;
+  SPROT+=dt*(S.bpm/60)*Math.PI/4*(1+mid*.6);   /* un huitième de tour par temps */
+  const col=S.players[S.turn].color,TURNS=2.6,N=180,arms=2,lvl=.3+SPEN*.5+SPBASS*.6;
+  c.globalCompositeOperation="lighter";c.lineCap="round";c.lineJoin="round";
+  for(let a=0;a<arms;a++)for(const [lw,al] of [[10,.05],[4,.12],[1.6,.35]]){
+    c.beginPath();
+    for(let k=0;k<=N;k++){const u=k/N,th=u*TURNS*Math.PI*2+SPROT+a*Math.PI;
+      const bin=F?F[2+Math.floor(u*90)]/255:0;
+      const r=Rmax*(.06+u*.94)*(.82+SPBASS*.28)+Math.sin(u*38-now/180)*bin*Rmax*.07*(.4+hi*1.6);
+      const x=cx+Math.cos(th)*r,y=cy+Math.sin(th)*r;k?c.lineTo(x,y):c.moveTo(x,y);}
+    c.strokeStyle=col;c.globalAlpha=al*lvl;c.lineWidth=lw*dpr*(.8+SPBASS*.6);c.stroke();}
+  /* halo central qui respire avec les basses */
+  const rg=c.createRadialGradient(cx,cy,0,cx,cy,Rmax*(.25+SPBASS*.25));rg.addColorStop(0,col);rg.addColorStop(1,"transparent");
+  c.globalAlpha=.10+SPBASS*.18;c.fillStyle=rg;c.fillRect(0,0,W,H);
+  c.globalAlpha=1;c.globalCompositeOperation="source-over";}
 function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],camp=rCamp(),fin=isFinal();
   $("rpScores").style.setProperty("--np",n);$("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><b>${p.score}</b></div>`).join("");
   /* jauge des tours : un segment par joueur, dans l'ordre de la manche */
@@ -1099,12 +1154,19 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
       g+=`<line x1="${(x-px*h).toFixed(3)}" y1="${(y-py*h).toFixed(3)}" x2="${(x+px*h).toFixed(3)}" y2="${(y+py*h).toFixed(3)}" class="rp-tick${k%5?"":" maj"}"/>`;
       if(k%2===0&&(n===2||k<ROPE.R)){let tx=x+px*2.2,ty=y+py*2.2;if(n===2){tx=x;ty=3.1;}g+=`<text x="${tx.toFixed(3)}" y="${(ty+.38).toFixed(3)}" class="rp-num">${k}</text>`;}}});
   g+=n===2?`<line x1="0" y1="-1.3" x2="0" y2="1.3" class="rp-tick maj"/>`:`<circle cx="0" cy="0" r=".45" class="rp-dot"/>`;
-  g+=C.map((q,i)=>`<circle cx="${q.x}" cy="${q.y}" r="${n===2?1.9:1.5}" fill="${S.players[i].color}"/>`).join("");
+  /* bouts de la corde : bonus de corde de la manche en cours (+3, +5 à la dernière) ; celui qui a la corde dans son camp est en surbrillance */
+  const bon="+"+(fin?ROPE.BONUS_FINAL:ROPE.BONUS),cr=n===2?1.9:1.6;
+  g+=C.map((q,i)=>{const on=camp===i;return (on?`<circle cx="${q.x}" cy="${q.y}" r="${cr}" class="rp-halo" stroke="${S.players[i].color}"/>`:"")
+    +`<circle cx="${q.x}" cy="${q.y}" r="${cr}" fill="${S.players[i].color}" style="${on?"":`fill:color-mix(in srgb,${S.players[i].color} 50%,#141026)`}" class="rp-end${on?" on":""}"/>`
+;}).join("");
+  const bonTxt=C.map((q,i)=>`<text x="${q.x}" y="${(q.y+cr*.36).toFixed(3)}" class="rp-bon${camp===i?" on":""}" style="font-size:${(cr*.95).toFixed(2)}px">${bon}</text>`).join("");
   const V=ropeViewPos();
-  g+=`<line id="rpPullL" x1="0" y1="0" x2="${V.x}" y2="${V.y}" class="rp-pull" stroke="${col}"/><circle id="rpRing" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-ring"/><circle id="rpKnot" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-knot" fill="${col}"/>`;
+  g+=`<line id="rpPullL" x1="0" y1="0" x2="${V.x}" y2="${V.y}" class="rp-pull" stroke="${col}"/><circle id="rpRing" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-ring"/><circle id="rpKnot" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-knot" fill="${col}"/>`+bonTxt;
   const vb=n===2?"-11.9 -2.4 23.8 6.2":n===3?"-11.6 -11.9 23.2 18.8":"-9.4 -9.4 18.8 18.8";
+  $("rpGauge").style.setProperty("--pc",pl.color);$("rpGauge").classList.toggle("act",!S.ended);
   $("rpBpm").textContent="♩ "+Math.round(S.bpm)+" BPM";
   $("rpGauge").innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg><div class="rp-sub">${camp!==null?`Corde dans le camp de <b style="color:${col}">${esc(S.players[camp].name)}</b> : sa carte posée se verrouille`:"Corde au milieu"}</div>`;
+  $("rpGauge").prepend(spiralCanvas());spiralStart();
   ropeAnimate();
   const LKN=new Set(PORDER.filter(p=>R.locks[p]!==undefined&&!(LKSEEN.S===S&&LKSEEN.k.has(p+":"+R.round))));
   LKSEEN={S,k:new Set(PORDER.filter(p=>R.locks[p]!==undefined).map(p=>p+":"+R.round))};
@@ -1342,6 +1404,8 @@ function startAudio(){
     const outG=ctx.createGain();outG.gain.value=.9;
     chain(masterIn,glue,lim,outG,ctx.destination);
     window.__masterOut=outG;
+    /* analyseur pour la spirale lumineuse (pris avant le volume de sortie : la spirale ne s'éteint pas pendant les modales) */
+    const ana=ctx.createAnalyser();ana.fftSize=512;ana.smoothingTimeConstant=.78;lim.connect(ana);window.__ana=ana;
     const conv=ctx.createConvolver();conv.buffer=makeIR(2.6,3.2,1);revIn=ctx.createGain();revIn.gain.value=1;
     const revRet=ctx.createGain();revRet.gain.value=.55;chain(revIn,bq("highpass",180,.7),conv,revRet,masterIn);
     delIn=ctx.createGain();delNode=ctx.createDelay(2);delNode.delayTime.value=SPB*3;const fb=ctx.createGain();fb.gain.value=.38;const dret=ctx.createGain();dret.gain.value=.45;
