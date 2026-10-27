@@ -487,9 +487,9 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 #rpKnot.beat{animation:rpknot .32s ease-out}#rpKnot.beat.last{animation:rpknot2 .45s ease-out}
 @keyframes rpknot{0%{transform:scale(1.8);stroke:var(--gold);stroke-width:.3}100%{transform:scale(1)}}
 @keyframes rpknot2{0%{transform:scale(2.2);stroke:var(--gold);stroke-width:.3}100%{transform:scale(1)}}
-.rp-kn{font-family:var(--arc-d);font-size:1.8px;text-anchor:middle;fill:var(--gold);paint-order:stroke;stroke:#2a1a00;stroke-width:.32;pointer-events:none;opacity:0;transform-box:fill-box;transform-origin:center}
-.rp-kn.go{animation:rpkn .48s ease-out forwards}
-@keyframes rpkn{0%{opacity:1;transform:scale(1.5)}70%{opacity:1;transform:scale(1)}100%{opacity:0}}
+.rp-kn{font-family:var(--arc-d);font-weight:700;font-size:2.1px;text-anchor:middle;dominant-baseline:central;fill:var(--gold);pointer-events:none;opacity:0}
+.rp-kn.go{animation:rpkn .48s linear forwards}
+@keyframes rpkn{0%,75%{opacity:1}100%{opacity:0}}
 .rp-ring{fill:none;stroke:var(--gold);stroke-width:.35;transform-box:fill-box;transform-origin:center;opacity:0}
 .rp-ring.go{animation:rpring .5s ease-out}
 @keyframes rpring{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(3.4)}}
@@ -667,7 +667,7 @@ body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v86";
+const VERSION="v87";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1221,7 +1221,7 @@ function ropeAnimate(){if(RANIM)return;let last=performance.now();
       else{/* mauvaise branche : on redescend vers le centre */
         if(RVIEW.d<=step){step-=RVIEW.d;RVIEW.d=0;RVIEW.br=R.br===null?null:R.br;if(R.br===null)step=0;}else{RVIEW.d-=step;step=0;}}}
     if(RVIEW.d<=0&&R.br===null)RVIEW.br=null;
-    const p=ropeXY(RVIEW.br,RVIEW.d),k=$("rpKnot"),l=$("rpPullL");if(k){k.setAttribute("cx",p.x);k.setAttribute("cy",p.y);}const rg=$("rpRing");if(rg){rg.setAttribute("cx",p.x);rg.setAttribute("cy",p.y);}const kn=$("rpKnotN");if(kn){kn.setAttribute("x",p.x);kn.setAttribute("y",(p.y+.62).toFixed(3));}if(l){l.setAttribute("x2",p.x);l.setAttribute("y2",p.y);}
+    const p=ropeXY(RVIEW.br,RVIEW.d),k=$("rpKnot"),l=$("rpPullL");if(k){k.setAttribute("cx",p.x);k.setAttribute("cy",p.y);}const rg=$("rpRing");if(rg){rg.setAttribute("cx",p.x);rg.setAttribute("cy",p.y);}const kn=$("rpKnotN");if(kn){kn.setAttribute("x",p.x);kn.setAttribute("y",p.y);}if(l){l.setAttribute("x2",p.x);l.setAttribute("y2",p.y);}
     if(RVIEW.br===R.br&&Math.abs(RVIEW.d-R.d)<1e-6||R.br===null&&RVIEW.d<=0){RANIM=0;return;}
     RANIM=requestAnimationFrame(f);})(last);}
 let LKSEEN={S:null,k:new Set()};
@@ -1327,7 +1327,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
 ;}).join("");
   const bonTxt=C.map((q,i)=>`<text x="${q.x}" y="${(q.y+cr*.36).toFixed(3)}" class="rp-bon${camp===i?" on":""}" style="font-size:${(cr*.95).toFixed(2)}px">${bon}</text>`).join("");
   const V=ropeViewPos();
-  g+=`<line id="rpPullL" x1="0" y1="0" x2="${V.x}" y2="${V.y}" class="rp-pull" stroke="${col}"/><circle id="rpRing" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-ring"/><circle id="rpKnot" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-knot" fill="${col}"/><text id="rpKnotN" x="${V.x}" y="${(V.y+.62).toFixed(3)}" class="rp-kn"></text>`+bonTxt;
+  g+=`<line id="rpPullL" x1="0" y1="0" x2="${V.x}" y2="${V.y}" class="rp-pull" stroke="${col}"/><circle id="rpRing" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-ring"/><circle id="rpKnot" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-knot" fill="${col}"/><text id="rpKnotN" x="${V.x}" y="${V.y}" class="rp-kn"></text>`+bonTxt;
   const vb=n===2?"-11.9 -2.4 23.8 6.2":n===3?"-11.6 -11.9 23.2 18.8":"-9.4 -9.4 18.8 18.8";
   $("rpGauge").style.setProperty("--pc",pl.color);$("rpGauge").classList.toggle("act",!S.ended);
   $("rpBpm").textContent="♩ "+Math.round(S.rope&&S.rope.ramp?curBpm:S.bpm)+" BPM";
