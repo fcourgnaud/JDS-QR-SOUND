@@ -598,9 +598,9 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
     <li><b>Ton tour</b> : scanne une carte et pose-la sur sa piste. Elle tire le curseur vers toi. Si le curseur est alors dans ton camp, ta carte se <b>verrouille</b> jusqu'à la fin de la manche.</li>
     <li><b>Surenchère</b> (cartes marquées) : si elle recouvre une carte adverse qui vaut moins de points, elle tire +1.</li>
     <li>Joker : traction pure +6, 0 point, il ne se pose pas.</li>
-    <li><b>Deck Action</b> (15 cartes communes : Élan ×3, Coup de reins ×2, Cadenas ×3, Projecteur ×2, Coupure ×3, Sabotage ×2). À la fin de ton tour, pioche dans ton deck <b>ou</b> une carte Action. Une carte recouverte retourne sous le deck de son propriétaire.</li>
+    <li><b>Deck Action</b> (15 cartes communes : Élan ×3, Coup de reins ×2, Cadenas ×3, Projecteur ×2, Coupure ×3, Sabotage ×2). À la fin de ton tour, pioche dans ton deck <b>ou</b> une carte Action. Une carte recouverte reste sur sa piste, sous la nouvelle. Quand ton deck est vide, remélange ta défausse pour en faire un nouveau.</li>
     <li>Pendant ton tour, <b>avant ta carte</b>, tu peux jouer une Action (une seule, +1 point) : Élan (traction +4), Coup de reins (+6), Cadenas (verrouille ta dernière carte posée), Projecteur (la carte que tu poses ce tour marque double à cette fin de manche).</li>
-    <li><b>Réactions</b>, jouées par un adversaire juste après la pose d'une carte : Coupure (la carte est annulée, retourne sous le deck de son propriétaire, la corde revient en arrière) et Sabotage (la carte ne marque pas à cette fin de manche et la corde s'éloigne de 2 de son propriétaire). Après la dernière carte d'une manche, il reste 4 secondes pour réagir.</li>
+    <li><b>Réactions</b>, jouées par un adversaire juste après la pose d'une carte : Coupure (la carte est annulée et part dans la défausse de son propriétaire ; la carte qui était en dessous rejoue, la corde revient en arrière) et Sabotage (la carte ne marque pas à cette fin de manche et la corde s'éloigne de 2 de son propriétaire). Après la dernière carte d'une manche, il reste 10 secondes pour réagir.</li>
     <li><b>Fin de manche</b> (jauge des tours pleine) : chacun marque ses cartes visibles ; +3 pour le camp de la corde ; <b>Chœur</b> : +3 si tu tiens au moins 3 pistes. La corde recule d'un quart vers le centre et les verrous sautent.</li>
     <li><b>Ordre</b> : à la manche suivante, le joueur en tête au score joue en premier, le dernier au score joue en dernier.</li>
     <li><b>Dernière manche</b> (8e) : tempo +20, cartes ×2, corde +5.</li>
@@ -651,7 +651,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v80";
+const VERSION="v81";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -980,7 +980,7 @@ for(const k in OBJ)CARDS[k]={id:k,kind:"obj"};
 const RACT={ELAN:{n:"Élan",tr:4,d:"Tire la corde vers toi de 4."},REINS:{n:"Coup de reins",tr:6,d:"Tire la corde vers toi de 6."},
   CADENAS:{n:"Cadenas",d:"Verrouille ta dernière carte posée jusqu'à la fin de la manche."},
   PROJO:{n:"Projecteur",d:"La carte que tu poses ce tour marque double à cette fin de manche (perdu si elle est recouverte)."},
-  COUPURE:{n:"Coupure",react:true,d:"Réaction : annule la carte qui vient d'être posée. Elle retourne sous le deck de son propriétaire et la corde revient en arrière."},
+  COUPURE:{n:"Coupure",react:true,d:"Réaction : annule la carte qui vient d'être posée. Elle part dans la défausse de son propriétaire, la carte d'en dessous rejoue et la corde revient en arrière."},
   SABOT:{n:"Sabotage",react:true,d:"Réaction : la carte qui vient d'être posée ne marque pas à cette fin de manche, et la corde s'éloigne de 2 de son propriétaire."}};
 const RACT_IDS={A01:"ELAN",A02:"ELAN",A03:"ELAN",A04:"REINS",A05:"REINS",A06:"CADENAS",A07:"CADENAS",A08:"CADENAS",
   A09:"COUPURE",A10:"COUPURE",A11:"COUPURE",A13:"SABOT",A14:"SABOT",A15:"PROJO",A16:"PROJO"};
@@ -1094,10 +1094,11 @@ function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;const _snd=()=>pla
     if(!L||!t||t.seq!==L.seq){toast(`${a.n} se joue en réaction, juste après la pose d'une carte`,true);return;}
     if(pending&&!R.closing)return;
     snap();const o=S.players[L.owner];R.usedA.push(c.id);
-    if(c.act==="COUPURE"){S.stacks[L.p].pop();R.br=L.before.br;R.d=L.before.d;rSync();if(R.locks[L.p]===L.owner&&L.lk){delete R.locks[L.p];R.st[L.owner].locks--;}
+    if(c.act==="COUPURE"){const cut=S.stacks[L.p].pop();R.br=L.before.br;R.d=L.before.d;rSync();if(R.locks[L.p]===L.owner&&L.lk){delete R.locks[L.p];R.st[L.owner].locks--;}
       if(L.cover)R.st[L.owner].covers--;if(L.sur)R.st[L.owner].sur--;S.last=topOf(L.p)?L.p:null;
-      R.log=`✂️ COUPURE ! La carte ${PISTES[L.p]} de ${esc(o.name)} est annulée : ${esc(o.name)}, glisse-la sous ton deck`;
-      ropeBanner("✂️ COUPURE",`${esc(o.name)} reprend sa carte ${PISTES[L.p]} sous son deck`,"#ff5468");}
+      (R.disc=R.disc||{})[L.owner]=[...(R.disc[L.owner]||[]),cut.id];
+      R.log=`✂️ COUPURE ! La carte ${PISTES[L.p]} de ${esc(o.name)} est annulée : elle part dans sa défausse`;
+      ropeBanner("✂️ COUPURE",`la carte ${PISTES[L.p]} de ${esc(o.name)} part dans sa défausse`,"#ff5468");}
     else{const t2=topOf(L.p);t2.sab=true;
       if(S.players.length>2&&rPushCross(L.owner,2)){R.lastPlace=null;if(!_snd())sfx("XMUTE");if(RREACT)RREACT.hurry();sabWho(L,o);render();return;}
       rPush(L.owner,2);R.log=`🚫 SABOTAGE ! La carte ${PISTES[L.p]} de ${esc(o.name)} ne marquera pas cette manche, et la corde s'éloigne de lui de 2`;
@@ -1212,8 +1213,13 @@ let LKSEEN={S:null,k:new Set()};
 function renderSim(){const el=$("rpSim");if(!el)return;el.hidden=!(S&&S.sim);if(el.hidden)return;const R=S.rope,fin=isFinal();
   const card=(id,lab,sub,cls,st)=>`<button class="sim-c ${cls||""}" data-id="${id}" ${st||""}><b>${lab}</b><small>${sub}</small></button>`;
   let h="";
-  /* cartes déjà utilisées (grisées) : posées et encore visibles sur une piste, ou Joker déjà joué ; une carte recouverte ou coupée retourne sous le deck */
-  const onTable=new Set(PORDER.map(q=>topOf(q)).filter(Boolean).map(t=>t.id)),jok=new Set(R.jokUsed||[]);
+  /* cartes grisées : posées sur une piste (même recouvertes, elles y restent) ou dans la défausse (coupées, Joker joué).
+     Quand un joueur n'a plus rien à jouer, sa défausse est remélangée : ses cartes redeviennent disponibles. */
+  const onTable=new Set(PORDER.flatMap(q=>S.stacks[q].map(t=>t.id)));
+  S.players.forEach((p,i)=>{const d=p.deck,all=[...PORDER.flatMap(q=>["2","4"].map(v=>q+d+v)),"J"+d+"2"];
+    const disc=new Set([...((R.disc||{})[i]||[]),...(R.jokUsed||[]).filter(j=>j[1]===d)]);
+    if(all.every(id=>onTable.has(id)||disc.has(id))&&disc.size){(R.disc=R.disc||{})[i]=[];R.jokUsed=(R.jokUsed||[]).filter(j=>j[1]!==d);toast(p.name+" remélange sa défausse");}});
+  const jok=new Set([...(R.jokUsed||[]),...Object.values(R.disc||{}).flat()]);
   h+=S.players.map((p,i)=>{const d=p.deck,ids=[...PORDER.flatMap(q=>["2","4"].map(v=>q+d+v)),"J"+d+"2"];
     return `<div class="sim-g${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><h4>${esc(p.name)} <small>${DECKS[d].short}${i===S.turn&&!S.ended?" · à toi":""}</small></h4><div class="sim-row">${ids.map(id=>{const v=RV[id];
       const u=onTable.has(id)||jok.has(id);
@@ -1320,7 +1326,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
     const o=S.players[t.owner],v=RV[t.id];
     return `<div class="rp-tr${now?" now":""}${lk?" lk":""}${LKN.has(p)?" lknew":""}" style="--kc:${o.color}">${hd}
       <div class="rp-card"><span class="rp-star">${t.sab?0:v[0]*(fin?2:1)*(R.projo[p]?2:1)}</span><span class="rp-gl">${DECKS[CARDS[t.id].deck].glyph}</span></div><div class="rp-own" style="color:${o.color}">${esc(o.name)}</div></div>`;}).join("");
-  $("rpLog").innerHTML=(R.log||"Scanne une carte.")+(S.ended?"":`<small class="rp-hint">${R.actUsed?"Action jouée ce tour":"Action possible avant ta carte"} · fin de tour : pioche ton deck <b>ou</b> une Action · carte recouverte : sous le deck de son propriétaire</small>`);
+  $("rpLog").innerHTML=(R.log||"Scanne une carte.")+(S.ended?"":`<small class="rp-hint">${R.actUsed?"Action jouée ce tour":"Action possible avant ta carte"} · fin de tour : pioche ton deck <b>ou</b> une Action</small>`);
   $("undoBtnR").disabled=!undoStack.length;
   renderSim();$("latV").textContent=USERLAT+" ms";$("rpTitle").textContent=S.sim?"🧪 ESSAI":"🪢 LA CORDE";
 }
@@ -2099,9 +2105,9 @@ function plWait(seq){if(plIdle())return (4-curBeat%4)%4||4;return (16-curBeat%16
 function plStopTrack(p,t){const c=PL.tr[p];PL.tr[p]=null;if(!c||!c.ref||!SMP[c.ref])return;const s=SMP[c.ref];
   if(PORDER.some(q=>PL.tr[q]&&PL.tr[q].ref===c.ref))return;
   (s.srcs||[]).forEach(x=>{try{x.stop(t+.003);}catch(e){}});s.src=null;s.playing=false;}
-function plStartTrack(p,v,t){const id=sndOf(v.t),r=SREF(id),mp3=!!(SAMPLES[r]&&smpOn(r));
+function plStartTrack(p,v,t,beat){const id=sndOf(v.t),r=SREF(id),mp3=!!(SAMPLES[r]&&smpOn(r));beat=beat||0;
   if(PL.tr[p])plStopTrack(p,t);
-  if(mp3){const s=SMP[r];s.at=p;startSample(r,t,0);s.absStart=ABS;}
+  if(mp3){const s=SMP[r];s.at=p;startSample(r,t,beat%s.D.beats);s.absStart=ABS-beat;}
   PL.tr[p]={seq:v.t.seq,id,ref:mp3?r:null,p,t0:t};}
 /* appelé à chaque pas, avant de le jouer ; renvoie le pas (remis à 0 quand le cycle repart) */
 function plTick(st,t){
@@ -2109,7 +2115,9 @@ function plTick(st,t){
   ABS++;
   if(S&&S.ended&&S.rope&&soundOn&&!preview)return st;   /* fin de partie (La Corde) : les boucles continuent en fond sous l'écran de résultat */
   if(preview||!S||S.ended||!soundOn){for(const p of PORDER)if(PL.tr[p])plStopTrack(p,t);return st;}
-  for(const p of PORDER){const c=PL.tr[p];if(c&&!plFind(c.seq))plStopTrack(p,t);}   /* carte annulée (Coupure, Larsen, retour arrière) */
+  for(const p of PORDER){const c=PL.tr[p];if(c&&!plFind(c.seq)){plStopTrack(p,t);
+      /* carte annulée (Coupure, retour arrière) : la carte d'en dessous reprend tout de suite, calée sur le cycle */
+      const v=plVisible().find(x=>x.p===p);if(v){const r=SREF(sndOf(v.t));if(!SMP[r]||SMP[r].ready)plStartTrack(p,v,t,st/4);}}}
   const want={};plVisible().forEach(v=>want[v.p]=v);
   const idle=plIdle(),any=Object.keys(want).length;
   let start=false;
