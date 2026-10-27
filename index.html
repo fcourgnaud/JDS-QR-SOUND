@@ -174,7 +174,7 @@ body.arcade .pickbar{flex-direction:column;align-items:stretch;top:50%;bottom:au
 .cm-lab{font-weight:800;font-size:15px;color:var(--dc);text-align:center}
 .cm-num{font-family:var(--mono);font-size:96px;line-height:1;font-weight:600;color:var(--text)}
 .cm-num.pop{animation:cmPop .45s cubic-bezier(.3,1.6,.5,1)}
-@keyframes cmPop{0%{transform:scale(1.6);opacity:.3}100%{transform:scale(1);opacity:1}}
+@keyframes cmPop{0%{transform:scale(1.35);opacity:1}100%{transform:scale(1);opacity:1}}
 .cm-sub{font-size:14px;color:var(--muted)}
 .cm-dots{display:grid;grid-template-columns:repeat(4,22px);gap:8px;margin-top:4px}
 .cm-dots i{height:22px;border-radius:50%;background:var(--panel-2);border:2px solid var(--line)}
@@ -409,7 +409,7 @@ body.rope{background:var(--arc-bg);background-image:none}
 .rp-log{min-height:2.4em;text-align:center;font-size:14px;color:#e8e6ff;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.05)}
 .rp-burst{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--arc-d);font-size:34px;text-shadow:0 0 14px currentColor;animation:rpb 1.2s ease-out forwards;pointer-events:none}
 @keyframes rpb{0%{opacity:0;transform:translate(-50%,-20%) scale(.6)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-140%) scale(1)}}
-.rp-ban{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:30;background:#0d0b2b;border:2px solid var(--neon2);border-radius:20px;padding:16px 22px;text-align:center;display:flex;flex-direction:column;gap:4px;box-shadow:0 0 30px rgba(56,243,255,.35);animation:rpban 2.2s ease forwards;min-width:240px}
+.rp-ban{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:30;background:#0d0b2b;border:2px solid var(--neon2);border-radius:20px;padding:16px 22px;text-align:center;display:flex;flex-direction:column;gap:4px;box-shadow:0 0 30px rgba(56,243,255,.35);animation:rpban 3.7s ease forwards;min-width:240px}
 .rp-ban[hidden]{display:none}.rp-ban b{font-family:var(--arc-d);font-size:30px;text-shadow:0 0 14px currentColor}.rp-ban span{color:#e8e6ff}
 @keyframes rpban{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}80%{opacity:1}100%{opacity:0}}
 body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:var(--arc-t);color:#fff}
@@ -419,7 +419,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .rp-react{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(92vw,420px);text-align:center}
 .rp-react.full{inset:0;left:0;right:0;bottom:0;top:0;transform:none;width:auto;border:0;border-radius:0;box-shadow:none;background:rgba(3,3,10,.72);justify-content:center;gap:20px;z-index:30;padding:20px}
 .rp-react.full[hidden]{display:none}
-.rr-k{font-family:var(--arc-d);font-size:clamp(34px,11vw,56px);line-height:1.05;letter-spacing:.06em;color:#ff5468;text-shadow:0 0 18px #ff5468;text-align:center}
+.rr-k{font-family:var(--arc-d);font-size:clamp(28px,9vw,44px);line-height:1.05;letter-spacing:.06em;color:#ff5468;text-shadow:0 0 18px #ff5468;text-align:center}
 .rr-q{font-size:16px;color:#e8e4ff}.rr-q b{color:#ff8a9a}
 .rr-num{font-family:var(--arc-d);font-size:120px;line-height:1;color:#fff;text-shadow:0 0 22px #ff5468,0 0 6px #ff5468}
 .rr-num.gold{color:var(--gold);text-shadow:0 0 24px var(--gold),0 0 6px #fff}
@@ -465,7 +465,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .rp-cycle{display:flex;align-items:center;gap:8px}
 .rc-bpm{font-family:var(--arc-d);font-size:13px;color:var(--gold);white-space:nowrap;min-width:64px}
 .rp-cycle b{flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
-.rp-cycle i{height:12px;border-radius:3px;background:rgba(255,255,255,.08);transition:background .08s}
+.rp-cycle i{height:12px;border-radius:3px;background:rgba(255,255,255,.08)}
 .rp-cycle i.bar{box-shadow:inset 3px 0 0 rgba(255,255,255,.35)}
 .rp-cycle i.done{background:rgba(255,255,255,.28)}
 .rp-cycle i.now{background:#fff;box-shadow:0 0 8px #fff}
@@ -485,8 +485,8 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 @keyframes rpcd{0%{opacity:1;transform:scale(1.6)}60%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9)}}
 #rpKnot{transform-box:fill-box;transform-origin:center}
 #rpKnot.beat{animation:rpknot .32s ease-out}#rpKnot.beat.last{animation:rpknot2 .45s ease-out}
-@keyframes rpknot{0%{transform:scale(1.9);filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px var(--gold));stroke:var(--gold)}100%{transform:scale(1);filter:none}}
-@keyframes rpknot2{0%{transform:scale(2.5);filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 3px var(--gold));stroke:#fff}100%{transform:scale(1);filter:none}}
+@keyframes rpknot{0%{transform:scale(1.8);stroke:var(--gold);stroke-width:.3}100%{transform:scale(1)}}
+@keyframes rpknot2{0%{transform:scale(2.2);stroke:var(--gold);stroke-width:.3}100%{transform:scale(1)}}
 .rp-kn{font-family:var(--arc-d);font-size:1.8px;text-anchor:middle;fill:var(--gold);paint-order:stroke;stroke:#2a1a00;stroke-width:.32;pointer-events:none;opacity:0;transform-box:fill-box;transform-origin:center}
 .rp-kn.go{animation:rpkn .48s ease-out forwards}
 @keyframes rpkn{0%{opacity:1;transform:scale(1.5)}70%{opacity:1;transform:scale(1)}100%{opacity:0}}
@@ -537,6 +537,8 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .ann-gain,.ann-note,.fin-notes{text-shadow:0 0 10px rgba(255,210,63,.55)}
 .fr-o.ok b{text-shadow:0 0 8px #4fdc96}.fr-o.ko b{text-shadow:0 0 8px #ff5468}
 .rp-ban{z-index:40}
+#ropeAnn .ann-score,#ropeAnn .ann-score *{color:var(--gold)!important}
+#ropeAnn .ann-gain,#ropeAnn .ann-note{color:#ffe9a3!important}
 body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
 .obj-pn{color:#fff;text-shadow:0 0 12px var(--gc),0 0 4px var(--gc)}
 </style>
@@ -617,7 +619,7 @@ body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
     <li><b>Réactions</b>, jouées par un adversaire juste après la pose d'une carte : Coupure (la carte est annulée et part dans la défausse de son propriétaire ; la carte qui était en dessous rejoue, la corde revient en arrière) et Sabotage (la carte ne marque pas à cette fin de manche et la corde s'éloigne de 2 de son propriétaire). Après la dernière carte d'une manche, il reste 10 secondes pour réagir.</li>
     <li><b>Fin de manche</b> (jauge des tours pleine) : chacun marque ses cartes visibles ; +3 pour le camp de la corde ; <b>Chœur</b> : +3 si tu tiens au moins 3 pistes. La corde recule d'un quart vers le centre et les verrous sautent.</li>
     <li><b>Ordre</b> : à la manche suivante, le joueur en tête au score joue en premier, le dernier au score joue en dernier.</li>
-    <li><b>Dernière manche</b> (8e) : tempo +20, cartes ×2, corde +5.</li>
+    <li><b>Dernière manche</b> (8e) : cartes ×2, corde +5.</li>
     <li><b>Objectifs secrets</b> (option) : avant la partie, tour de table : chacun pioche une carte Objectif et scanne son QR. Révélés et comptés à la fin.</li></ul>
     <h3>Fin</h3>
     <ul><li>Après la 8e mesure, le meilleur score gagne. La musique s'arrête.</li><li>Égalité : celui qui contrôle le plus de pistes l'emporte.</li></ul>
@@ -665,7 +667,7 @@ body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v84";
+const VERSION="v86";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -867,7 +869,7 @@ function setup(){stopEverything();document.body.classList.remove("cd-on");try{if
         <input type="text" id="pn${i}" value="${esc(p.name)}" aria-label="Nom du joueur ${i+1}">
         <div class="decks">${Object.keys(DECKS).map(d=>`<button data-i="${i}" data-d="${d}" class="${p.deck===d?"sel":""}" style="--dc:${DECKS[d].color}">${DECKS[d].glyph} ${DECKS[d].short}</button>`).join("")}</div></div>`).join("")}
       <div class="calib"><div class="cal-h"><b>🎧 Décalage du son</b><span id="calV">${USERLAT} ms</span></div>
-        <div class="cal-sl"><button class="chip" id="calM" aria-label="moins 10 ms">◀</button><input type="range" id="calR" min="0" max="700" step="10" value="${USERLAT}"><button class="chip" id="calP" aria-label="plus 10 ms">▶</button></div>
+        <div class="cal-sl"><button class="chip" id="calM" aria-label="moins 10 ms">◀</button><input type="range" id="calR" min="-200" max="700" step="10" value="${USERLAT}"><button class="chip" id="calP" aria-label="plus 10 ms">▶</button></div>
         <div class="cal-row"><button class="chip" data-lat="0">Haut-parleur</button><button class="chip" data-lat="250">Bluetooth</button><button class="chip" id="calTest">▶ Tester</button><i id="calDot"></i></div>
         <small>Enceinte Bluetooth : lance le test et règle jusqu'à ce que le rond clignote pile sur le bip.</small></div>
       <p class="note" style="margin:0">${modeChoice==="mp3"?"Chaque joueur choisit sa tribu. Les cartes de chacun s'affichent sous le jeu : touche-les pour simuler un scan.":"Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale."}</p>
@@ -877,7 +879,7 @@ function setup(){stopEverything();document.body.classList.remove("cd-on");try{if
     document.querySelectorAll(".mode button").forEach(b=>b.onclick=()=>{save();modeChoice=b.dataset.m;try{localStorage.setItem("ts-mode",modeChoice);}catch(e){}draw();});
     document.querySelectorAll(".decks button").forEach(b=>b.onclick=()=>{save();const i=+b.dataset.i,d=b.dataset.d,j=pls.findIndex(p=>p.deck===d);
       if(j>=0&&j!==i)pls[j].deck=pls[i].deck;pls[i].deck=d;draw();});
-    const setLat=v=>{USERLAT=Math.max(0,Math.min(700,Math.round(+v||0)));try{localStorage.setItem("ts-lat",USERLAT);}catch(e){}$("calV").textContent=USERLAT+" ms";$("calR").value=USERLAT;};
+    const setLat=v=>{USERLAT=Math.max(-200,Math.min(700,Math.round(+v||0)));try{localStorage.setItem("ts-lat",USERLAT);}catch(e){}$("calV").textContent=USERLAT+" ms";$("calR").value=USERLAT;};
     $("calR").oninput=e=>setLat(e.target.value);
     $("calM").onclick=()=>setLat(USERLAT-10);$("calP").onclick=()=>setLat(USERLAT+10);
     document.querySelectorAll(".calib [data-lat]").forEach(b=>b.onclick=()=>setLat(b.dataset.lat));
@@ -962,9 +964,9 @@ $("arcQuit").onclick=()=>$("newBtn").click();
      +3 (Chœur) si un joueur tient au moins 3 pistes. La corde recule d'un quart vers le centre (la pente).
      La manche suivante, le joueur en tête au score joue en premier (le dernier au score joue en dernier).
    - À 2 joueurs, la corde démarre à 2 crans vers le premier joueur (jouer en dernier dans une manche est un avantage).
-   - Dernière manche : tempo +20, toutes les cartes comptent double, bonus de corde +5.
+   - Dernière manche : toutes les cartes comptent double, bonus de corde +5 (le tempo ne change plus).
    - Option objectifs secrets : chaque joueur scanne une carte Objectif à son premier tour ; révélés et comptés à la fin. */
-const ROPE={BPM:120,R:10,CAMP:3,PENTE:.75,BONUS:3,BONUS_FINAL:5,CHOIR:3,CHOIR_MIN:3,ROUNDS:8,FINAL_BPM:20,MODAL_MS:5000,DUCK:.2,START2:2};
+const ROPE={BPM:120,R:10,CAMP:3,PENTE:.75,BONUS:3,BONUS_FINAL:5,CHOIR:3,CHOIR_MIN:3,ROUNDS:8,FINAL_BPM:0,MODAL_MS:5000,DUCK:.2,START2:2};
 const RV={RF2:[1,5],RF4:[4,2],BF2:[2,4],BF4:[5,1],HF2:[3,3],HF4:[2,4],MF2:[4,2],MF4:[3,3],
   RN2:[3,3],RN4:[2,4],BN2:[4,2],BN4:[1,5],HN2:[5,1],HN4:[3,3],MN2:[2,4],MN4:[4,2],
   RE2:[2,4],RE4:[5,1],BE2:[3,3],BE4:[4,2],HE2:[1,5],HE4:[4,2],ME2:[3,3],ME4:[2,4],
@@ -1159,12 +1161,12 @@ function ropeRound(){if(!S||!S.rope||S.ended)return;if($("sabWho"))return setTim
   /* la pente : la corde recule de moitié ; nouvel ordre ; verrous levés */
   R.projo={};R.projoNext=null;R.lastPlace=null;R.actUsed=false;
   R.order=ropeOrder();R.d=+(R.d*ROPE.PENTE).toFixed(3);rSync();R.locks={};R.played=[];R.round++;S.turn=R.order[0];
-  if(isFinal())rampStart();else if(R.round===ROPE.ROUNDS-1)prepRamp();
+  if(ROPE.FINAL_BPM){if(isFinal())rampStart();else if(R.round===ROPE.ROUNDS-1)prepRamp();}   /* montée de tempo désactivée (FINAL_BPM:0) */
   R.log=`Manche ${R.round} : ${esc(S.players[S.turn].name)} commence (en tête au score)`;render();cheer();
   const L=leaderOf(),lead=L.who.length>1?null:L.who[0];
   const head=lead?`<div class="ann-crown">👑</div><b class="ann-name" style="--gc:${lead.color}">${esc(lead.name)}</b><div class="ann-score">${lead.score}<small>PTS</small></div>`
     :`<b class="ann-name">ÉGALITÉ</b><div class="ann-gain">${L.who.map(p=>esc(p.name)).join(" · ")} · ${L.mx} pts</div>`;
-  const next=isFinal()?`<span class="ann-next fin">🔥 DERNIÈRE MANCHE 🔥</span><span class="ann-gain">tempo +${ROPE.FINAL_BPM} · cartes ×2 · corde +${ROPE.BONUS_FINAL}</span>`:`<span class="ann-next">MANCHE ${R.round}</span>`;
+  const next=isFinal()?`<span class="ann-next fin">🔥 DERNIÈRE MANCHE 🔥</span><span class="ann-gain">${ROPE.FINAL_BPM?`tempo +${ROPE.FINAL_BPM} · `:""}cartes ×2 · corde +${ROPE.BONUS_FINAL}</span>`:`<span class="ann-next">MANCHE ${R.round}</span>`;
   ropeModal(`<span class="ann-k">EN TÊTE</span>${head}${notes.map(t=>`<span class="ann-note">${t}</span>`).join("")}${next}<span class="ann-gain" style="font-size:13px">${esc(S.players[S.turn].name)} commence (en tête)</span>`,ROPE.MODAL_MS,null);}
 /* fin de partie : podium animé, dernière manche, objectifs révélés */
 function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
@@ -1205,7 +1207,7 @@ function sabWho(L,o){const R=S.rope,keep=pending;pending={sab:true};
     rPush(L.owner,2,who);R.log=`🚫 SABOTAGE de ${esc(S.players[who].name)} ! La carte ${PISTES[L.p]} de ${esc(o.name)} ne marquera pas cette manche, et la corde part vers ${esc(S.players[who].name)}`;
     ropeBanner("🚫 SABOTAGE",`${PISTES[L.p]} de ${esc(o.name)} ne marque pas`,"#ff5468");creak(.4);render();};}
 function ropeBanner(a,b,col){const el=$("ropeBan");if(!el)return;el.innerHTML=`<b style="--gc:${col}">${a}</b><span>${b}</span>`;el.hidden=false;el.style.animation="none";void el.offsetWidth;el.style.animation="";
-  clearTimeout(ropeBanner.t);ropeBanner.t=setTimeout(()=>el.hidden=true,2000);}
+  clearTimeout(ropeBanner.t);ropeBanner.t=setTimeout(()=>el.hidden=true,3500);}
 /* ---------- rendu ---------- */
 /* animation du nœud : il glisse le long des rails (en repassant par le centre pour changer de branche) */
 let RVIEW=null,RANIM=0;
@@ -1242,7 +1244,7 @@ function renderSim(){const el=$("rpSim");if(!el)return;el.hidden=!(S&&S.sim);if(
     return card(k,a.n,a.react?"réaction":a.tr?"+"+a.tr:"action",(a.react?"re ":"")+(R.usedA.includes(k)?"used":""),R.usedA.includes(k)?"disabled":"");}).join("")}</div></div>`;
   el.innerHTML=h;}
 /* décalage du son réglable pendant la partie (enregistré, appliqué tout de suite) */
-function latSet(v){USERLAT=Math.max(0,Math.min(700,Math.round(+v||0)));try{localStorage.setItem("ts-lat",USERLAT);}catch(e){}const e=$("latV");if(e)e.textContent=USERLAT+" ms";}
+function latSet(v){USERLAT=Math.max(-200,Math.min(700,Math.round(+v||0)));try{localStorage.setItem("ts-lat",USERLAT);}catch(e){}const e=$("latV");if(e)e.textContent=USERLAT+" ms";}
 $("latM").onclick=()=>latSet(USERLAT-10);$("latP").onclick=()=>latSet(USERLAT+10);
 $("rpSim").onclick=e=>{const b=e.target.closest("button[data-id]");if(!b||b.disabled||!S||!S.sim)return;startAudio();seen[b.dataset.id]=0;onCode("BOUCLE:"+b.dataset.id);};
 /* ============ Test des MP3 : écouter les boucles des dossiers, une par piste, ensemble et calées comme en partie ============ */
@@ -1276,7 +1278,7 @@ function spiralFrame(now){SPRAF=0;
   const g=$("rpGauge");if(!S||!S.rope||$("rope").hidden||!g||!SPC||!SPC.isConnected)return;
   SPRAF=requestAnimationFrame(spiralFrame);if(document.hidden)return;
   const dt=Math.min(.1,(now-(SPLAST||now))/1000);SPLAST=now;
-  const W0=g.clientWidth,H0=g.clientHeight,dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(W0*dpr),H=Math.round(H0*dpr);
+  const W0=g.clientWidth,H0=g.clientHeight,dpr=.5,W=Math.round(W0*dpr),H=Math.round(H0*dpr);
   if(SPC.width!==W||SPC.height!==H){SPC.width=W;SPC.height=H;}
   const c=SPC.getContext("2d");c.clearRect(0,0,W,H);
   let bass=0,mid=0,T=null;const A=window.__ana;
@@ -1289,7 +1291,7 @@ function spiralFrame(now){SPRAF=0;
   c.globalCompositeOperation="lighter";
   for(let k=0;k<6;k++){const ph=k*1.7,x=W*(.5+.42*Math.sin(SPT*.5+ph)),y=H*(.5+.38*Math.cos(SPT*.37+ph*1.3)),r=Math.max(W,H)*(.32+.1*Math.sin(SPT*.8+ph))*(1+SPBASS*.25);
     const rg=c.createRadialGradient(x,y,0,x,y,r);rg.addColorStop(0,col);rg.addColorStop(1,"transparent");
-    c.globalAlpha=(.09+SPEN*.07+SPBASS*.16);c.fillStyle=rg;c.fillRect(0,0,W,H);}
+    c.globalAlpha=(.09+SPEN*.07+SPBASS*.16);c.fillStyle=rg;c.fillRect(x-r,y-r,2*r,2*r);}
   /* ondes */
   const P=40,pts=[];
   for(let i=0;i<=P;i++){let v=0;if(T){const a=Math.floor(i/P*(T.length-1)),w=10;let s2=0,n2=0;for(let k=-w;k<=w;k++){const q=a+k;if(q>=0&&q<T.length){s2+=T[q];n2++;}}v=(s2/n2-128)/128;}pts.push(v);}
@@ -1578,7 +1580,7 @@ function calStart(){startAudio();if(ctx.state!=="running")ctx.resume();let t=ctx
       visAt(t,()=>{const d=$("calDot");if(!d)return;d.classList.remove("on","big");void d.offsetWidth;d.classList.add("on");if(k===0)d.classList.add("big");});t+=.5;}},50);
   const b=$("calTest");if(b)b.textContent="■ Arrêter";}
 function visAt(t,fn){VISQ.push({t,fn});if(!VISRAF)VISRAF=requestAnimationFrame(visRun);}
-function visRun(){VISRAF=0;const h=heardNow()+.008;
+function visRun(){VISRAF=0;const h=heardNow()+.022;   /* +1 image : le temps que l'écran affiche le changement */
   for(let i=0;i<VISQ.length;){if(VISQ[i].t<=h||document.hidden){const f=VISQ[i].fn;VISQ.splice(i,1);try{f();}catch(e){console.error(e);}}else i++;}
   if(VISQ.length)VISRAF=requestAnimationFrame(visRun);}
 function startAudio(){
@@ -1971,7 +1973,7 @@ function finishSample(id){const s=SMP[id];if(!s.raw)return;
 /* décode un son à la demande (carte qui tire ce son, test) ; then = appelé quand il est prêt */
 function ensureSample(id,then){const s=SMP[id];if(!s)return;if(s.ready){if(then)then();return;}
   if(!s.loading)s.loading=decode(s.ab.slice(0)).then(raw=>{s.raw=raw;fitDur(id);finishSample(id);
-      if(S&&S.rope){if(S.rope.round>=ROPE.ROUNDS-1)for(let k=1;k<=4;k++)prepTempo(S.rope.baseBpm+ROPE.FINAL_BPM*k/4,[id]);   /* fin de partie proche : toute la montée */
+      if(S&&S.rope&&ROPE.FINAL_BPM){if(S.rope.round>=ROPE.ROUNDS-1)for(let k=1;k<=4;k++)prepTempo(S.rope.baseBpm+ROPE.FINAL_BPM*k/4,[id]);   /* fin de partie proche : toute la montée */
         else prepTempo(ROPE.BPM+ROPE.FINAL_BPM,[id]);}   /* version « dernière manche » préparée d'avance */
       if(S&&S.mp3t)render();}).catch(e=>{console.error(id,e);toast("sons/"+KFILE(id)+".mp3 n'a pas pu être lu",true);});
   if(then)s.loading.then(then);}
