@@ -484,7 +484,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .obj-scan{font-size:54px;margin:6px 0;animation:crown .8s infinite alternate}
 .calib{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;border:1px solid var(--line)}
 .cal-h{display:flex;justify-content:space-between;align-items:center}.cal-h span{font-family:var(--mono);color:var(--gold)}
-.calib input[type=range]{width:100%}.calib small{color:var(--muted)}
+.cal-sl{display:flex;align-items:center;gap:8px}.cal-sl input[type=range]{flex:1;min-width:0}.cal-sl .chip{padding:6px 12px;font-size:15px}.calib small{color:var(--muted)}
 .cal-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 #calDot{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.12);margin-left:auto}
 #calDot.on{animation:calf .25s ease-out}#calDot.big{animation:calf2 .3s ease-out}
@@ -631,7 +631,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v73";
+const VERSION="v74";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -817,7 +817,7 @@ function drawStart(){
     el.classList.remove("rb-tick","rb-win");void el.offsetWidth;el.classList.add(final?"rb-win":"rb-tick");
     if(final&&ctx){const tt=ctx.currentTime;beepT(784,tt,.1,.1,"triangle");beepT(1175,tt+.1,.1,.1,"triangle");beepT(1568,tt+.2,.22,.1,"triangle");}}
 }
-function setup(){stopEverything();setRope(false);setMp3(false);
+function setup(){stopEverything();S=null;RWAIT=null;setRope(false);setMp3(false);   /* plus aucune partie en mémoire : rien ne rejoue en fond */
   let n=2;const pls=[{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"},{name:"Joueur 3",deck:"E"},{name:"Joueur 4",deck:"S"}];
   const save=()=>{for(let i=0;i<n;i++){const e=$("pn"+i);if(e)pls[i].name=e.value;}};
   const draw=()=>{if(modeChoice!=="corde"&&n>3)n=3;
@@ -830,7 +830,7 @@ function setup(){stopEverything();setRope(false);setMp3(false);
         <input type="text" id="pn${i}" value="${esc(p.name)}" aria-label="Nom du joueur ${i+1}">
         <div class="decks">${Object.keys(DECKS).map(d=>`<button data-i="${i}" data-d="${d}" class="${p.deck===d?"sel":""}" style="--dc:${DECKS[d].color}">${DECKS[d].glyph} ${DECKS[d].short}</button>`).join("")}</div></div>`).join("")}
       <div class="calib"><div class="cal-h"><b>🎧 Décalage du son</b><span id="calV">${USERLAT} ms</span></div>
-        <input type="range" id="calR" min="0" max="700" step="10" value="${USERLAT}">
+        <div class="cal-sl"><button class="chip" id="calM" aria-label="moins 10 ms">◀</button><input type="range" id="calR" min="0" max="700" step="10" value="${USERLAT}"><button class="chip" id="calP" aria-label="plus 10 ms">▶</button></div>
         <div class="cal-row"><button class="chip" data-lat="0">Haut-parleur</button><button class="chip" data-lat="250">Bluetooth</button><button class="chip" id="calTest">▶ Tester</button><i id="calDot"></i></div>
         <small>Enceinte Bluetooth : lance le test et règle jusqu'à ce que le rond clignote pile sur le bip.</small></div>
       <p class="note" style="margin:0">${modeChoice==="mp3"?"Touche les boucles pour les écouter ensemble, calées sur le tempo comme en partie.":"Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale."}</p>
@@ -842,6 +842,7 @@ function setup(){stopEverything();setRope(false);setMp3(false);
       if(j>=0&&j!==i)pls[j].deck=pls[i].deck;pls[i].deck=d;draw();});
     const setLat=v=>{USERLAT=Math.max(0,Math.min(700,Math.round(+v||0)));try{localStorage.setItem("ts-lat",USERLAT);}catch(e){}$("calV").textContent=USERLAT+" ms";$("calR").value=USERLAT;};
     $("calR").oninput=e=>setLat(e.target.value);
+    $("calM").onclick=()=>setLat(USERLAT-10);$("calP").onclick=()=>setLat(USERLAT+10);
     document.querySelectorAll(".calib [data-lat]").forEach(b=>b.onclick=()=>setLat(b.dataset.lat));
     $("calTest").onclick=()=>{if(CALT)calStop();else calStart();};
     const oo=$("objOpt");if(oo)oo.onchange=()=>{ropeObjOpt=oo.checked;try{localStorage.setItem("ts-obj",oo.checked?"1":"0");}catch(e){}};
