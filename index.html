@@ -587,6 +587,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
     <h3>Actions</h3>
     <ul><li><b>Mute</b> : la piste touchée ne marque pas à la prochaine mesure.</li><li><b>Drop</b> : la prochaine mesure compte double, puis les cartes recouvertes sont défaussées.</li><li><b>Tonalité</b> : la carte de la piste touchée vaut +2 à la prochaine mesure.</li></ul>
     <h3>La musique</h3>
+    <p>En mode La Corde, les cartes posées dans les <b>manches 1 à 4</b> tirent leur son dans les dossiers <b>« calme »</b>, celles des <b>manches 5 à 8</b> dans les dossiers <b>« fort »</b>.</p>
     <p><b>Toutes les boucles jouent ensemble</b>, calées sur un cycle de 4 mesures : une carte posée démarre au début du cycle suivant, et l'ancienne boucle de la piste continue jusque-là. Toutes les pistes qui jouent s'allument ensemble. (Ancienne règle, désactivée : Quand une carte est posée, l'app finit la boucle en cours puis lance la nouvelle. Ensuite elle joue les pistes l'une après l'autre, toujours dans l'ordre A, B, C, D (Rythme, Basse, Harmonie, Mélodie), en repartant de la piste qui suit : une carte posée en Basse joue, puis Harmonie, Mélodie, Rythme, Basse… jusqu'à la prochaine carte posée. Les pistes vides ou coupées par un Mute sont sautées. La pile qui joue s'illumine.</p>
     <h3>Tes propres sons (MP3)</h3>
     <p><b>Pioches au hasard</b> : un dossier par piste, avec deux sous-dossiers : <b>sons/Arythme/rythme-calme</b> et <b>rythme-fort</b>, <b>sons/Bbasse/basse-calme</b> et <b>basse-fort</b>, <b>sons/Charmonie/harmonie-calme</b> et <b>harmonie-fort</b>, <b>sons/Dmélodie/mélodie-calme</b> et <b>mélodie-fort</b>. Les fichiers sont numérotés sans trou : 1.mp3, 2.mp3, 3.mp3… Au premier scan d'une carte, l'app lui tire un son au hasard dans son sous-dossier et le retire de la pioche : aucune autre carte ne peut l'avoir. La carte le garde jusqu'à la fin de la partie, et tout est retiré au sort à la partie suivante. La carte « forte » d'une piste est celle des deux qui tire le plus la corde (traction), l'autre est « calme ». Si un sous-dossier est vide ou épuisé, la carte utilise son son fixe ci-dessous.</p>
@@ -650,7 +651,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v78";
+const VERSION="v79";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1813,10 +1814,15 @@ let ASSIGN={},POOLUSED=new Set();
 const poolPath=(p,m)=>FOLD[p][0]+"/"+FOLD[p][1]+"-"+m;
 function moodOf(id){const o=id.slice(0,2)+(id[2]==="2"?"4":"2");const a=(typeof RV!=="undefined"&&RV[id])?RV[id][1]:0,b=(typeof RV!=="undefined"&&RV[o])?RV[o][1]:0;return a>b?"fort":"calme";}
 function poolReset(){ASSIGN={};POOLUSED=new Set();}
-function poolAssign(id){const c=CARDS[id];if(!c||c.kind!=="inst"||c.joker||ASSIGN[id])return;
-  const keys=(POOL[c.piste+":"+moodOf(id)]||[]).filter(k=>!POOLUSED.has(k)&&SMP[k]);
-  if(!keys.length)return;   /* pioche vide : la carte garde son son fixe (Btribu1-1.mp3, fichier commun ou son synthétisé) */
-  const k=keys[Math.floor(Math.random()*keys.length)];POOLUSED.add(k);ASSIGN[id]=k;ensureSample(k);}
+/* La Corde : manches 1 à 4 → dossiers « calme », manches 5 à 8 → dossiers « fort ».
+   Une carte garde le même son pendant toute une moitié de partie ; rejouée dans l'autre moitié, elle en tire un nouveau. */
+const ropeMood=()=>S&&S.rope?(S.rope.round<=ROPE.ROUNDS/2?"calme":"fort"):null;
+function poolAssign(id){const c=CARDS[id];if(!c||c.kind!=="inst"||c.joker)return null;
+  const mood=ropeMood()||moodOf(id),key=S&&S.rope?id+"@"+mood:id;
+  if(ASSIGN[key])return ASSIGN[key];
+  const keys=(POOL[c.piste+":"+mood]||[]).filter(k=>!POOLUSED.has(k)&&SMP[k]);
+  if(!keys.length)return null;   /* pioche vide : la carte garde son son fixe (Btribu1-1.mp3, fichier commun ou son synthétisé) */
+  const k=keys[Math.floor(Math.random()*keys.length)];POOLUSED.add(k);ASSIGN[key]=k;SNDKEY[k]=k;ensureSample(k);return k;}
 const FLET={R:"A",B:"B",H:"C",M:"D",J:"J"},FNUM={F:1,N:2,E:3,S:4};
 const FNAME=ref=>FLET[ref[0]]+"tribu"+FNUM[ref[1]];
 const CFILE=id=>id[0]==="J"?"Jtribu"+FNUM[id[1]]:FLET[id[0]]+"tribu"+FNUM[id[1]]+"-"+(id[2]==="2"?1:2);
@@ -2054,7 +2060,7 @@ function openCount(e){const sid=e.snd||e.id,c=CARDS[e.id],D=DECKS[c.deck];
   el.style.setProperty("--dc",D.color);el.classList.toggle("mini",!!(S&&S.rope));
   if(S&&S.rope){el.innerHTML=`<div class="mc-box"><b class="mc-num" id="cmNum"></b><div class="mc-dots" id="cmDots">${"<i></i>".repeat(16)}</div><span id="cmSub" hidden></span></div>`;
     el.className="mini";countTick(curBeat,true);return;}
-  el.innerHTML=`<div class="cm-box"><span class="cm-lab">${D.glyph} ${D.short} · ${c.joker?"Joker · ":""}${PISTES[sid[0]]}</span><b class="cm-num" id="cmNum"></b><span class="cm-sub" id="cmSub">temps</span><div class="cm-dots" id="cmDots">${"<i></i>".repeat(4)}</div></div>`;
+  el.innerHTML=`<div class="cm-box"><span class="cm-lab">${D.glyph} ${D.short} · ${c.joker?"Joker · ":""}${PISTES[sid[0]==="P"?sid[1]:sid[0]]}</span><b class="cm-num" id="cmNum"></b><span class="cm-sub" id="cmSub">temps</span><div class="cm-dots" id="cmDots">${"<i></i>".repeat(4)}</div></div>`;
   el.className="";countTick(curBeat,true);}
 function countTick(b,first){
   if(!countId)return;const el=$("countModal");if(!el)return;const num=$("cmNum");
@@ -2078,7 +2084,8 @@ function countTick(b,first){
 const PL={tr:{R:null,B:null,H:null,M:null},spot:null,cyc:0};let ABS=0;
 const sndOf=e=>e.snd||e.id;
 function plReset(){for(const p of PORDER){const c=PL.tr[p];if(c&&c.ref&&SMP[c.ref])stopSample(c.ref);PL.tr[p]=null;}PL.spot=null;PL.cyc=0;}
-function plAdd(e){poolAssign(e.id);if(e.snd)poolAssign(e.snd);}   /* Joker : il prend le son tiré pour la carte de sa tribu sur cette piste */
+function plAdd(e){const src=e.snd||e.id,k=poolAssign(src);   /* Joker : il prend le son de la carte de sa tribu sur cette piste */
+  if(k&&S&&S.rope)e.snd=k;}   /* le son tiré est noté sur la carte posée (calme ou fort selon la manche) */
 function plFind(seq){if(!S)return null;for(const p of PORDER)for(const e of S.stacks[p])if(e.seq===seq)return{p,t:e};return null;}
 function plVisible(){if(!S||S.ended)return[];return PORDER.map(p=>{const t=topOf(p);return t&&!t.hidden&&!isSilent(p)&&t.seq?{p,t}:null;}).filter(Boolean);}
 const plIdle=()=>PORDER.every(p=>!PL.tr[p]);
