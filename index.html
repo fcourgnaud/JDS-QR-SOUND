@@ -432,8 +432,8 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .rp-halo{fill:none;stroke-width:.5;transform-box:fill-box;transform-origin:center;animation:rphalo 1.2s ease-out infinite}
 @keyframes rphalo{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
 .rp-spiral{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;opacity:.9}
-.rp-gauge>svg,.rp-gauge>.rp-sub,.rp-gauge>.rp-cd{position:relative}
-.rp-gauge{position:relative;transition:border-color .3s,box-shadow .3s}.rp-gauge.act{border-color:var(--pc)!important;box-shadow:0 0 14px color-mix(in srgb,var(--pc) 55%,transparent)}
+.rp-gauge>svg{position:relative}.rp-gauge>.rp-cd{position:absolute;z-index:2}
+.rp-gauge{overflow:hidden;contain:paint;position:relative;transition:border-color .3s,box-shadow .3s}.rp-gauge.act{border-color:var(--pc)!important;box-shadow:0 0 14px color-mix(in srgb,var(--pc) 55%,transparent)}
 .rp-cd{position:absolute;right:12px;top:6px;font-family:var(--arc-d);font-size:44px;line-height:1;color:var(--gold);text-shadow:0 0 18px var(--gold);opacity:0;pointer-events:none}
 .rp-cd.go{animation:rpcd .5s ease-out}
 @keyframes rpcd{0%{opacity:1;transform:scale(1.6)}60%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9)}}
@@ -585,7 +585,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v62";
+const VERSION="v63";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1101,42 +1101,41 @@ function ropeAnimate(){if(RANIM)return;let last=performance.now();
     if(RVIEW.br===R.br&&Math.abs(RVIEW.d-R.d)<1e-6||R.br===null&&RVIEW.d<=0){RANIM=0;return;}
     RANIM=requestAnimationFrame(f);})(last);}
 let LKSEEN={S:null,k:new Set()};
-/* ============ Spirale lumineuse derrière la corde ============
-   Deux bras en spirale autour du centre de la corde, à la couleur du joueur actif.
-   Les basses la font gonfler, les médiums et aigus la font onduler le long des bras ; elle tourne au tempo. Discrète : en fond. */
-let SPC=null,SPRAF=0,SPROT=0,SPLAST=0,SPBASS=0,SPAVG=0,SPEN=0;
+/* ============ Fond de la corde : ondes sonores dans la brume ============
+   Brume : grandes nappes floues qui dérivent lentement et s'éclairent sur les coups de basse.
+   Ondes : la forme d'onde de la musique, lissée, en trois lignes lumineuses superposées. Couleur du joueur actif. */
+let SPC=null,SPRAF=0,SPLAST=0,SPBASS=0,SPAVG=0,SPEN=0,SPT=0;
 function spiralCanvas(){if(!SPC){SPC=document.createElement("canvas");SPC.className="rp-spiral";}return SPC;}
 function spiralStart(){if(!SPRAF)SPRAF=requestAnimationFrame(spiralFrame);}
 function spiralFrame(now){SPRAF=0;
-  const g=$("rpGauge"),svg=g&&g.querySelector("svg");if(!S||!S.rope||$("rope").hidden||!svg||!SPC||!SPC.isConnected)return;
+  const g=$("rpGauge");if(!S||!S.rope||$("rope").hidden||!g||!SPC||!SPC.isConnected)return;
   SPRAF=requestAnimationFrame(spiralFrame);if(document.hidden)return;
   const dt=Math.min(.1,(now-(SPLAST||now))/1000);SPLAST=now;
-  const gr=g.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(gr.width*dpr),H=Math.round(gr.height*dpr);
+  const W0=g.clientWidth,H0=g.clientHeight,dpr=Math.min(2,window.devicePixelRatio||1),W=Math.round(W0*dpr),H=Math.round(H0*dpr);
   if(SPC.width!==W||SPC.height!==H){SPC.width=W;SPC.height=H;}
   const c=SPC.getContext("2d");c.clearRect(0,0,W,H);
-  /* centre de la corde (0,0 du dessin) en pixels */
-  const sr=svg.getBoundingClientRect(),vb=svg.viewBox.baseVal,sc=Math.min(sr.width/vb.width,sr.height/vb.height);
-  const ox=sr.left+(sr.width-vb.width*sc)/2-gr.left,oy=sr.top+(sr.height-vb.height*sc)/2-gr.top;
-  const cx=(ox-vb.x*sc)*dpr,cy=(oy-vb.y*sc)*dpr,Rmax=Math.max(W,H)*.62;
-  /* spectre */
-  let bass=0,mid=0,hi=0,F=null;const A=window.__ana;
-  if(A&&soundOn){F=new Uint8Array(A.frequencyBinCount);A.getByteFrequencyData(F);const n=F.length;
-    for(let k=1;k<6;k++)bass+=F[k];bass/=5*255;for(let k=6;k<40;k++)mid+=F[k];mid/=34*255;for(let k=40;k<120;k++)hi+=F[k];hi/=80*255;}
-  /* les basses comptent par rapport à leur niveau moyen : la spirale « tape » sur les coups au lieu de rester gonflée */
-  SPAVG+=(bass-SPAVG)*.03;const kick=Math.max(0,Math.min(1,(bass-SPAVG)*6));SPBASS+=(kick-SPBASS)*(kick>SPBASS?.6:.1);SPEN+=((bass+mid)/2-SPEN)*.05;
-  SPROT+=dt*(S.bpm/60)*Math.PI/4*(1+mid*.6);   /* un huitième de tour par temps */
-  const col=S.players[S.turn].color,TURNS=2.6,N=180,arms=2,lvl=.3+SPEN*.5+SPBASS*.6;
-  c.globalCompositeOperation="lighter";c.lineCap="round";c.lineJoin="round";
-  for(let a=0;a<arms;a++)for(const [lw,al] of [[10,.05],[4,.12],[1.6,.35]]){
+  let bass=0,mid=0,T=null;const A=window.__ana;
+  if(A&&soundOn){const F=new Uint8Array(A.frequencyBinCount);A.getByteFrequencyData(F);for(let k=1;k<6;k++)bass+=F[k];bass/=5*255;for(let k=6;k<60;k++)mid+=F[k];mid/=54*255;
+    T=new Uint8Array(A.fftSize);A.getByteTimeDomainData(T);}
+  SPAVG+=(bass-SPAVG)*.03;const kick=Math.max(0,Math.min(1,(bass-SPAVG)*6));SPBASS+=(kick-SPBASS)*(kick>SPBASS?.6:.08);SPEN+=((bass+mid)/2-SPEN)*.05;
+  SPT+=dt*(.35+SPEN*.6);
+  const col=S.players[S.turn].color;
+  /* brume */
+  c.globalCompositeOperation="lighter";
+  for(let k=0;k<6;k++){const ph=k*1.7,x=W*(.5+.42*Math.sin(SPT*.5+ph)),y=H*(.5+.38*Math.cos(SPT*.37+ph*1.3)),r=Math.max(W,H)*(.32+.1*Math.sin(SPT*.8+ph))*(1+SPBASS*.25);
+    const rg=c.createRadialGradient(x,y,0,x,y,r);rg.addColorStop(0,col);rg.addColorStop(1,"transparent");
+    c.globalAlpha=(.09+SPEN*.07+SPBASS*.16);c.fillStyle=rg;c.fillRect(0,0,W,H);}
+  /* ondes */
+  const P=40,pts=[];
+  for(let i=0;i<=P;i++){let v=0;if(T){const a=Math.floor(i/P*(T.length-1)),w=10;let s2=0,n2=0;for(let k=-w;k<=w;k++){const q=a+k;if(q>=0&&q<T.length){s2+=T[q];n2++;}}v=(s2/n2-128)/128;}pts.push(v);}
+  let LX=0,LY=0;
+  for(const [off,lw,al,sp] of [[0,2,.6,1],[.18,6,.16,.8],[-.22,14,.07,.6]]){
     c.beginPath();
-    for(let k=0;k<=N;k++){const u=k/N,th=u*TURNS*Math.PI*2+SPROT+a*Math.PI;
-      const bin=F?F[2+Math.floor(u*90)]/255:0;
-      const r=Rmax*(.06+u*.94)*(.82+SPBASS*.28)+Math.sin(u*38-now/180)*bin*Rmax*.07*(.4+hi*1.6);
-      const x=cx+Math.cos(th)*r,y=cy+Math.sin(th)*r;k?c.lineTo(x,y):c.moveTo(x,y);}
-    c.strokeStyle=col;c.globalAlpha=al*lvl;c.lineWidth=lw*dpr*(.8+SPBASS*.6);c.stroke();}
-  /* halo central qui respire avec les basses */
-  const rg=c.createRadialGradient(cx,cy,0,cx,cy,Rmax*(.25+SPBASS*.25));rg.addColorStop(0,col);rg.addColorStop(1,"transparent");
-  c.globalAlpha=.10+SPBASS*.18;c.fillStyle=rg;c.fillRect(0,0,W,H);
+    for(let i=0;i<=P;i++){const u=i/P,env=Math.sin(Math.PI*u);   /* les bords restent calmes */
+      const y=H*(.5+off*.25)+(pts[i]*H*.42*(.6+SPEN)+Math.sin(u*9+SPT*3*sp+off*5)*H*.04*(.4+SPBASS))*env;
+      const x=u*W;if(!i){c.moveTo(x,y);}else{const px=(i-.5)/P*W;c.quadraticCurveTo(LX,LY,(LX+x)/2,(LY+y)/2);}LX=x;LY=y;}
+    c.lineTo(LX,LY);
+    c.strokeStyle=col;c.globalAlpha=al*(.5+SPEN*.5+SPBASS*.5);c.lineWidth=lw*dpr*(1+SPBASS*.5);c.lineJoin="round";c.stroke();}
   c.globalAlpha=1;c.globalCompositeOperation="source-over";}
 function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],camp=rCamp(),fin=isFinal();
   $("rpScores").style.setProperty("--np",n);$("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><b>${p.score}</b></div>`).join("");
@@ -1165,7 +1164,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
   const vb=n===2?"-11.9 -2.4 23.8 6.2":n===3?"-11.6 -11.9 23.2 18.8":"-9.4 -9.4 18.8 18.8";
   $("rpGauge").style.setProperty("--pc",pl.color);$("rpGauge").classList.toggle("act",!S.ended);
   $("rpBpm").textContent="♩ "+Math.round(S.bpm)+" BPM";
-  $("rpGauge").innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg><div class="rp-sub">${camp!==null?`Corde dans le camp de <b style="color:${col}">${esc(S.players[camp].name)}</b> : sa carte posée se verrouille`:"Corde au milieu"}</div>`;
+  $("rpGauge").innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg>`;
   $("rpGauge").prepend(spiralCanvas());spiralStart();
   ropeAnimate();
   const LKN=new Set(PORDER.filter(p=>R.locks[p]!==undefined&&!(LKSEEN.S===S&&LKSEEN.k.has(p+":"+R.round))));
