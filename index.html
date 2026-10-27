@@ -525,6 +525,20 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .rp-L{font-family:var(--arc-d);font-size:20px!important;font-weight:400}.rp-pn{font-size:11px;color:#cfcbe8;margin-top:-2px}
 .rp-own{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rp-empty{opacity:.4;font-size:13px;margin:14px 0}
 .rpk .sheet{max-height:92dvh;overflow:auto}.rpk .jk-grid button{padding:10px 6px}.rpk .jk-grid button b{font-size:16px}
+
+/* ===== Modales : tous les textes en blanc, chacun garde son halo lumineux d'origine ===== */
+#ropeAnn,#ropeAnn *,.rp-ban,.rp-ban *,.rp-react.full,.rp-react.full *,#countModal.mini *,.fin-modal,.fin-modal *,#sabWho .sheet,#sabWho .sheet *,.sheet .glw{color:#fff!important}
+.ann-name{text-shadow:0 0 22px var(--gc,#fff),0 0 8px var(--gc,#fff)!important}
+.fin-t{text-shadow:0 0 20px var(--gc,#fff),0 0 8px var(--gc,#fff)!important}
+.rp-ban b{text-shadow:0 0 14px var(--gc,#fff),0 0 6px var(--gc,#fff)!important}
+.glw{text-shadow:0 0 12px var(--gc),0 0 4px var(--gc)}
+.fp-name{text-shadow:0 0 10px var(--pc)}
+.rr-q b{text-shadow:0 0 10px #ff5468}
+.ann-gain,.ann-note,.fin-notes{text-shadow:0 0 10px rgba(255,210,63,.55)}
+.fr-o.ok b{text-shadow:0 0 8px #4fdc96}.fr-o.ko b{text-shadow:0 0 8px #ff5468}
+.rp-ban{z-index:40}
+body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
+.obj-pn{color:#fff;text-shadow:0 0 12px var(--gc),0 0 4px var(--gc)}
 </style>
 </head>
 <body>
@@ -651,7 +665,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v82";
+const VERSION="v84";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -840,7 +854,7 @@ function drawStart(){
 let WAKE=null;
 function wakeOn(){try{if(navigator.wakeLock&&!WAKE)navigator.wakeLock.request("screen").then(w=>{WAKE=w;w.addEventListener("release",()=>{WAKE=null;});}).catch(()=>{});}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S&&S.rope&&!S.ended)wakeOn();});
-function setup(){stopEverything();try{if(WAKE)WAKE.release();}catch(e){}S=null;RWAIT=null;setRope(false);setMp3(false);   /* plus aucune partie en mémoire : rien ne rejoue en fond */
+function setup(){stopEverything();document.body.classList.remove("cd-on");try{if(WAKE)WAKE.release();}catch(e){}S=null;RWAIT=null;setRope(false);setMp3(false);   /* plus aucune partie en mémoire : rien ne rejoue en fond */
   let n=2;const pls=[{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"},{name:"Joueur 3",deck:"E"},{name:"Joueur 4",deck:"S"}];
   const save=()=>{for(let i=0;i<n;i++){const e=$("pn"+i);if(e)pls[i].name=e.value;}};
   const draw=()=>{if(modeChoice!=="corde"&&n>3)n=3;
@@ -921,7 +935,7 @@ function arcAnnounce(before,round){
   const L=leaderOf(),el=$("arcAnn");if(L.mx===0)return;
   const lead=L.who[0],idx=S.players.indexOf(lead),from=before[idx],gain=lead.score-from;
   el.innerHTML=`<div class="ann-box"><span class="ann-k">FIN DE LA MANCHE ${round}</span><div class="ann-crown">👑</div>
-    <b class="ann-name" style="color:${L.who.length>1?"#fff":lead.color}">${L.who.length>1?"ÉGALITÉ":esc(lead.name)}</b>
+    <b class="ann-name" style="--gc:${L.who.length>1?"#fff":lead.color}">${L.who.length>1?"ÉGALITÉ":esc(lead.name)}</b>
     <div class="ann-score"><span id="annNum">${from}</span><small>PTS</small></div><span class="ann-gain">${L.who.length>1?L.who.map(p=>esc(p.name)).join(" · "):gain>0?"+"+gain+" cette manche":"garde la tête"}</span></div>`;
   el.hidden=false;const t0=performance.now(),dur=900,num=$("annNum");
   (function step(){const k=Math.min(1,(performance.now()-t0-350)/dur);if(k>0)num.textContent=Math.round(from+(lead.score-from)*k);if(k<1)requestAnimationFrame(step);})();
@@ -931,7 +945,7 @@ function arcFinal(){
   const r=[...S.players].sort((a,b)=>b.score-a.score);
   $("arcBonus").hidden=true;bonusOn=false;
   $("layer").innerHTML=`<div class="overlay" style="align-items:center"><div class="sheet" style="text-align:center"><h2>FIN DU CONCERT</h2>
-    <div class="ann-crown">👑</div><b class="ann-name" style="color:${r[0].color}">${esc(r[0].name)}</b><div class="ann-score" style="font-size:64px">${r[0].score}<small>PTS</small></div>
+    <div class="ann-crown">👑</div><b class="ann-name" style="--gc:${r[0].color}">${esc(r[0].name)}</b><div class="ann-score" style="font-size:64px">${r[0].score}<small>PTS</small></div>
     <div class="lines">${r.slice(1).map((p,i)=>`<div><span style="color:${p.color}">${i+2}. ${esc(p.name)}</span><span class="mono">${p.score}</span></div>`).join("")}</div>
     <button class="btn main" id="ok">Rejouer</button></div></div>`;
   $("ok").onclick=()=>{$("layer").innerHTML="";setup();};
@@ -1003,13 +1017,13 @@ function startRope(players,sim){
   S.rope.log=`🎲 ${esc(S.players[first].name)} commence`;render();
   if(S.rope.objOn)ropeObjRound(0);else ropeStartAnn();}
 function ropeStartAnn(){const first=S.rope.order[0];
-  ropeModal(`<span class="ann-k">🪢 LA CORDE · MANCHE 1</span><b class="ann-name" style="color:${S.players[first].color}">${esc(S.players[first].name)}</b><span class="ann-gain">commence</span>`,2500,()=>{});}
+  ropeModal(`<span class="ann-k">🪢 LA CORDE · MANCHE 1</span><b class="ann-name" style="--gc:${S.players[first].color}">${esc(S.players[first].name)}</b><span class="ann-gain">commence</span>`,2500,()=>{});}
 /* objectifs secrets : tour de table avant la partie, dans l'ordre de jeu ; chacun scanne son objectif (ou joue sans) */
 function ropeObjRound(k){const R=S.rope,n=S.players.length;
   if(k>=n){R.objPhase=false;R.objCur=null;pending=null;$("layer").innerHTML="";render();return ropeStartAnn();}
   const i=R.order[k],p=S.players[i];R.objPhase=true;R.objCur=i;R.objK=k;pending={obj:true};
   $("layer").innerHTML=`<div class="overlay" style="align-items:center"><div class="sheet" style="text-align:center;--dc:${p.color}"><span class="note" style="margin:0">Tour de table · ${k+1}/${n}</span><h2>🎯 Objectif secret</h2>
-    <p style="margin:0"><b style="color:${p.color}">${esc(p.name)}</b>, pioche une carte Objectif au hasard, regarde-la sans la montrer, puis scanne son QR code.</p>
+    <p style="margin:0"><b class="glw" style="--gc:${p.color}">${esc(p.name)}</b>, pioche une carte Objectif au hasard, regarde-la sans la montrer, puis scanne son QR code.</p>
     <div class="obj-scan">📷</div><p class="note" style="margin:0">L'objectif reste secret : il sera révélé et compté à la fin de la partie.</p>
     ${S.sim?`<div class="sim-row" id="simObj" style="justify-content:center">${Object.keys(OBJ).filter(o=>!R.obj.includes(o)).map(o=>`<button class="sim-c" data-id="${o}" style="--pc:${p.color}"><b>${o}</b><small>${OBJ[o].t.slice(0,22)}…</small></button>`).join("")}</div>`:""}
     <button class="btn" id="objSkip">Jouer sans objectif</button></div></div>`;
@@ -1043,7 +1057,7 @@ function ropeAskObj(){return;   /* les objectifs se valident maintenant avant la
   const R=S.rope;if(!R.objOn||R.round!==1||S.ended)return;const i=S.turn;if(R.obj[i]||R.objAsked[i])return;
   R.objAsked[i]=true;const p=S.players[i];pending={obj:true};
   $("layer").innerHTML=`<div class="overlay" style="align-items:center"><div class="sheet" style="text-align:center;--dc:${p.color}"><h2>🎯 Objectif secret</h2>
-    <p style="margin:0"><b style="color:${p.color}">${esc(p.name)}</b>, pioche une carte Objectif au hasard, regarde-la sans la montrer, puis scanne son QR code.</p>
+    <p style="margin:0"><b class="glw" style="--gc:${p.color}">${esc(p.name)}</b>, pioche une carte Objectif au hasard, regarde-la sans la montrer, puis scanne son QR code.</p>
     <div class="obj-scan">📷</div><p class="note" style="margin:0">L'objectif reste secret : il sera révélé et compté à la fin de la partie.</p>
     <button class="btn" id="objSkip">Jouer sans objectif</button></div></div>`;
   $("objSkip").onclick=()=>{pending=null;$("layer").innerHTML="";render();};}
@@ -1052,7 +1066,7 @@ function ropeObjScan(c){const R=S.rope,i=R.objCur;
   if(R.obj[i]){toast("Tu as déjà un objectif",true);return;}
   if(R.obj.includes(c.id)){toast("Cet objectif est déjà pris : pioches-en un autre",true);return;}
   R.obj[i]=c.id;playOne("OBJ");$("layer").innerHTML="";R.objCur=null;const k=R.objK;render();
-  ropeModal(`<span class="ann-k">🎯 OBJECTIF ENREGISTRÉ</span><b class="ann-name" style="color:${S.players[i].color}">${esc(S.players[i].name)}</b><span class="ann-gain">garde ta carte face cachée</span>`,1500,()=>ropeObjRound(k+1),true);}
+  ropeModal(`<span class="ann-k">🎯 OBJECTIF ENREGISTRÉ</span><b class="ann-name" style="--gc:${S.players[i].color}">${esc(S.players[i].name)}</b><span class="ann-gain">garde ta carte face cachée</span>`,1500,()=>ropeObjRound(k+1),true);}
 function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope;
   if(c.kind==="obj")return ropeObjScan(c);
   if(c.kind==="ract")return ropeAction(c);
@@ -1148,7 +1162,7 @@ function ropeRound(){if(!S||!S.rope||S.ended)return;if($("sabWho"))return setTim
   if(isFinal())rampStart();else if(R.round===ROPE.ROUNDS-1)prepRamp();
   R.log=`Manche ${R.round} : ${esc(S.players[S.turn].name)} commence (en tête au score)`;render();cheer();
   const L=leaderOf(),lead=L.who.length>1?null:L.who[0];
-  const head=lead?`<div class="ann-crown">👑</div><b class="ann-name" style="color:${lead.color}">${esc(lead.name)}</b><div class="ann-score">${lead.score}<small>PTS</small></div>`
+  const head=lead?`<div class="ann-crown">👑</div><b class="ann-name" style="--gc:${lead.color}">${esc(lead.name)}</b><div class="ann-score">${lead.score}<small>PTS</small></div>`
     :`<b class="ann-name">ÉGALITÉ</b><div class="ann-gain">${L.who.map(p=>esc(p.name)).join(" · ")} · ${L.mx} pts</div>`;
   const next=isFinal()?`<span class="ann-next fin">🔥 DERNIÈRE MANCHE 🔥</span><span class="ann-gain">tempo +${ROPE.FINAL_BPM} · cartes ×2 · corde +${ROPE.BONUS_FINAL}</span>`:`<span class="ann-next">MANCHE ${R.round}</span>`;
   ropeModal(`<span class="ann-k">EN TÊTE</span>${head}${notes.map(t=>`<span class="ann-note">${t}</span>`).join("")}${next}<span class="ann-gain" style="font-size:13px">${esc(S.players[S.turn].name)} commence (en tête)</span>`,ROPE.MODAL_MS,null);}
@@ -1165,7 +1179,7 @@ function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
   const rows=rank.map(({p,i})=>{const o=obj[i];return `<div class="fr-row" style="--pc:${p.color}"><span class="fr-dot"></span><span class="fr-n">${esc(p.name)}</span>
     <span class="fr-c">dernière manche <b>+${gains[i]}</b></span>${R.objOn?`<span class="fr-o ${o?(o.ok?"ok":"ko"):""}">${o?`🎯 ${OBJ[o.o].t} <b>${o.ok?"✔ +"+o.v:"✘"}</b>`:"🎯 sans objectif"}</span>`:""}</div>`;}).join("");
   $("layer").innerHTML=`<div class="overlay fin-ov"><div class="fin-modal"><div class="fin-glow"></div>
-    <span class="fin-k">🪢 FIN DU TIR À LA CORDE</span><h2 class="fin-t" style="color:${tie?"#fff":rank[0].p.color}">${tie?"ÉGALITÉ !":esc(rank[0].p.name)+" gagne"}</h2>
+    <span class="fin-k">🪢 FIN DU TIR À LA CORDE</span><h2 class="fin-t" style="--gc:${tie?"#fff":rank[0].p.color}">${tie?"ÉGALITÉ !":esc(rank[0].p.name)+" gagne"}</h2>
     <div class="fp">${pod}</div>${fourth}
     ${notes.length?`<div class="fin-notes">${notes.map(t=>`<span>${t}</span>`).join("")}</div>`:""}
     <div class="fin-rows">${rows}</div>
@@ -1185,12 +1199,12 @@ function sabWho(L,o){const R=S.rope,keep=pending;pending={sab:true};
   const others=S.players.map((p,i)=>i).filter(i=>i!==L.owner);
   const el=document.createElement("div");el.className="overlay";el.style.alignItems="center";el.style.zIndex="40";el.id="sabWho";
   el.innerHTML=`<div class="sheet" style="text-align:center"><h2>🚫 Sabotage</h2><p style="margin:0">La corde repasse le centre et part vers le saboteur. <b>Qui a joué le Sabotage ?</b></p>
-    <div class="sab-row">${others.map(i=>`<button class="btn" data-i="${i}" style="--pc:${S.players[i].color};border-color:${S.players[i].color};color:${S.players[i].color}">${esc(S.players[i].name)}</button>`).join("")}</div></div>`;
+    <div class="sab-row">${others.map(i=>`<button data-i="${i}" style="--pc:${S.players[i].color};--gc:${S.players[i].color};border-color:${S.players[i].color}" class="btn glw">${esc(S.players[i].name)}</button>`).join("")}</div></div>`;
   $("layer").appendChild(el);
   el.onclick=e=>{const b=e.target.closest("button[data-i]");if(!b)return;const who=+b.dataset.i;el.remove();pending=keep&&keep.sab?null:keep;
     rPush(L.owner,2,who);R.log=`🚫 SABOTAGE de ${esc(S.players[who].name)} ! La carte ${PISTES[L.p]} de ${esc(o.name)} ne marquera pas cette manche, et la corde part vers ${esc(S.players[who].name)}`;
     ropeBanner("🚫 SABOTAGE",`${PISTES[L.p]} de ${esc(o.name)} ne marque pas`,"#ff5468");creak(.4);render();};}
-function ropeBanner(a,b,col){const el=$("ropeBan");if(!el)return;el.innerHTML=`<b style="color:${col}">${a}</b><span>${b}</span>`;el.hidden=false;el.style.animation="none";void el.offsetWidth;el.style.animation="";
+function ropeBanner(a,b,col){const el=$("ropeBan");if(!el)return;el.innerHTML=`<b style="--gc:${col}">${a}</b><span>${b}</span>`;el.hidden=false;el.style.animation="none";void el.offsetWidth;el.style.animation="";
   clearTimeout(ropeBanner.t);ropeBanner.t=setTimeout(()=>el.hidden=true,2000);}
 /* ---------- rendu ---------- */
 /* animation du nœud : il glisse le long des rails (en repassant par le centre pour changer de branche) */
@@ -2069,15 +2083,15 @@ function openCount(e){const sid=e.snd||e.id,c=CARDS[e.id],D=DECKS[c.deck];
   if(!el){el=document.createElement("div");el.id="countModal";document.body.appendChild(el);}
   el.style.setProperty("--dc",D.color);el.classList.toggle("mini",!!(S&&S.rope));
   if(S&&S.rope){el.innerHTML=`<div class="mc-box"><b class="mc-num" id="cmNum"></b><div class="mc-dots" id="cmDots">${"<i></i>".repeat(16)}</div><span id="cmSub" hidden></span></div>`;
-    el.className="mini";countTick(curBeat,true);return;}
+    el.className="mini show";document.body.classList.add("cd-on");countTick(curBeat,true);return;}
   el.innerHTML=`<div class="cm-box"><span class="cm-lab">${D.glyph} ${D.short} · ${c.joker?"Joker · ":""}${PISTES[sid[0]==="P"?sid[1]:sid[0]]}</span><b class="cm-num" id="cmNum"></b><span class="cm-sub" id="cmSub">temps</span><div class="cm-dots" id="cmDots">${"<i></i>".repeat(4)}</div></div>`;
   el.className="";countTick(curBeat,true);}
 function countTick(b,first){
   if(!countId)return;const el=$("countModal");if(!el)return;const num=$("cmNum");
   const mini=el.classList.contains("mini");
   if(mini){
-    if(plIsPlaying(countId)||!plIsPending(countId)){countId=null;el.classList.add("out");countClose=setTimeout(()=>{el.className="mini";},350);return;}
-    const left=plWait(countId);el.classList.add("show");
+    if(plIsPlaying(countId)||!plIsPending(countId)){countId=null;el.classList.add("out");document.body.classList.remove("cd-on");countClose=setTimeout(()=>{el.className="mini";},350);return;}
+    const left=plWait(countId);el.classList.add("show");document.body.classList.add("cd-on");
     num.textContent=left;num.classList.toggle("gold",left<=4);num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");
     const b0=curBeat%16;$("cmDots").querySelectorAll("i").forEach((d,i)=>d.className=(i===b0?"now ":"")+(i<b0?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":""));return;}
   if(plIsPlaying(countId)){num.textContent="▶";$("cmSub").textContent="c'est parti !";el.classList.add("go");
