@@ -651,7 +651,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v79";
+const VERSION="v80";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1074,7 +1074,7 @@ function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope;
     R.log=`${esc(S.players[me].name)} pose ${PISTES[p]} (${v[0]} pt${v[0]>1?"s":""}) et tire de ${pull}`+(sur?" — ⚡ surenchère !":"")+(lk?" — 🔒 verrouillée !":"");
     if(sur||lk)ropeBanner(lk?"🔒 VERROU":"⚡ SURENCHÈRE",`${esc(S.players[me].name)} ${lk?"verrouille "+PISTES[p]:"tire +1"}`,S.players[me].color);
     openCount(e);creak(.3+v[1]/10);return ropeWaitStart(e.seq);}
-  else{snap();rPull(me,v[1]);R.lastPlace=null;if(c.joker)playOne(CFILE(c.id));R.log=`${esc(S.players[me].name)} : ${c.joker?"Joker":RNAME[c.id]}, tire de ${v[1]}`;}
+  else{snap();rPull(me,v[1]);R.lastPlace=null;if(c.joker){playOne(CFILE(c.id));(R.jokUsed=R.jokUsed||[]).push(c.id);}R.log=`${esc(S.players[me].name)} : ${c.joker?"Joker":RNAME[c.id]}, tire de ${v[1]}`;}
   creak(.3+v[1]/10);ropeNextTurn();}
 /* le tour ne passe au joueur suivant qu'une fois la boucle de la carte posée lancée (fin de la dernière mesure du cycle) */
 let RWAIT=null;
@@ -1212,9 +1212,12 @@ let LKSEEN={S:null,k:new Set()};
 function renderSim(){const el=$("rpSim");if(!el)return;el.hidden=!(S&&S.sim);if(el.hidden)return;const R=S.rope,fin=isFinal();
   const card=(id,lab,sub,cls,st)=>`<button class="sim-c ${cls||""}" data-id="${id}" ${st||""}><b>${lab}</b><small>${sub}</small></button>`;
   let h="";
+  /* cartes déjà utilisées (grisées) : posées et encore visibles sur une piste, ou Joker déjà joué ; une carte recouverte ou coupée retourne sous le deck */
+  const onTable=new Set(PORDER.map(q=>topOf(q)).filter(Boolean).map(t=>t.id)),jok=new Set(R.jokUsed||[]);
   h+=S.players.map((p,i)=>{const d=p.deck,ids=[...PORDER.flatMap(q=>["2","4"].map(v=>q+d+v)),"J"+d+"2"];
     return `<div class="sim-g${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><h4>${esc(p.name)} <small>${DECKS[d].short}${i===S.turn&&!S.ended?" · à toi":""}</small></h4><div class="sim-row">${ids.map(id=>{const v=RV[id];
-      return id[0]==="J"?card(id,"Joker","+"+v[1]):card(id,FLET[id[0]]+" ★"+v[0]*(fin?2:1),"+"+v[1]+(SUR.has(id)?" ⚡":""));}).join("")}</div></div>`;}).join("");
+      const u=onTable.has(id)||jok.has(id);
+      return id[0]==="J"?card(id,"Joker","+"+v[1],u?"used":"",u?"disabled":""):card(id,FLET[id[0]]+" ★"+v[0]*(fin?2:1),"+"+v[1]+(SUR.has(id)?" ⚡":""),u?"used":"",u?"disabled":"");}).join("")}</div></div>`;}).join("");
   h+=`<div class="sim-g act"><h4>⚡ Deck Action <small>une carte = un exemplaire</small></h4><div class="sim-row">${Object.keys(RACT_IDS).map(k=>{const a=RACT[RACT_IDS[k]];
     return card(k,a.n,a.react?"réaction":a.tr?"+"+a.tr:"action",(a.react?"re ":"")+(R.usedA.includes(k)?"used":""),R.usedA.includes(k)?"disabled":"");}).join("")}</div></div>`;
   el.innerHTML=h;}
