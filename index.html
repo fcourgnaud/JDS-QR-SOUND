@@ -450,7 +450,9 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .rp-tick.maj{stroke:rgba(255,255,255,.45)}.rp-num{font-size:1.45px;font-weight:700;fill:rgba(255,255,255,.55);text-anchor:middle}.rp-dot{fill:rgba(255,255,255,.4)}
 .rp-tracks{grid-template-columns:repeat(4,1fr)!important;gap:6px!important}
 .rp-tr{padding:6px!important;text-align:center}.rp-tr .rp-h{justify-content:center;font-size:12px}.rp-tr .rp-h b{font-size:12px!important}
-.rp-tr.lk{border-color:var(--kc);background:color-mix(in srgb,var(--kc) 14%,transparent)}
+.rp-tr.lk,.rp-tr.lk.now{border:3px solid #ff1f3d;box-shadow:0 0 0 2px rgba(255,31,61,.35),0 0 16px rgba(255,31,61,.7);background:color-mix(in srgb,var(--kc) 14%,transparent)}
+.rp-tr.lk.lknew{animation:rplk .9s ease-out}
+@keyframes rplk{0%{box-shadow:0 0 0 10px rgba(255,31,61,.0),0 0 34px #ff1f3d;transform:scale(1.06)}30%{box-shadow:0 0 0 6px rgba(255,31,61,.6),0 0 30px #ff1f3d}100%{box-shadow:0 0 0 2px rgba(255,31,61,.35),0 0 16px rgba(255,31,61,.7);transform:scale(1)}}
 .rp-card{display:flex;align-items:center;justify-content:center;gap:4px;margin:6px 0 2px}.rp-gl{font-size:22px}
 .rp-star{display:inline-grid;place-items:center;width:30px;height:30px;font-weight:800;color:#1a1530;background:#f4c64e;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
 .rp-L{font-family:var(--arc-d);font-size:20px!important;font-weight:400}.rp-pn{font-size:11px;color:#cfcbe8;margin-top:-2px}
@@ -573,7 +575,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v56";
+const VERSION="v59";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -859,7 +861,7 @@ $("arcQuit").onclick=()=>$("newBtn").click();
    - À 2 joueurs, la corde démarre à 2 crans vers le premier joueur (jouer en dernier dans une manche est un avantage).
    - Dernière manche : tempo +20, toutes les cartes comptent double, bonus de corde +5.
    - Option objectifs secrets : chaque joueur scanne une carte Objectif à son premier tour ; révélés et comptés à la fin. */
-const ROPE={R:10,CAMP:3,PENTE:.75,BONUS:3,BONUS_FINAL:5,CHOIR:3,CHOIR_MIN:3,ROUNDS:8,FINAL_BPM:20,MODAL_MS:5000,DUCK:.2,START2:2};
+const ROPE={BPM:120,R:10,CAMP:3,PENTE:.75,BONUS:3,BONUS_FINAL:5,CHOIR:3,CHOIR_MIN:3,ROUNDS:8,FINAL_BPM:20,MODAL_MS:5000,DUCK:.2,START2:2};
 const RV={RF2:[1,5],RF4:[4,2],BF2:[2,4],BF4:[5,1],HF2:[3,3],HF4:[2,4],MF2:[4,2],MF4:[3,3],
   RN2:[3,3],RN4:[2,4],BN2:[4,2],BN4:[1,5],HN2:[5,1],HN4:[3,3],MN2:[2,4],MN4:[4,2],
   RE2:[2,4],RE4:[5,1],BE2:[3,3],BE4:[4,2],HE2:[1,5],HE4:[4,2],ME2:[3,3],ME4:[2,4],
@@ -902,7 +904,7 @@ function ropeCorners(n){if(n===2)return[{x:-ROPE.R,y:0},{x:ROPE.R,y:0}];
 let ropeObjOpt=false;try{ropeObjOpt=localStorage.getItem("ts-obj")==="1";}catch(e){}
 function startRope(players){
   const n=players.length,first=Math.floor(Math.random()*n);
-  S=fresh(players);S.rope={corners:ropeCorners(n),x:0,y:0,br:null,d:0,locks:{},played:[],round:1,log:"",baseBpm:Math.round(+SET.bpm||100),
+  S=fresh(players);S.rope={corners:ropeCorners(n),x:0,y:0,br:null,d:0,locks:{},played:[],round:1,log:"",baseBpm:ROPE.BPM,
     order:[...Array(n)].map((_,k)=>(first+k)%n),objOn:ropeObjOpt,obj:players.map(()=>null),objAsked:players.map(()=>false),
     st:players.map(()=>({locks:0,ropeWins:0,covers:0,sur:0,tracks:[],held3:false})),finalCamp:null,lastBest:null,endTops:null,
     actUsed:false,lastPlace:null,lastBy:players.map(()=>null),projo:{},closing:false,usedA:[]};
@@ -1080,6 +1082,7 @@ function ropeAnimate(){if(RANIM)return;let last=performance.now();
     const p=ropeXY(RVIEW.br,RVIEW.d),k=$("rpKnot"),l=$("rpPullL");if(k){k.setAttribute("cx",p.x);k.setAttribute("cy",p.y);}const rg=$("rpRing");if(rg){rg.setAttribute("cx",p.x);rg.setAttribute("cy",p.y);}if(l){l.setAttribute("x2",p.x);l.setAttribute("y2",p.y);}
     if(RVIEW.br===R.br&&Math.abs(RVIEW.d-R.d)<1e-6||R.br===null&&RVIEW.d<=0){RANIM=0;return;}
     RANIM=requestAnimationFrame(f);})(last);}
+let LKSEEN={S:null,k:new Set()};
 function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],camp=rCamp(),fin=isFinal();
   $("rpScores").style.setProperty("--np",n);$("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><b>${p.score}</b></div>`).join("");
   /* jauge des tours : un segment par joueur, dans l'ordre de la manche */
@@ -1103,11 +1106,13 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
   $("rpBpm").textContent="♩ "+Math.round(S.bpm)+" BPM";
   $("rpGauge").innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg><div class="rp-sub">${camp!==null?`Corde dans le camp de <b style="color:${col}">${esc(S.players[camp].name)}</b> : sa carte posée se verrouille`:"Corde au milieu"}</div>`;
   ropeAnimate();
+  const LKN=new Set(PORDER.filter(p=>R.locks[p]!==undefined&&!(LKSEEN.S===S&&LKSEEN.k.has(p+":"+R.round))));
+  LKSEEN={S,k:new Set(PORDER.filter(p=>R.locks[p]!==undefined).map(p=>p+":"+R.round))};
   $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),now=PL.spot===p&&t&&plIsPlaying(t.seq),lk=R.locks[p]!==undefined;
-    const hd=`<div class="rp-h"><b class="rp-L">${FLET[p]}</b>${now?'<span class="rp-now">♪</span>':""}${lk?'<span>🔒</span>':""}${R.projo[p]?'<span>🔦</span>':""}${t&&t.sab?'<span>🚫</span>':""}</div><div class="rp-pn">${PISTES[p]}</div>`;
+    const hd=`<div class="rp-h"><b class="rp-L">${FLET[p]}</b>${now?'<span class="rp-now">♪</span>':""}${R.projo[p]?'<span>🔦</span>':""}${t&&t.sab?'<span>🚫</span>':""}</div><div class="rp-pn">${PISTES[p]}</div>`;
     if(!t)return `<div class="rp-tr empty">${hd}<div class="rp-empty">libre</div></div>`;
     const o=S.players[t.owner],v=RV[t.id];
-    return `<div class="rp-tr${now?" now":""}${lk?" lk":""}" style="--kc:${o.color}">${hd}
+    return `<div class="rp-tr${now?" now":""}${lk?" lk":""}${LKN.has(p)?" lknew":""}" style="--kc:${o.color}">${hd}
       <div class="rp-card"><span class="rp-star">${t.sab?0:v[0]*(fin?2:1)*(R.projo[p]?2:1)}</span><span class="rp-gl">${DECKS[CARDS[t.id].deck].glyph}</span></div><div class="rp-own" style="color:${o.color}">${esc(o.name)}</div></div>`;}).join("");
   $("rpLog").innerHTML=(R.log||"Scanne une carte.")+(S.ended?"":`<small class="rp-hint">${R.actUsed?"Action jouée ce tour":"Action possible avant ta carte"} · fin de tour : pioche ton deck <b>ou</b> une Action · carte recouverte : sous le deck de son propriétaire</small>`);
   $("undoBtnR").disabled=!undoStack.length;
@@ -1869,9 +1874,8 @@ function auditionCard(id){
 function markPlaying(id){document.querySelectorAll("#sons button").forEach(b=>b.classList.toggle("playing",b.dataset.k===id));}
 function pulseLater(p,t){const d=Math.max(0,(t-ctx.currentTime)*1000);setTimeout(()=>{const el=document.querySelector(`.piste[data-p="${p}"]`);if(!el)return;el.classList.add("pulse");setTimeout(()=>el.classList.remove("pulse"),90);},d);}
 /* décompte des 4 derniers temps du cycle (mode La Corde) : bois + bip, le dernier plus aigu et plus fort */
-function ropeTick(b,t){const last=b===15,f=last?1568:1046;
-  beepT(f,t,last?.16:.07,last?.22:.14,"square");beepT(f*2,t,.03,last?.08:.05,"sine");
-  const s=ctx.createBufferSource();s.buffer=noiseBuf();const hp=bq("highpass",2500,1),g=envG(t,.001,last?.35:.22,.03,.02);chain(s,hp,g);g.connect(masterIn);s.start(t,Math.random());s.stop(t+.08);}
+function ropeTick(b,t){const last=b===15,f=last?880:660;   /* doux, dans les médiums : triangle court, sans bruit */
+  beepT(f,t,last?.09:.05,last?.09:.06,"triangle");}
 function beepT(f,t,d,v,type){const o=ctx.createOscillator(),g=envG(t,.005,v,d,.05);o.type=type||"sine";o.frequency.value=f;o.connect(g);g.connect(masterIn);o.start(t);o.stop(t+d+.1);}
 function blip(){if(!ctx)return;const t=ctx.currentTime;beepT(1320,t,.05,.18);beepT(1760,t+.06,.07,.18);}
 function alarm(){if(!ctx)return;const t=ctx.currentTime;[0,.15,.3].forEach(d=>beepT(880,t+d,.08,.1,"square"));}
