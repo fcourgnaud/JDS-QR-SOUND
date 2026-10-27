@@ -585,7 +585,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v63";
+const VERSION="v64";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -963,6 +963,7 @@ function ropeObjScan(c){const R=S.rope,i=S.turn;
 function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope;
   if(c.kind==="obj")return ropeObjScan(c);
   if(c.kind==="ract")return ropeAction(c);
+  if(RWAIT){toast("Attends que la carte posée se lance",true);return;}
   if(R.closing){toast("La manche se termine : seules Coupure et Sabotage peuvent encore réagir",true);return;}
   if(c.kind==="action"){toast("Les anciennes cartes Action ne servent pas en mode Corde : utilise le deck Action",true);return;}
   if(pending&&pending.obj){toast("Scanne d'abord ton objectif, ou choisis « Jouer sans objectif »",true);return;}
@@ -978,9 +979,18 @@ function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope;
     R.lastPlace={p,seq:e.seq,owner:me,before,cover,sur,lk};R.lastBy[me]=p;
     R.log=`${esc(S.players[me].name)} pose ${PISTES[p]} (${v[0]} pt${v[0]>1?"s":""}) et tire de ${pull}`+(sur?" — ⚡ surenchère !":"")+(lk?" — 🔒 verrouillée !":"");
     if(sur||lk)ropeBanner(lk?"🔒 VERROU":"⚡ SURENCHÈRE",`${esc(S.players[me].name)} ${lk?"verrouille "+PISTES[p]:"tire +1"}`,S.players[me].color);
-    openCount(e);}
+    openCount(e);creak(.3+v[1]/10);return ropeWaitStart(e.seq);}
   else{snap();rPull(me,v[1]);R.lastPlace=null;if(c.joker)playOne(CFILE(c.id));R.log=`${esc(S.players[me].name)} : ${c.joker?"Joker":RNAME[c.id]}, tire de ${v[1]}`;}
   creak(.3+v[1]/10);ropeNextTurn();}
+/* le tour ne passe au joueur suivant qu'une fois la boucle de la carte posée lancée (fin de la dernière mesure du cycle) */
+let RWAIT=null;
+function ropeWaitStart(seq){
+  if(!ctx||!soundOn||ctx.state!=="running"){render();return ropeNextTurn();}
+  const w={seq,S0:S,t0:Date.now(),max:(16*60/S.bpm+2)*1000};RWAIT=w;render();
+  (function poll(){if(RWAIT!==w)return;
+    if(S!==w.S0){RWAIT=null;render();return;}                 /* retour arrière : la pose est annulée */
+    if(!plFind(seq)||plIsPlaying(seq)||!soundOn||Date.now()-w.t0>w.max){RWAIT=null;return ropeNextTurn();}   /* boucle lancée (ou carte coupée) */
+    setTimeout(poll,60);})();}
 /* cartes du deck Action */
 function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;const _snd=()=>playOne(c.act);
   if(R.usedA.includes(c.id)){toast(`${a.n} : cette carte a déjà été jouée`,true);return;}
@@ -998,7 +1008,7 @@ function ropeAction(c){const R=S.rope,a=RACT[c.act],me=S.turn;const _snd=()=>pla
       rPush(L.owner,2);R.log=`🚫 SABOTAGE ! La carte ${PISTES[L.p]} de ${esc(o.name)} ne marquera pas cette manche, et la corde s'éloigne de lui de 2`;
       ropeBanner("🚫 SABOTAGE",`${PISTES[L.p]} de ${esc(o.name)} ne marque pas`,"#ff5468");}
     R.lastPlace=null;if(!_snd())sfx("XMUTE");if(RREACT)RREACT.hurry();render();return;}
-  if(R.closing||pending){toast("Attends ton tour pour jouer cette carte",true);return;}
+  if(R.closing||pending||RWAIT){toast("Attends ton tour pour jouer cette carte",true);return;}
   if(R.actUsed){toast("Une seule carte Action par tour (avant ta carte)",true);return;}
   const p0=S.players[me];
   if(c.act==="CADENAS"){const p=R.lastBy[me],t=p&&topOf(p);
@@ -1185,7 +1195,7 @@ function creak(lv){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02,n=2+Math
     chain(s,f,g);g.connect(masterIn);s.start(tt,Math.random());s.stop(tt+.15);}}
 
 $("undoBtnR").onclick=()=>$("undoBtn").onclick();
-$("passR").onclick=()=>{if(!S||!S.rope||S.ended||pending)return;snap();S.rope.log=esc(S.players[S.turn].name)+" passe";ropeNextTurn();};
+$("passR").onclick=()=>{if(!S||!S.rope||S.ended||pending||RWAIT)return;snap();S.rope.log=esc(S.players[S.turn].name)+" passe";ropeNextTurn();};
 $("quitR").onclick=()=>$("newBtn").click();
 
 /* ================= Mode test solo : on scanne, ça joue, sans règles ================= */
@@ -1892,8 +1902,7 @@ function sampleStep(st,t){
       if(!s.playing&&st===0)startSample(r,t,0);else if(s.playing&&st%4===0&&s.bpm!==Math.round(curBpm))startSample(r,t,(st/4)%16);return[r];}}
   else if(st%4===0)for(const p of PORDER){const c=PL.tr[p];if(!c||!c.ref)continue;const s=SMP[c.ref];
     if(s.playing&&s.bpm!==Math.round(curBpm))startSample(c.ref,t,((ABS-(s.absStart||0))%s.D.beats+s.D.beats)%s.D.beats);}
-  if(st%4===0){const b=st/4;setTimeout(()=>showBeat(b),Math.max(0,(t-ctx.currentTime)*1000));
-    if(b>=12&&S&&S.rope&&!S.ended&&!preview&&soundOn&&!plIdle())ropeTick(b,t);}
+  if(st%4===0){const b=st/4;setTimeout(()=>showBeat(b),Math.max(0,(t-ctx.currentTime)*1000));}
   return PORDER.map(p=>PL.tr[p]&&PL.tr[p].ref).filter(Boolean);
 }
 /* ---------- séquenceur ---------- */
