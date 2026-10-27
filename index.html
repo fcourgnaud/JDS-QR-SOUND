@@ -182,6 +182,18 @@ body.arcade .pickbar{flex-direction:column;align-items:stretch;top:50%;bottom:au
 #countModal.go .cm-box{animation:cmGo .7s ease-out}
 #countModal.go .cm-num{color:var(--dc)}
 @keyframes cmGo{0%{transform:scale(1)}30%{transform:scale(1.12)}100%{transform:scale(1);opacity:.2}}
+
+#countModal.mini.out{animation:mcOut .35s ease-in forwards}@keyframes mcOut{to{opacity:0}}
+.mc-box{display:flex;flex-direction:column;align-items:center;gap:22px}
+.mc-num{font-family:var(--arc-d);font-size:120px;line-height:1;height:120px;color:#fff;text-shadow:0 0 22px var(--dc),0 0 6px var(--dc)}
+.mc-num.pop{animation:cmPop .4s ease-out}
+.mc-dots{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;width:min(300px,78vw)}
+.mc-dots i{height:12px;border-radius:3px;background:rgba(255,255,255,.08)}
+.mc-dots i.bar{box-shadow:inset 3px 0 0 rgba(255,255,255,.35)}
+.mc-dots i.done{background:rgba(255,255,255,.28)}
+.mc-dots i.now{background:#fff;box-shadow:0 0 8px #fff}
+.mc-dots i.last{background:rgba(255,200,60,.25)}.mc-dots i.last.done{background:rgba(255,200,60,.55)}
+.mc-dots i.last.now{background:var(--gold);box-shadow:0 0 14px var(--gold),0 0 4px #fff}
 /* Cycle de 16 temps */
 .cycle{display:flex;align-items:center;gap:8px}
 .cycle b{flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
@@ -410,6 +422,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 #countModal .cm-box{width:auto;flex-direction:row;align-items:center;gap:10px;padding:8px 14px;border-width:2px;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
 #countModal .cm-num{font-size:30px}#countModal .cm-lab{font-size:13px}#countModal .cm-sub{font-size:12px}
 #countModal .cm-dots{grid-template-columns:repeat(4,10px);gap:4px;margin:0}#countModal .cm-dots i{height:10px;border-width:1px}
+#countModal.mini{inset:0;top:0;left:0;transform:none;width:auto;background:rgba(3,3,10,.72);backdrop-filter:none}
 .ann-next{font-family:var(--arc-d);font-size:clamp(26px,9vw,42px);color:#fff;text-shadow:0 0 16px var(--neon2);margin-top:8px}
 .ann-next.fin{color:#ff8a3d;text-shadow:0 0 20px #ff5468;animation:crown .5s infinite alternate}
 .ann-note{font-size:15px;color:#ffe9a3;font-weight:700}
@@ -585,7 +598,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v64";
+const VERSION="v66";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1059,7 +1072,7 @@ function ropeRound(){if(!S||!S.rope||S.ended)return;if($("sabWho"))return setTim
 /* fin de partie : podium animé, dernière manche, objectifs révélés */
 function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
   const before=S.players.map(p=>p.score),obj=S.players.map((p,i)=>{const o=R.objOn?R.obj[i]:null;if(!o)return null;const ok=OBJ[o].ok(i,R);if(ok)p.score+=OBJ[o].v;return{o,ok,v:OBJ[o].v};});
-  render();cheer();duck(true);
+  render();cheer();duck(.5);
   const rank=S.players.map((p,i)=>({p,i})).sort((a,b)=>b.p.score-a.p.score||PORDER.filter(k=>topOf(k)&&topOf(k).owner===b.i).length-PORDER.filter(k=>topOf(k)&&topOf(k).owner===a.i).length);
   const top=rank[0].p.score,tie=rank.length>1&&rank[1].p.score===top;
   const podOrder=rank.length>=3?[rank[1],rank[0],rank[2]]:rank.length===2?[rank[1],rank[0]]:rank;
@@ -1079,9 +1092,9 @@ function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
   const fx=document.createElement("div");fx.className="confetti";fx.innerHTML=[...Array(36)].map((_,j)=>`<i style="left:${Math.random()*100}%;background:${S.players[j%S.players.length].color};animation-delay:${(Math.random()*1.2).toFixed(2)}s;animation-duration:${(2.4+Math.random()*1.6).toFixed(2)}s"></i>`).join("");
   $("layer").querySelector(".fin-ov").appendChild(fx);}
 /* modale de manche : volume à 20 %, ouverte 5 secondes, on ne joue pas pendant ce temps */
-function ropeModal(html,ms,after,noDuck){const el=$("ropeAnn");el.innerHTML=`<div class="ann-box">${html}</div>`;el.hidden=false;pending={modal:true};if(!noDuck)duck(true);
-  clearTimeout(ropeModal.t);ropeModal.t=setTimeout(()=>{el.hidden=true;if(pending&&pending.modal)pending=null;duck(false);render();if(after)after();else ropeAskObj();},ms);}
-function duck(on){if(!ctx||!window.__masterOut)return;const g=window.__masterOut.gain,t=ctx.currentTime;g.cancelScheduledValues(t);g.setTargetAtTime(on?.9*ROPE.DUCK:.9,t,.15);}
+function ropeModal(html,ms,after,noDuck){const el=$("ropeAnn");el.innerHTML=`<div class="ann-box">${html}</div>`;el.hidden=false;pending={modal:true};
+  clearTimeout(ropeModal.t);ropeModal.t=setTimeout(()=>{el.hidden=true;if(pending&&pending.modal)pending=null;render();if(after)after();else ropeAskObj();},ms);}
+function duck(on){if(!ctx||!window.__masterOut)return;const g=window.__masterOut.gain,t=ctx.currentTime;g.cancelScheduledValues(t);g.setTargetAtTime(typeof on==="number"?.9*on:on?.9*ROPE.DUCK:.9,t,.15);}
 /* Sabotage à 3-4 joueurs quand la corde repasse le centre : elle part vers le saboteur, qui se désigne */
 function sabWho(L,o){const R=S.rope,keep=pending;pending={sab:true};
   const others=S.players.map((p,i)=>i).filter(i=>i!==L.owner);
@@ -1220,6 +1233,7 @@ function onCode(raw){
   if(seen[id]&&now-seen[id]<1200){seen[id]=now;return;}
   seen[id]=now;
   if(!S||S.ended)return;
+  if(S.rope&&RWAIT){if(now-badT>1500){badT=now;toast("Attends que la carte posée se lance",true);}return;}
   if(S.rope&&CARDS[id].kind==="obj"){flashHit();blip();return ropeObjScan(CARDS[id]);}
   if(CARDS[id].kind==="obj"&&!S.rope){toast("Les cartes Objectif servent au mode La Corde",true);return;}
   if(S.rope&&pending&&pending.obj){toast("Scanne d'abord ton objectif, ou choisis « Jouer sans objectif »",true);return;}
@@ -1827,11 +1841,7 @@ function stopAllSamples(){for(const id in SMP)stopSample(id);}
 /* indicateur de position dans le cycle : 4 mesures × 4 temps */
 let curBeat=0;
 function ropeBeat(b){const rc=$("rpCycle");if(rc)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});
-  if(b<12||!S||!S.rope||S.ended||plIdle())return;
-  const last=b===15,k=$("rpKnot"),rg=$("rpRing"),cd=$("rpCd");
-  if(k){k.classList.remove("beat","last");void k.getBoundingClientRect();k.classList.add("beat");if(last)k.classList.add("last");}
-  if(rg){rg.classList.remove("go");void rg.getBoundingClientRect();rg.classList.add("go");}
-  if(cd){cd.textContent=16-b;cd.classList.remove("go");void cd.offsetWidth;cd.classList.add("go");}}
+}
 function showBeat(b){curBeat=b;ropeBeat(b);const el=$("cycle");if(!el)return;
   el.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar":"");});
   document.querySelectorAll(".waitTag").forEach(w=>w.textContent="▶ dans "+plWait(+w.dataset.seq)+" temps");
@@ -1841,11 +1851,19 @@ let countId=null,countClose=null;
 function openCount(e){const sid=e.snd||e.id,c=CARDS[e.id],D=DECKS[c.deck];
   if(plIsPlaying(e.seq))return;countId=e.seq;clearTimeout(countClose);let el=$("countModal");
   if(!el){el=document.createElement("div");el.id="countModal";document.body.appendChild(el);}
-  el.style.setProperty("--dc",D.color);
+  el.style.setProperty("--dc",D.color);el.classList.toggle("mini",!!(S&&S.rope));
+  if(S&&S.rope){el.innerHTML=`<div class="mc-box"><b class="mc-num" id="cmNum"></b><div class="mc-dots" id="cmDots">${"<i></i>".repeat(16)}</div><span id="cmSub" hidden></span></div>`;
+    el.className="mini";countTick(curBeat,true);return;}
   el.innerHTML=`<div class="cm-box"><span class="cm-lab">${D.glyph} ${D.short} · ${c.joker?"Joker · ":""}${PISTES[sid[0]]}</span><b class="cm-num" id="cmNum"></b><span class="cm-sub" id="cmSub">temps</span><div class="cm-dots" id="cmDots">${"<i></i>".repeat(4)}</div></div>`;
   el.className="";countTick(curBeat,true);}
 function countTick(b,first){
   if(!countId)return;const el=$("countModal");if(!el)return;const num=$("cmNum");
+  const mini=el.classList.contains("mini");
+  if(mini){
+    if(plIsPlaying(countId)||!plIsPending(countId)){countId=null;el.classList.add("out");countClose=setTimeout(()=>{el.className="mini";},350);return;}
+    const left=plWait(countId);el.classList.add("show");
+    num.textContent=left<=4?left:"";if(left<=4){num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");}
+    const b0=curBeat%16;$("cmDots").querySelectorAll("i").forEach((d,i)=>d.className=(i===b0?"now ":"")+(i<b0?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":""));return;}
   if(plIsPlaying(countId)){num.textContent="▶";$("cmSub").textContent="c'est parti !";el.classList.add("go");
     $("cmDots").querySelectorAll("i").forEach(d=>d.className="on");countId=null;countClose=setTimeout(()=>{el.className="";},700);return;}
   if(!plIsPending(countId)){countId=null;el.className="";return;}
@@ -1881,6 +1899,7 @@ function plSpotGain(t){for(const p of PORDER){const c=PL.tr[p];if(!c||!c.ref)con
 function plTick(st,t){
   if(st%4)return st;
   ABS++;
+  if(S&&S.ended&&S.rope&&soundOn&&!preview)return st;   /* fin de partie (La Corde) : les boucles continuent en fond sous l'écran de résultat */
   if(preview||!S||S.ended||!soundOn){for(const p of PORDER)if(PL.tr[p])plStopTrack(p,t);return st;}
   for(const p of PORDER){const c=PL.tr[p];if(c&&!plFind(c.seq))plStopTrack(p,t);}   /* carte annulée (Coupure, Larsen, retour arrière) */
   const want={};plVisible().forEach(v=>want[v.p]=v);
@@ -1920,7 +1939,7 @@ function playStep(st,t){
     if(ctx.currentTime>preview.until){preview=null;markPlaying(null);return;}
     if(!smp.includes(SREF(preview.id))){curGain=CG[preview.id]||1;VOICE[preview.id]({...info,p:preview.piste});curGain=1;}return;
   }
-  if(!S||S.ended)return;
+  if(!S||S.ended&&!S.rope)return;
   for(const p of PORDER){const c=PL.tr[p];if(!c)continue;if(st%4===0)pulseLater(p,t);
     if(c.ref)continue;                   /* boucle MP3 : elle joue toute seule */
     curGain=(CG[c.id]||1)*(S.rope&&PL.spot===p?1.3:1);VOICE[c.id]({...info,p});curGain=1;}
