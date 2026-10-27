@@ -605,7 +605,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v68";
+const VERSION="v69";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1438,6 +1438,17 @@ function makeDrive(piste,level){
   const rs=ctx.createGain();rs.gain.value=.12;og.connect(rs);rs.connect(revIn);
   return inp;
 }
+/* ===== Visuels calés sur ce qu'on ENTEND =====
+   Le son sort des haut-parleurs avec un retard (souvent 50 à 300 ms sur téléphone, plus en Bluetooth).
+   Les visuels (temps, décompte, corde) sont donc déclenchés quand l'instant t est réellement entendu, à l'image près. */
+const VISQ=[];let VISRAF=0;
+function heardNow(){if(!ctx)return 0;
+  try{if(ctx.getOutputTimestamp){const o=ctx.getOutputTimestamp();if(o&&o.contextTime>0&&o.performanceTime>0)return o.contextTime+(performance.now()-o.performanceTime)/1000;}}catch(e){}
+  return ctx.currentTime-(ctx.outputLatency||ctx.baseLatency||0);}
+function visAt(t,fn){VISQ.push({t,fn});if(!VISRAF)VISRAF=requestAnimationFrame(visRun);}
+function visRun(){VISRAF=0;const h=heardNow()+.008;
+  for(let i=0;i<VISQ.length;){if(VISQ[i].t<=h||document.hidden){const f=VISQ[i].fn;VISQ.splice(i,1);try{f();}catch(e){console.error(e);}}else i++;}
+  if(VISQ.length)VISRAF=requestAnimationFrame(visRun);}
 function startAudio(){
   if(!ctx){
     ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -1936,7 +1947,7 @@ function plTick(st,t){
     if(!w){if(c)plStopTrack(p,t);continue;}
     if(!c||c.seq!==w.t.seq||c.id!==sndOf(w.t))plStartTrack(p,w,t);}
   PL.spot=S.rope?PORDER[PL.cyc%4]:null;PL.cyc++;plSpotGain(t);
-  setTimeout(()=>{if(S)render();},Math.max(0,(t-ctx.currentTime)*1000));
+  visAt(t,()=>{if(S)render();});
   return 0;
 }
 function sampleStep(st,t){
@@ -1945,7 +1956,7 @@ function sampleStep(st,t){
       if(!s.playing&&st===0)startSample(r,t,0);else if(s.playing&&st%4===0&&s.bpm!==Math.round(curBpm))startSample(r,t,(st/4)%16);return[r];}}
   else if(st%4===0)for(const p of PORDER){const c=PL.tr[p];if(!c||!c.ref)continue;const s=SMP[c.ref];
     if(s.playing&&s.bpm!==Math.round(curBpm))startSample(c.ref,t,((ABS-(s.absStart||0))%s.D.beats+s.D.beats)%s.D.beats);}
-  if(st%4===0){const b=st/4;setTimeout(()=>showBeat(b),Math.max(0,(t-ctx.currentTime)*1000));}
+  if(st%4===0){const b=st/4;visAt(t,()=>showBeat(b));}
   return PORDER.map(p=>PL.tr[p]&&PL.tr[p].ref).filter(Boolean);
 }
 /* ---------- séquenceur ---------- */
@@ -1987,7 +1998,7 @@ function auditionCard(id){
   nextT=ctx.currentTime+.05;step=0;
 }
 function markPlaying(id){document.querySelectorAll("#sons button").forEach(b=>b.classList.toggle("playing",b.dataset.k===id));}
-function pulseLater(p,t){const d=Math.max(0,(t-ctx.currentTime)*1000);setTimeout(()=>{const el=document.querySelector(`.piste[data-p="${p}"]`);if(!el)return;el.classList.add("pulse");setTimeout(()=>el.classList.remove("pulse"),90);},d);}
+function pulseLater(p,t){visAt(t,()=>{const el=document.querySelector(`.piste[data-p="${p}"]`);if(!el)return;el.classList.add("pulse");setTimeout(()=>el.classList.remove("pulse"),90);});}
 /* décompte des 4 derniers temps du cycle (mode La Corde) : bois + bip, le dernier plus aigu et plus fort */
 function ropeTick(b,t){const last=b===15,f=last?880:660;   /* doux, dans les médiums : triangle court, sans bruit */
   beepT(f,t,last?.09:.05,last?.09:.06,"triangle");}
