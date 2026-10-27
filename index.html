@@ -605,7 +605,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v69";
+const VERSION="v70";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1804,7 +1804,8 @@ async function initSamples(){
     toast(fixes.length+" MP3 ne correspondent pas à reglages.json → "+Object.entries(g).map(([k,n])=>n+" × "+k).join(" · ")+" (corrigé automatiquement)",true);console.warn("MP3",fixes);
     mp3Info+=" · ⚠ "+Object.entries(g).map(([k,n])=>n+" × "+k).join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
   else if(fixes.length){toast("Durée différente de reglages.json → "+fixes.join(" · "),true);console.warn("MP3",fixes);mp3Info+=" · ⚠ "+fixes.join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
-  for(const id in SMP){const s=SMP[id];s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm);s.cache[s.D.bpm]=s.base;
+  GRIDFRAC=gridPhase();
+  for(const id in SMP){const s=SMP[id];s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm,GRIDFRAC*60/s.D.bpm);s.cache[s.D.bpm]=s.base;
     /* volume : chaque boucle est ramenée au niveau des autres sons */
     let ss=0;const d=s.base.getChannelData(0);for(let i=0;i<d.length;i+=4)ss+=d[i]*d[i];const rms=Math.sqrt(ss/(d.length/4))||.1;s.norm=Math.min(1.5,.1/rms);s.g.gain.value=s.norm;
     s.ready=true;}
@@ -1813,8 +1814,28 @@ async function initSamples(){
   cardButtons($("sons"));prepTempo(targetBpm());
 }
 /* extrait exactement les 16 temps de la boucle */
-function cutLoop(buf,off,dur){const sr=buf.sampleRate,a=Math.round(off*sr),n=Math.round(dur*sr),out=ctx.createBuffer(buf.numberOfChannels,n,sr);
-  for(let c=0;c<buf.numberOfChannels;c++){const src=buf.getChannelData(c),dst=out.getChannelData(c);for(let i=0;i<n;i++)dst[i]=src[a+i]||0;}return out;}
+/* rot : la boucle est « tournée » de rot secondes, pour que le premier temps de la musique tombe pile au début (la fin repasse devant) */
+function cutLoop(buf,off,dur,rot){const sr=buf.sampleRate,a=Math.round(off*sr),n=Math.round(dur*sr),r=Math.round((rot||0)*sr)%n,out=ctx.createBuffer(buf.numberOfChannels,n,sr);
+  for(let c=0;c<buf.numberOfChannels;c++){const src=buf.getChannelData(c),dst=out.getChannelData(c);for(let i=0;i<n;i++)dst[i]=src[a+(i+r)%n]||0;}return out;}
+/* Où tombent les temps dans les MP3 ? Beaucoup de boucles exportées commencent un peu AVANT le premier temps (ici ~80 ms) :
+   la musique était alors en retard sur les visuels. On repère la position des attaques (coups de batterie, notes) dans chaque temps,
+   sur l'ensemble des boucles, et on recale toutes les boucles sur ce point. Réglable à la main dans reglages.json : "decalage_ms". */
+let GRIDFRAC=0;
+function gridPhase(){
+  if(SET.decalage_ms!==undefined&&isFinite(+SET.decalage_ms))return (+SET.decalage_ms/1000)*(+SET.bpm||120)/60;
+  const NB=48,bins=new Float64Array(NB);let used=0;
+  const ids=Object.keys(SMP).sort((x,y)=>(SMP[y].D.piste==="R")-(SMP[x].D.piste==="R")).slice(0,40);
+  for(const id of ids){const s=SMP[id],D=s.D,buf=s.raw,sr=buf.sampleRate,d=buf.getChannelData(0),a=Math.round(smpOffset*sr),beat=60/D.bpm*sr,n=Math.min(d.length-a,Math.round(D.beats*beat)),hop=128;
+    let prev=0;for(let i=0;i+hop<=n;i+=hop){let e=0;for(let k=0;k<hop;k++){const v=d[a+i+k];e+=v*v;}const le=Math.log(e+1e-7);if(i>0){const on=le-prev;if(on>0)bins[Math.floor(((i+hop/2)%beat)/beat*NB)%NB]+=on*(D.piste==="R"?2:1);}prev=le;}
+    used++;}
+  if(!used)return 0;
+  let best=0;for(let k=1;k<NB;k++)if(bins[k]>bins[best])best=k;
+  const mean=bins.reduce((x,y)=>x+y,0)/NB;if(bins[best]<mean*1.25)return 0;   /* pas de temps net : on ne touche à rien */
+  /* affinage sur les cases voisines */
+  const l=bins[(best+NB-1)%NB],r=bins[(best+1)%NB],c=bins[best],dd=(l-r)/(2*(l-2*c+r)||1);
+  let fr=((best+.5+(isFinite(dd)?dd:0))/NB+1)%1;
+  if(fr>.85)fr=0;   /* temps à peine en avance : on laisse */
+  const b0=SMP[ids[0]].D.bpm;console.log("Calage des boucles : premier temps à",Math.round(fr*60/b0*1000),"ms");return fr;}
 /* WSOLA : change la durée sans changer la hauteur. ratio = durée finale / durée d'origine */
 function* wsola(buf,ratio){   /* WSOLA circulaire : la fin de la boucle s'enchaîne sans coupure sur son début. Générateur pour ne pas bloquer la musique. */
   const sr=buf.sampleRate,C=buf.numberOfChannels,inL=buf.length,outL=Math.round(inL*ratio);
