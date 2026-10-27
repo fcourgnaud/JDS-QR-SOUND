@@ -651,7 +651,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v81";
+const VERSION="v82";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1934,7 +1934,8 @@ async function initSamples(){
   else if(fixes.length){toast("Durée différente de reglages.json → "+fixes.join(" · "),true);console.warn("MP3",fixes);mp3Info+=" · ⚠ "+fixes.join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
   GRIDFRAC=gridPhase(an);
   for(const id of an)finishSample(id);
-  const n=Object.keys(SMP).length;if(n)toast(n+" boucle"+(n>1?"s":"")+" MP3 chargée"+(n>1?"s":"")+" depuis le dossier sons");
+  const n=Object.keys(SMP).length,rdy=Object.keys(SMP).filter(k=>SMP[k].ready).length;
+  if(n)toast(n+" boucle"+(n>1?"s":"")+" MP3 trouvée"+(n>1?"s":"")+(n>rdy?` · ${rdy} prêtes, les autres se préparent quand une carte les tire`:""));
   $("arcCam").dataset.mp3=n?"🎵"+n:"";
   cardButtons($("sons"));prepTempo(targetBpm());if(S&&S.mp3t)render();
 }
