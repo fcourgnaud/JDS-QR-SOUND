@@ -650,7 +650,7 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v77";
+const VERSION="v78";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1143,7 +1143,7 @@ function ropeRound(){if(!S||!S.rope||S.ended)return;if($("sabWho"))return setTim
   /* la pente : la corde recule de moitié ; nouvel ordre ; verrous levés */
   R.projo={};R.projoNext=null;R.lastPlace=null;R.actUsed=false;
   R.order=ropeOrder();R.d=+(R.d*ROPE.PENTE).toFixed(3);rSync();R.locks={};R.played=[];R.round++;S.turn=R.order[0];
-  if(isFinal())S.bpm=R.baseBpm+ROPE.FINAL_BPM;
+  if(isFinal())rampStart();else if(R.round===ROPE.ROUNDS-1)prepRamp();
   R.log=`Manche ${R.round} : ${esc(S.players[S.turn].name)} commence (en tête au score)`;render();cheer();
   const L=leaderOf(),lead=L.who.length>1?null:L.who[0];
   const head=lead?`<div class="ann-crown">👑</div><b class="ann-name" style="color:${lead.color}">${esc(lead.name)}</b><div class="ann-score">${lead.score}<small>PTS</small></div>`
@@ -1304,7 +1304,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
   g+=`<line id="rpPullL" x1="0" y1="0" x2="${V.x}" y2="${V.y}" class="rp-pull" stroke="${col}"/><circle id="rpRing" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-ring"/><circle id="rpKnot" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-knot" fill="${col}"/><text id="rpKnotN" x="${V.x}" y="${(V.y+.62).toFixed(3)}" class="rp-kn"></text>`+bonTxt;
   const vb=n===2?"-11.9 -2.4 23.8 6.2":n===3?"-11.6 -11.9 23.2 18.8":"-9.4 -9.4 18.8 18.8";
   $("rpGauge").style.setProperty("--pc",pl.color);$("rpGauge").classList.toggle("act",!S.ended);
-  $("rpBpm").textContent="♩ "+Math.round(S.bpm)+" BPM";
+  $("rpBpm").textContent="♩ "+Math.round(S.rope&&S.rope.ramp?curBpm:S.bpm)+" BPM";
   $("rpGauge").innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg>`;
   $("rpGauge").prepend(spiralCanvas());spiralStart();
   ropeAnimate();
@@ -1582,14 +1582,17 @@ function startAudio(){
   if(!schedTimer){nextT=ctx.currentTime+.1;step=0;
     schedTimer=setInterval(()=>{
       const tgt=targetBpm();
-      if(tgt!==targetBpm.last){targetBpm.last=tgt;if(window.prepTempo)prepTempo(tgt);}
+      if(tgt!==targetBpm.last){targetBpm.last=tgt;if(window.prepTempo&&S)prepTempo(tgt);}
       while(nextT<ctx.currentTime-.02){nextT+=SPB;step=(step+1)%LOOP;}
       while(nextT<ctx.currentTime+.25){if(step%4===0)curBpm=tgt;SPB=60/curBpm/4;
         try{step=plTick(step,nextT);playStep(step,nextT);}catch(e){console.error(e);}nextT+=SPB;step=(step+1)%LOOP;}
       delNode.delayTime.setTargetAtTime(SPB*3,ctx.currentTime,.05);
     },25);}
 }
-function targetBpm(){return preview?preview.bpm:(S&&!S.ended?S.bpm:BPM_START);}
+function targetBpm(){if(preview)return preview.bpm;if(!S)return BPM_START;
+  if(S.rope&&S.rope.ramp){const r=S.rope.ramp,k=ABS+1-r.at;   /* k = n° du temps dans la mesure de montée (0 à 3) */
+    if(k<0)return r.from;if(k>=3){S.bpm=r.to;S.rope.ramp=null;return r.to;}return Math.round(r.from+(r.to-r.from)*(k+1)/4);}
+  return !S.ended||S.rope?S.bpm:BPM_START;}   /* La Corde : les boucles gardent le tempo de la dernière manche sous l'écran de résultat */
 /* envoi d'un nœud vers une piste, avec réverbe / écho / pompe */
 function out(node,piste,rev,del,pump){node.connect(pump?pumps[piste]:buses[piste]);
   if(rev){const g=ctx.createGain();g.gain.value=rev;node.connect(g);g.connect(revIn);}
@@ -1938,7 +1941,8 @@ function finishSample(id){const s=SMP[id];if(!s.raw)return;
 /* décode un son à la demande (carte qui tire ce son, test) ; then = appelé quand il est prêt */
 function ensureSample(id,then){const s=SMP[id];if(!s)return;if(s.ready){if(then)then();return;}
   if(!s.loading)s.loading=decode(s.ab.slice(0)).then(raw=>{s.raw=raw;fitDur(id);finishSample(id);
-      if(S&&S.rope)prepTempo(ROPE.BPM+ROPE.FINAL_BPM,[id]);   /* version « dernière manche » préparée d'avance */
+      if(S&&S.rope){if(S.rope.round>=ROPE.ROUNDS-1)for(let k=1;k<=4;k++)prepTempo(S.rope.baseBpm+ROPE.FINAL_BPM*k/4,[id]);   /* fin de partie proche : toute la montée */
+        else prepTempo(ROPE.BPM+ROPE.FINAL_BPM,[id]);}   /* version « dernière manche » préparée d'avance */
       if(S&&S.mp3t)render();}).catch(e=>{console.error(id,e);toast("sons/"+KFILE(id)+".mp3 n'a pas pu être lu",true);});
   if(then)s.loading.then(then);}
 /* extrait exactement les 16 temps de la boucle */
@@ -1993,10 +1997,12 @@ function prepTempo(bpm,only){bpm=Math.round(bpm);
   prepQueue.sort((a,b)=>inUse.has(b[0])-inUse.has(a[0]));
   if(prepQueue.length&&!prepTempo.busy){prepTempo.busy=true;let job=null;
     setTimeout(function run(){const t0=performance.now();
-      while(performance.now()-t0<5){
+      while(performance.now()-t0<8){
         if(!job){const q=prepQueue.shift();if(!q)break;const s=SMP[q[0]];if(s.cache[q[1]])continue;job={q,s,g:wsola(s.base,s.D.bpm/q[1])};}
         const r=job.g.next();if(r.done){const c=job.s.cache;c[job.q[1]]=r.value;const ks=Object.keys(c).map(Number).filter(k=>k!==job.s.D.bpm);
-          if(ks.length>2){ks.sort((a,b)=>Math.abs(a-curBpm)-Math.abs(b-curBpm));ks.slice(2).forEach(k=>delete c[k]);}job=null;}}
+          /* on garde les tempos utiles (actuel, visé, montée de la dernière manche) et on libère les autres en premier */
+          const keep=new Set([Math.round(curBpm),Math.round(targetBpm()),...(S&&S.rope?[1,2,3,4].map(k=>S.rope.baseBpm+ROPE.FINAL_BPM*k/4):[])]);
+          if(ks.length>5){ks.sort((a,b)=>(keep.has(a)-keep.has(b))||(Math.abs(b-curBpm)-Math.abs(a-curBpm)));while(ks.length>5)delete c[ks.shift()];}job=null;}}
       if(job||prepQueue.length)setTimeout(run,12);else prepTempo.busy=false;},12);}}
 const smpOn=id=>SMP[id]&&SMP[id].ready;
 /* beat = temps de la boucle (0 à 15) où la lecture démarre.
@@ -2025,7 +2031,12 @@ function stopAllSamples(){for(const id in SMP)stopSample(id);}
 /* indicateur de position dans le cycle : 4 mesures × 4 temps */
 let curBeat=0;
 function mtBeat(b){const rc=$("mtCycle");if(rc&&S&&S.mp3t)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});}
-function ropeBeat(b){mtBeat(b);const rc=$("rpCycle");if(rc)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});
+/* Dernière manche : le tempo monte progressivement sur une mesure, en partant de la prochaine mesure (+5 à chaque temps → +20 à la fin des 4 temps) */
+function rampStart(){const R=S.rope,last=((step-1+LOOP)%LOOP)>>2,inBar=last%4;   /* dernier temps déjà programmé, et sa place dans la mesure */
+  R.ramp={from:S.bpm,to:R.baseBpm+ROPE.FINAL_BPM,at:ABS+(4-inBar)};prepRamp();}
+function prepRamp(){const R=S.rope,refs=[...new Set([...PORDER.map(p=>PL.tr[p]&&PL.tr[p].ref),...PORDER.map(p=>{const t=topOf(p);return t&&SREF(sndOf(t));})].filter(r=>r&&SMP[r]))];
+  for(let k=1;k<=4;k++)prepTempo(R.baseBpm+ROPE.FINAL_BPM*k/4,refs);}
+function ropeBeat(b){mtBeat(b);const bp=$("rpBpm");if(bp&&S&&S.rope)bp.textContent="♩ "+Math.round(curBpm)+" BPM";const rc=$("rpCycle");if(rc)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});
   if(b<12||!S||!S.rope||S.ended||plIdle())return;
   const last=b===15,k=$("rpKnot"),rg=$("rpRing"),cd=$("rpCd");
   if(k){k.classList.remove("beat","last");void k.getBoundingClientRect();k.classList.add("beat");if(last)k.classList.add("last");}
