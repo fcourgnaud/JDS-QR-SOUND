@@ -772,7 +772,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v96";
+const VERSION="v97";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -920,8 +920,15 @@ let camStream=null;
 function stopEverything(){
   clearTimeout(mesureTimer);stopLarsen();picking=null;pending=null;
   if(schedTimer){clearInterval(schedTimer);schedTimer=null;}
-  try{plReset();stopAllSamples();}catch(e){}preview=null;
-  if(ctx&&ctx.state==="running")ctx.suspend().catch(()=>{});
+  /* Quitter en douceur : la musique s'éteint en 0,15 s (plus de coupure sèche ni de clic), puis le son reste allumé
+     mais muet 3,5 s, le temps que l'écho et la réverbération finissent de s'éteindre ; ensuite seulement il est mis en pause.
+     Avant, la pause tombait en plein son : clic (grésillement sur iPhone) et reste d'écho figé qui ressortait à la partie suivante. */
+  let tq=0;
+  if(ctx&&ctx.state==="running"&&window.__masterOut){const g=window.__masterOut.gain,n=ctx.currentTime;tq=n+.16;
+    g.cancelScheduledValues(n);g.setValueAtTime(g.value,n);g.linearRampToValueAtTime(0,n+.15);QUITMUTE=true;
+    clearTimeout(QUITT);QUITT=setTimeout(()=>{if(ctx&&!schedTimer&&ctx.state==="running")ctx.suspend().catch(()=>{});},3500);}
+  else if(ctx&&ctx.state==="running")ctx.suspend().catch(()=>{});
+  try{plReset(tq);stopAllSamples(tq);}catch(e){}preview=null;
   scanning=false;if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}try{video.srcObject=null;}catch(e){}
   bonusOn=false;const ab=$("arcBonus");if(ab)ab.hidden=true;const an=$("arcAnn");if(an)an.hidden=true;const cm=$("countModal");if(cm)cm.className="";
   camState("","Caméra arrêtée");
@@ -1311,7 +1318,7 @@ function ropeModal(html,ms,after,noDuck){const el=$("ropeAnn");el.innerHTML=`<di
   const done=()=>{clearTimeout(ropeModal.t);el.onclick=null;if(el.hidden)return;el.hidden=true;if(pending&&pending.modal)pending=null;render();if(after)after();};
   clearTimeout(ropeModal.t);ropeModal.t=setTimeout(done,ms);
   setTimeout(()=>{el.onclick=done;},350);}   /* un clic sur l'écran le ferme (après un court instant, pour éviter un double clic) */
-function duck(on){if(!ctx||!window.__masterOut)return;const g=window.__masterOut.gain,t=ctx.currentTime;g.cancelScheduledValues(t);g.setTargetAtTime(typeof on==="number"?.9*on:on?.9*ROPE.DUCK:.9,t,.15);}
+function duck(on){if(!ctx||!window.__masterOut||QUITMUTE)return;const g=window.__masterOut.gain,t=ctx.currentTime;g.cancelScheduledValues(t);g.setTargetAtTime(typeof on==="number"?.9*on:on?.9*ROPE.DUCK:.9,t,.15);}
 /* Sabotage à 3-4 joueurs quand la corde repasse le centre : elle part vers le saboteur, qui se désigne */
 function sabWho(L,o){const R=S.rope,keep=pending;pending={sab:true};
   const others=S.players.map((p,i)=>i).filter(i=>i!==L.owner);
@@ -1945,7 +1952,10 @@ function micAnalyse(parts,T,sr){
   const so=[...res].sort((p,q)=>p-q),med=so[so.length>>1],good=res.filter(r=>Math.abs(r-med)<.006);
   if(good.length<5)return{ok:false,n:good.length};
   return{ok:true,n:good.length,lag:good.reduce((p,q)=>p+q,0)/good.length,all:res};}
+let QUITMUTE=false,QUITT=0;
 function startAudio(){
+  if(ctx){clearTimeout(QUITT);
+    if(QUITMUTE&&window.__masterOut){QUITMUTE=false;const g=window.__masterOut.gain,n=ctx.currentTime;g.cancelScheduledValues(n);g.setValueAtTime(0,n);g.linearRampToValueAtTime(.9,n+.05);}}
   if(!ctx){
     ctx=new (window.AudioContext||window.webkitAudioContext)();
     masterIn=ctx.createGain();masterIn.gain.value=.9;
@@ -1964,7 +1974,7 @@ function startAudio(){
     for(const p of PORDER){const g=ctx.createGain();g.gain.value=1;g.connect(mkPan(pans[p])).connect(masterIn);buses[p]=g;
       const pu=ctx.createGain();pu.gain.value=1;pu.connect(g);pumps[p]=pu;}
     drives.H=makeDrive("H",.3);drives.M=makeDrive("M",.19);
-    renderKits();initSamples();setTimeout(warmup,50);moteurInit();
+    renderKits();SAMPINIT=initSamples();setTimeout(warmup,50);moteurInit();
   }
   ctx.resume();   /* toujours : couvre le cas d'une pause encore en cours après « Quitter » */
   if(!schedTimer){nextT=ctx.currentTime+.1;step=0;schedTimer=setInterval(schedRun,25);}   /* le fil audio envoie aussi la cadence (« tic ») : la minuterie n'est plus qu'un secours */
@@ -2222,7 +2232,7 @@ const SMP={};let smpOffset=null;
 function decode(ab){return new Promise((res,rej)=>{const p=ctx.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);});}
 async function getFile(url){try{const r=await fetch(url,{cache:"no-cache"});return r.ok?r:null;}catch(e){return null;}}
 /* les fichiers sont téléchargés dès l'ouverture de la page ; le décodage se fait au lancement (il faut l'audio) */
-let PRE=null,mp3Info="";
+let PRE=null,mp3Info="",SAMPINIT=null;
 /* liste des fichiers du dépôt GitHub qui héberge la page (une seule requête, sans compte) ; null si indisponible */
 async function listRepo(){
   let cached=null;try{cached=JSON.parse(localStorage.getItem("ts-tree")||"null");}catch(e){}
@@ -2345,7 +2355,7 @@ function finishSample(id){const s=SMP[id];if(!s.raw)return;
   s.raw=null;s.ab=null;s.ready=true;moteurSon(id);}
 /* décode un son à la demande (carte qui tire ce son, test) ; then = appelé quand il est prêt */
 function ensureSample(id,then){const s=SMP[id];if(!s)return;if(s.ready){if(then)then();return;}
-  if(!s.loading&&s.ab)s.loading=decode(s.ab.slice(0)).then(raw=>{s.raw=raw;const f=fitDur(id);if(f)toast(f,true);finishSample(id);
+  if(!s.loading&&s.ab)s.loading=(smpOffset===null&&SAMPINIT?SAMPINIT.catch(()=>{}):Promise.resolve()).then(()=>s.ready?null:decode(s.ab.slice(0))).then(raw=>{if(!raw)return;s.raw=raw;const f=fitDur(id);if(f)toast(f,true);finishSample(id);
       if(S&&S.mp3t)render();}).catch(e=>{console.error(id,e);toast("sons/"+KFILE(id)+".mp3 n'a pas pu être lu",true);});
   if(then&&s.loading)s.loading.then(then);}
 /* extrait exactement les 16 temps de la boucle */
@@ -2365,6 +2375,10 @@ function cutLoop(buf,off,dur,rot){const sr=buf.sampleRate,a=Math.round(off*sr),n
 let GRIDFRAC=0;
 function gridPhase(an){
   if(SET.decalage_ms!==undefined&&isFinite(+SET.decalage_ms))return (+SET.decalage_ms/1000)*(+SET.bpm||120)/60;
+  /* v97 : plus de recalage automatique. Mesure faite sur les 25 boucles de rythme : les coups de grosse caisse tombent pile
+     sur les temps dès le vrai début de la boucle. L'estimation ci-dessous, trompée par les charlestons et le swing,
+     trouvait 81 ms et faisait jouer toute la musique 81 ms trop tôt par rapport aux bips, aux visuels et au réglage du décalage. */
+  if(SET.calage_auto!==true)return 0;
   const NB=48,bins=new Float64Array(NB);let used=0;
   const ids=(an||[]).filter(id=>SMP[id].raw).sort((x,y)=>(SMP[y].D.piste==="R")-(SMP[x].D.piste==="R")).slice(0,40);
   for(const id of ids){const s=SMP[id],D=s.D,buf=s.raw,sr=buf.sampleRate,d=buf.getChannelData(0),a=Math.round(smpOffset*sr),beat=60/D.bpm*sr,n=Math.min(d.length-a,Math.round(D.beats*beat)),hop=128;
@@ -2402,8 +2416,10 @@ function startSample(id,t,beat){const s=SMP[id],D=s.D,pp=s.at||D.piste;
 /* position (en secondes dans la boucle) que la lecture aura à l'instant t */
 function samplePos(s,t){return ((s.off0+(t-s.t0)*s.rate)%s.loopDur+s.loopDur)%s.loopDur;}
 /* arrêt immédiat (carte retirée, recouverte, mutée, fin de partie) */
-function stopSample(id){const s=SMP[id];if(!s||!s.playing)return;if(s.moteur&&MOT&&MOTOK)MOT.port.postMessage({k:"stop",id,f:0});s.moteur=false;(s.srcs||[]).forEach(x=>{try{x.stop();}catch(e){}});s.srcs=[];s.src=null;s.playing=false;}
-function stopAllSamples(){for(const id in SMP)stopSample(id);}
+function stopSample(id,when){const s=SMP[id];if(!s||!s.playing)return;
+  if(s.moteur&&MOT&&MOTOK)MOT.port.postMessage(when?{k:"stop",id,f:Math.round(when*ctx.sampleRate)}:{k:"stop",id,f:0});s.moteur=false;
+  (s.srcs||[]).forEach(x=>{try{x.stop(when||0);}catch(e){}});s.srcs=[];s.src=null;s.playing=false;}
+function stopAllSamples(when){for(const id in SMP)stopSample(id,when);}
 /* indicateur de position dans le cycle : 4 mesures × 4 temps */
 let curBeat=0;
 function mtBeat(b){const rc=$("mtCycle");if(rc&&S&&S.mp3t)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});}
@@ -2449,7 +2465,7 @@ function countTick(b,first){
    - Toutes les pistes qui jouent s'allument ensemble. */
 const PL={tr:{R:null,B:null,H:null,M:null},spot:null,cyc:0};let ABS=0;
 const sndOf=e=>e.snd||e.id;
-function plReset(){for(const p of PORDER){const c=PL.tr[p];if(c&&c.ref&&SMP[c.ref])stopSample(c.ref);PL.tr[p]=null;}PL.spot=null;PL.cyc=0;}
+function plReset(when){for(const p of PORDER){const c=PL.tr[p];if(c&&c.ref&&SMP[c.ref])stopSample(c.ref,when);PL.tr[p]=null;}PL.spot=null;PL.cyc=0;}
 function plAdd(e){const src=e.snd||e.id,k=poolAssign(src);   /* Joker : il prend le son de la carte de sa tribu sur cette piste */
   if(k&&S&&S.rope)e.snd=k;}   /* le son tiré est noté sur la carte posée (calme ou fort selon la manche) */
 function plFind(seq){if(!S)return null;for(const p of PORDER)for(const e of S.stacks[p])if(e.seq===seq)return{p,t:e};return null;}
