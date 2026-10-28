@@ -1,8 +1,9 @@
 /* Tribes Showdown — service worker (app hors ligne)
-   La version vient de index.html (sw.js?v=v88) : il n'y a RIEN à modifier ici quand tu publies.
+   La version vient de index.html (sw.js?v=…) : il n'y a RIEN à modifier ici quand tu publies.
    - index.html : réseau d'abord (3 s max), sinon la copie sur le téléphone → une nouvelle version arrive au lancement suivant, jamais en pleine partie
    - sons/ : copie sur le téléphone d'abord (démarrage instantané), puis vérification discrète en ligne ; un MP3 remplacé sur GitHub est mis à jour pour la partie suivante
-   - polices (Google Fonts) et lecteur de QR (jsQR.js) : gardés sur le téléphone */
+   - polices (Google Fonts), lecteur de QR (jsQR.js) et dessin de la corde (pixi.min.js) : gardés sur le téléphone
+   - les cartes viennent de ton Google Sheet (lues par la page elle-même, la dernière copie est gardée par la page) */
 const V = new URL(self.location).searchParams.get("v") || "dev";
 const APP = "ts-app-" + V, SONS = "ts-sons", EXT = "ts-ext";
 const SHELL = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png", "jsQR.js", "pixi.min.js"];
@@ -39,15 +40,17 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
 
-  /* la page elle-même */
-  if (req.mode === "navigate" || (url.origin === location.origin && /\/(index\.html)?$/.test(url.pathname))) {
+  /* la page du jeu */
+  /* seulement la page du jeu : une autre page du site (ancienne page, test…) ne remplace jamais la copie hors ligne */
+  if (url.origin === location.origin && /\/(index\.html)?$/.test(url.pathname)) {
+    const key = "./";
     e.respondWith((async () => {
       const c = await caches.open(APP);
       try {
         const r = await propre(await timeout(fetch(req.url, { cache: "no-cache", credentials: "same-origin" }), 3000));
-        if (r.ok) { await c.put("./", r.clone()); return r; }
+        if (r.ok) { await c.put(key, r.clone()); return r; }
       } catch (err) {}
-      return (await c.match("./")) || (await c.match(req, { ignoreSearch: true })) || sansReseau();
+      return (await c.match(key)) || (await c.match(req, { ignoreSearch: true })) || sansReseau();
     })());
     return;
   }
