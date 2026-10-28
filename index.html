@@ -772,7 +772,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v94";
+const VERSION="v95";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1544,7 +1544,7 @@ function pxFrame(){const app=PX.app,gz=$("rpGauge");
     if(age>600)PX.beat=null;}
   PX.knot.scale.set(ks);PX.knotG.scale.set(ks);PX.knotG.alpha=kg;PX.ring.scale.set(rs);PX.ring.alpha=ra;PX.knN.alpha=na;
   /* --- images par seconde --- */
-  PX.fpsN++;if(now-PX.fpsT>=1000){PX.fps=Math.round(PX.fpsN*1000/(now-PX.fpsT));PX.fpsN=0;PX.fpsT=now;PX.fpsTx.text=PX.showFps?PX.fps+" i/s":"";}
+  PX.fpsN++;if(now-PX.fpsT>=1000){PX.fps=Math.round(PX.fpsN*1000/(now-PX.fpsT));PX.fpsN=0;PX.fpsT=now;PX.fpsTx.text=PX.showFps?PX.fps+" i/s"+(scanning?" · QR "+(detector?"natif":QR.rate+" lectures/s"):""):"";}
 }
 function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],camp=rCamp(),fin=isFinal();
   $("rpScores").style.setProperty("--np",n);$("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><b>${p.score}</b></div>`).join("");
@@ -2552,14 +2552,17 @@ async function startCamera(){
   if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)
     return camOff("Caméra indisponible ici","Ouvre la page en https dans Safari ou Chrome. Le simulateur reste utilisable.");
   if("BarcodeDetector" in window){try{const f=await BarcodeDetector.getSupportedFormats();if(f.indexOf("qr_code")>=0)detector=new BarcodeDetector({formats:["qr_code"]});}catch(e){}}
-  if(!detector&&!window.jsQR)return camOff("Lecteur QR non chargé","Vérifie la connexion internet puis recharge.");
+  if(!detector&&!window.jsQR)return camOff("Lecteur QR non chargé","Recharge la page.");
+  if(!detector)await qrWorkersInit();
   let stream;
-  try{stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}}});}
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:"user",width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}}});}
   catch(e){return camOff("Caméra indisponible",({NotAllowedError:"Accès refusé : autorise la caméra pour ce site puis recharge.",NotFoundError:"Aucune caméra trouvée.",NotReadableError:"Caméra utilisée par une autre app."})[e.name]||("Erreur : "+(e.name||e.message)));}
   camStream=stream;video.srcObject=stream;try{await video.play();}catch(e){}
   await new Promise(r=>{if(video.videoWidth)r();else video.onloadedmetadata=r;});
   try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{});}catch(e){}
-  camRes=video.videoWidth+"×"+video.videoHeight+" · "+(detector?"lecteur natif":"jsQR");
+  /* mise au point continue quand la caméra le permet (surtout Android) */
+  try{const tr=stream.getVideoTracks()[0],cp=tr.getCapabilities?tr.getCapabilities():{};if(cp.focusMode&&cp.focusMode.includes("continuous"))tr.applyConstraints({advanced:[{focusMode:"continuous"}]}).catch(()=>{});}catch(e){}
+  camRes=video.videoWidth+"×"+video.videoHeight+" · "+(detector?"lecteur natif":QR.ok?"jsQR · "+QR.workers.length+" fil"+(QR.workers.length>1?"s":"")+" de lecture":"jsQR");
   camState("on",camRes);
   scanning=true;fpsT=performance.now();nextFrame();
 }
@@ -2567,7 +2570,69 @@ function camState(st,info){const c=$("camChip");c.className="cam "+st;c.textCont
 function camOff(t,sub,quiet){camState(quiet?"":"off",t+" · "+sub);if(!quiet)toast(t+" : "+sub,true);}
 /* la vidéo est invisible : on lit chaque nouvelle image avec requestAnimationFrame */
 let lastVT=-1;
-function nextFrame(){if(scanning)requestAnimationFrame(tick);}
+/* ===== Lecture des QR hors du fil principal (iPhone et navigateurs sans lecteur natif) =====
+   jsQR tourne dans 2 fils de calcul : la musique, l'écran et la corde ne sont plus bloqués pendant qu'une image est lue,
+   et deux images sont lues en même temps. Chaque nouvelle image de la caméra est lue avec un cadrage différent, à tour de rôle :
+   une lecture sur deux sur l'image entière (carte normale : lue tout de suite), les autres sur le centre agrandi
+   puis trois bandes de l'image à pleine finesse (petite carte tenue loin, même sur un bord) ;
+   dès qu'une carte est vue, une lecture sur deux se resserre autour de l'endroit où elle était (carte suivante au même endroit). */
+const QR={workers:[],free:[],ok:false,fail:false,bm:null,turn:0,last:null,lastT:0,n:0,rate:0,rateT:0};
+const QR_WORKER=`let oc=null,og=null;
+self.onmessage=e=>{const m=e.data;let d;
+  try{
+    if(m.bm){if(typeof OffscreenCanvas==="undefined"){m.bm.close();self.postMessage({r:m.r,err:"nooff"});return;}
+      if(!oc||oc.width!==m.w||oc.height!==m.h){oc=new OffscreenCanvas(m.w,m.h);og=oc.getContext("2d",{willReadFrequently:true});}
+      if(!og){m.bm.close();self.postMessage({r:m.r,err:"nooff"});return;}
+      og.drawImage(m.bm,0,0,m.w,m.h);m.bm.close();d=og.getImageData(0,0,m.w,m.h).data;}
+    else d=new Uint8ClampedArray(m.buf);
+  }catch(x){self.postMessage({r:m.r,err:"nooff"});return;}
+  let q=null;try{q=jsQR(d,m.w,m.h,{inversionAttempts:"dontInvert"});}catch(x){}
+  const L=q&&q.location;
+  self.postMessage({r:m.r,txt:q?q.data:null,loc:L?[L.topLeftCorner,L.topRightCorner,L.bottomRightCorner,L.bottomLeftCorner]:null});};`;
+async function qrWorkersInit(){
+  if(QR.ok||QR.fail)return QR.ok;
+  try{
+    const src=await (await fetch("jsQR.js")).text();   /* le code du lecteur est mis dans les fils (marche hors ligne) */
+    const url=URL.createObjectURL(new Blob([src+"\n;"+QR_WORKER],{type:"application/javascript"}));
+    const n=2;
+    for(let i=0;i<n;i++){const w=new Worker(url);w.onerror=e=>{console.warn("fil QR",e);};QR.workers.push(w);
+      /* mise en route : une première lecture à vide, pour que le lecteur soit déjà prêt quand la caméra s'allume */
+      const z=new Uint8ClampedArray(96*96*4).fill(255);w.onmessage=()=>{w.onmessage=e=>qrDone(w,e.data);QR.free.push(w);};w.postMessage({buf:z.buffer,w:96,h:96,r:null},[z.buffer]);}
+    QR.ok=true;
+  }catch(e){console.warn("lecture QR en fil séparé indisponible : lecture classique",e);QR.fail=true;}
+  return QR.ok;}
+/* cadrage de la prochaine lecture, en pixels de la vidéo */
+function qrRect(vw,vh,now){
+  const L=QR.last&&now-QR.lastT<3000?QR.last:null,t=QR.turn++;
+  const fit=(sx,sy,sw,sh,max,lab)=>{sx=Math.max(0,Math.round(sx));sy=Math.max(0,Math.round(sy));sw=Math.max(16,Math.round(Math.min(sw,vw-sx)));sh=Math.max(16,Math.round(Math.min(sh,vh-sy)));
+    const k=Math.min(1,max/Math.max(sw,sh));return{sx,sy,sw,sh,ow:Math.max(16,Math.round(sw*k)),oh:Math.max(16,Math.round(sh*k)),lab};};
+  if(L&&t%2===0){const cx=(L.x0+L.x1)/2,cy=(L.y0+L.y1)/2,s=Math.max(200,Math.max(L.x1-L.x0,L.y1-L.y0)*2.4);return fit(cx-s/2,cy-s/2,s,s,520,"suivi");}
+  const m=Math.min(vw,vh),u=t>>(L?1:0);
+  if(u%2===0)return fit(0,0,vw,vh,640,"entier");
+  const k=(u>>1)%4,tw=Math.min(vw,Math.round(vw*.42));
+  if(k===0)return fit((vw-m*.6)/2,(vh-m*.6)/2,m*.6,m*.6,720,"centre");
+  return fit([0,(vw-tw)/2,vw-tw][k-1],0,tw,vh,720,"bande "+k);}
+async function qrJob(w){
+  const vw=video.videoWidth,vh=video.videoHeight,r=qrRect(vw,vh,performance.now());
+  try{
+    /* copie de l'image dans un petit canvas (quelques ms), puis lecture dans le fil : plus rapide que de passer l'image elle-même au fil */
+    if(grab.width!==r.ow||grab.height!==r.oh){grab.width=r.ow;grab.height=r.oh;}
+    g2d.drawImage(video,r.sx,r.sy,r.sw,r.sh,0,0,r.ow,r.oh);
+    const im=g2d.getImageData(0,0,r.ow,r.oh);w.postMessage({buf:im.data.buffer,w:r.ow,h:r.oh,r},[im.data.buffer]);
+  }catch(e){QR.bm=false;QR.free.push(w);}}
+function qrDone(w,d){QR.free.push(w);QR.n++;
+  const now=performance.now();if(now-QR.rateT>=1000){QR.rate=Math.round(QR.n*1000/(now-QR.rateT||1000));QR.n=0;QR.rateT=now;$("camChip").title=camRes+" · "+QR.rate+" lectures/s";}
+  if(d.err){QR.bm=false;return;}
+  if(!d.txt)return;
+  const r=d.r,kx=r.sw/r.ow,ky=r.sh/r.oh,xs=d.loc.map(p=>r.sx+p.x*kx),ys=d.loc.map(p=>r.sy+p.y*ky);
+  QR.last={x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys)};QR.lastT=now;
+  try{onCode(d.txt);}catch(e){console.error(e);}}
+/* à chaque nouvelle image de la caméra : jusqu'à 2 lectures (une par fil libre), avec des cadrages différents */
+function qrLoop(){if(!scanning)return;requestAnimationFrame(()=>{
+  if(!scanning)return;
+  if(!document.hidden&&video.videoWidth&&video.currentTime!==lastVT){lastVT=video.currentTime;let k=0;while(QR.free.length&&k<2){k++;qrJob(QR.free.pop());}}
+  qrLoop();});}
+function nextFrame(){if(!scanning)return;if(!detector&&QR.ok)return qrLoop();requestAnimationFrame(tick);}
 async function tick(){
   if(!busy&&!document.hidden&&video.videoWidth&&video.currentTime!==lastVT){lastVT=video.currentTime;
     busy=true;
