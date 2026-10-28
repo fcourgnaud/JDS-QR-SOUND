@@ -772,7 +772,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v93";
+const VERSION="v94";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1835,21 +1835,26 @@ function visRun(){VISRAF=0;const h=heardNow()+.022;   /* +1 image : le temps que
 /* ===== Moteur audio dans le fil audio (AudioWorklet) =====
    Les boucles MP3 et la cadence tournent dans le fil audio : l'écran, la caméra ou un téléphone occupé ne peuvent plus
    les décaler ni faire sauter un temps. Si le téléphone ne le permet pas, l'ancien moteur prend le relais tout seul. */
-let MOT=null,MOTOK=false,MOTINFO="",MOTTOK=0,PREFILES=null;
+let MOT=null,MODST=null,MOTOK=false,MOTINFO="",MOTTOK=0,PREFILES=null;
 /* choix gardés sur le téléphone : moteur audio (fil séparé / classique) et visuels (carte graphique / ancien dessin) */
 const PREF=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
-const MOTPREF=PREF("ts-moteur")||"fil",PXPREF=PREF("ts-visuels")||"gpu";
+const MOTPREF=PREF("ts-moteur")||"classique",PXPREF=PREF("ts-visuels")||"gpu";
 function motInfo(t){MOTINFO=t;const el=$("motS");if(el)el.textContent="⚙️ Moteur audio : "+t;}
+/* Le code du fil audio est toujours chargé (il sert aussi à la mesure au micro) ;
+   les boucles n'y passent que si « fil séparé » est choisi. Par défaut : moteur classique, la lecture native du navigateur,
+   qui sonne mieux sur iPhone. */
 async function moteurInit(){
-  if(MOT)return;
-  if(MOTPREF==="classique"){motInfo("classique (choisi)");return;}
-  if(!ctx.audioWorklet||!window.AudioWorkletNode){motInfo("classique (ce navigateur n'a pas de fil audio séparé)");return;}
-  MOT="chargement";
+  if(MOT||MODST)return;
+  if(!ctx.audioWorklet||!window.AudioWorkletNode){MODST="non";motInfo("classique");return;}
+  MODST="chargement";
   const src=$("moteurSrc").textContent,urls=[];
   try{urls.push(URL.createObjectURL(new Blob([src],{type:"application/javascript"})));}catch(e){}
   urls.push("data:application/javascript;charset=utf-8,"+encodeURIComponent(src));
   let ok=false;for(const u of urls){try{await ctx.audioWorklet.addModule(u);ok=true;break;}catch(e){console.warn("moteur audio",u.slice(0,5),e);}}
-  if(!ok){MOT=null;motInfo("classique (fil audio séparé indisponible)");return;}
+  if(!ok){MODST="non";motInfo("classique");return;}
+  MODST="ok";
+  if(MOTPREF!=="fil"){motInfo("classique (lecture native du navigateur)");return;}
+  MOT="chargement";
   try{const n=new AudioWorkletNode(ctx,"ts-moteur",{numberOfInputs:0,numberOfOutputs:4,outputChannelCount:[2,2,2,2]});
     PORDER.forEach((p,i)=>n.connect(buses[p],i));
     n.onprocessorerror=moteurPanne;
@@ -1886,8 +1891,8 @@ async function micCalib(say){if(MICBUSY)return null;MICBUSY=true;
 async function micMesure(say){
   calStop();preview=null;startAudio();try{await ctx.resume();}catch(e){}
   if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){say("Micro indisponible ici : règle à la main avec ▶ Tester.");return null;}
-  for(let i=0;i<30&&!MOTOK&&MOT;i++)await wait(100);
-  if(!MOTOK){say("Mesure impossible sur ce téléphone : règle à la main avec ▶ Tester.");return null;}
+  for(let i=0;i<30&&MODST==="chargement";i++)await wait(100);
+  if(MODST!=="ok"){say("Mesure impossible sur ce téléphone : règle à la main avec ▶ Tester.");return null;}
   const R0=repLat();say("Autorise le micro…");
   let stream;
   try{try{if(navigator.audioSession)navigator.audioSession.type="play-and-record";}catch(e){}
