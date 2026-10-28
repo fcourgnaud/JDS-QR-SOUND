@@ -772,7 +772,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v92";
+const VERSION="v93";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -979,7 +979,9 @@ function setup(){stopEverything();document.body.classList.remove("cd-on");try{if
         <small id="calMicS">🎤 Mesurer : le téléphone, posé à sa place de jeu, écoute 8 clics au micro et règle le décalage tout seul (silence autour pendant 8 s).</small>
         <small>▶ Tester pour vérifier : le rond doit clignoter pile sur le bip, sinon règle à la main.</small>
         <small id="motS">⚙️ Moteur audio : ${MOTINFO||"démarre au premier son"}</small>
-        <small>🎨 Visuels : ${PX.on?"carte graphique ✓":PX.fail?"ancien dessin (carte graphique indisponible)":"chargement…"}</small></div>
+        <small>🎨 Visuels : ${PX.on?"carte graphique ✓":PXPREF==="ancien"?"ancien dessin (choisi)":PX.fail?"ancien dessin (carte graphique indisponible)":"chargement…"}</small>
+        <div class="cal-row"><button class="chip" id="motSw">⚙️ Moteur : ${MOTPREF==="classique"?"classique":"fil séparé"} ⇄</button><button class="chip" id="pxSw">🎨 Visuels : ${PXPREF==="ancien"?"ancien":"carte graphique"} ⇄</button></div>
+        <small>Pour comparer : touche un bouton, l'app redémarre avec l'autre choix (il reste gardé).</small></div>
       <p class="note" style="margin:0">${modeChoice==="mp3"?"Chaque joueur choisit sa tribu. Les cartes de chacun s'affichent sous le jeu : touche-les pour simuler un scan.":"Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale."}</p>
       <p class="note" id="mp3Status" style="margin:0">${mp3Info||"Recherche des boucles MP3…"}</p>
       <p class="note" id="offStatus" style="margin:0">${offHTML()}</p>
@@ -993,6 +995,9 @@ function setup(){stopEverything();document.body.classList.remove("cd-on");try{if
     $("calM").onclick=()=>setLat(USERLAT-10);$("calP").onclick=()=>setLat(USERLAT+10);
     document.querySelectorAll(".calib [data-lat]").forEach(b=>b.onclick=()=>setLat(b.dataset.lat));
     $("calTest").onclick=()=>{if(CALT)calStop();else calStart();};
+    const swap=(k,a,b,cur)=>{save();try{localStorage.setItem(k,cur===a?b:a);}catch(e){}toast("Redémarrage…",true);setTimeout(()=>location.reload(),350);};
+    $("motSw").onclick=()=>swap("ts-moteur","fil","classique",MOTPREF);
+    $("pxSw").onclick=()=>swap("ts-visuels","gpu","ancien",PXPREF);
     $("calMic").onclick=async()=>{const b=$("calMic");if(b)b.disabled=true;
       const v=await micCalib(t=>{const e=$("calMicS");if(e)e.textContent=t;});
       const b2=$("calMic");if(b2)b2.disabled=false;if(v!==null&&$("calV"))setLat(v);};
@@ -1420,7 +1425,7 @@ function spiralFrame(now){SPRAF=0;
    Sans carte graphique utilisable, l'ancien dessin (SVG + canvas) prend le relais tout seul.
    Touche « ♩ 120 BPM » pour afficher le nombre d'images par seconde. */
 const PX={app:null,on:false,fail:false,key:"",box:null,m:null,beat:null,fps:0,fpsN:0,fpsT:0,showFps:false,fonts:false};
-function pxBoot(){if(PX.app||PX.fail)return;
+function pxBoot(){if(PX.app||PX.fail)return;if(PXPREF==="ancien"){PX.fail=true;return;}
   if(window.PIXI)return pxInit();
   const sc=document.createElement("script");sc.src="pixi.min.js";sc.onload=pxInit;sc.onerror=()=>{PX.fail=true;};document.head.appendChild(sc);}
 async function pxInit(){if(PX.app||PX.fail||!window.PIXI)return;
@@ -1831,9 +1836,13 @@ function visRun(){VISRAF=0;const h=heardNow()+.022;   /* +1 image : le temps que
    Les boucles MP3 et la cadence tournent dans le fil audio : l'écran, la caméra ou un téléphone occupé ne peuvent plus
    les décaler ni faire sauter un temps. Si le téléphone ne le permet pas, l'ancien moteur prend le relais tout seul. */
 let MOT=null,MOTOK=false,MOTINFO="",MOTTOK=0,PREFILES=null;
+/* choix gardés sur le téléphone : moteur audio (fil séparé / classique) et visuels (carte graphique / ancien dessin) */
+const PREF=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
+const MOTPREF=PREF("ts-moteur")||"fil",PXPREF=PREF("ts-visuels")||"gpu";
 function motInfo(t){MOTINFO=t;const el=$("motS");if(el)el.textContent="⚙️ Moteur audio : "+t;}
 async function moteurInit(){
   if(MOT)return;
+  if(MOTPREF==="classique"){motInfo("classique (choisi)");return;}
   if(!ctx.audioWorklet||!window.AudioWorkletNode){motInfo("classique (ce navigateur n'a pas de fil audio séparé)");return;}
   MOT="chargement";
   const src=$("moteurSrc").textContent,urls=[];
