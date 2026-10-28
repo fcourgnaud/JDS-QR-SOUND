@@ -4,9 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Tribes Showdown</title>
+<!-- app installable et hors ligne (PWA) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e1022">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tribes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Bungee&family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Bungee&family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<script src="jsQR.js"></script><!-- lecteur de QR (jsQR 1.4.0, licence Apache 2.0), gardé dans le dépôt pour marcher hors ligne -->
 <style>
 /* Une scène vue d'en haut : jauge de tempo en haut (la caméra frontale lit les cartes en arrière-plan), 4 pistes, scores, régie. Thème sombre assumé.
    Chaque joueur a son deck : Rock (orange), Classique (violet), Électro (cyan). */
@@ -350,8 +359,7 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 body.rope .wrap,body.mp3t .wrap{display:none}
 body.mp3t{background:var(--arc-bg);background-image:none}
 #mp3t{position:relative;min-height:100dvh;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 18px;display:flex;flex-direction:column;gap:12px;font-family:var(--arc-t);color:#fff;max-width:640px;margin:0 auto}
-.mt-tempo{display:flex;gap:6px}.mt-tempo button,.mt-f button{font:inherit;color:#fff;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);border-radius:10px;padding:7px 10px}
-.mt-tempo button{flex:1}
+.mt-f button{font:inherit;color:#fff;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);border-radius:10px;padding:7px 10px}
 .mt-tr{border-radius:14px;padding:8px 10px;border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);display:flex;flex-direction:column;gap:6px}
 .mt-tr h3{margin:0;font-size:15px;display:flex;justify-content:space-between;align-items:center}.mt-tr h3 small{font-weight:400;color:#cfcbe8;font-size:12px}
 .mt-f{display:flex;flex-wrap:wrap;gap:5px;align-items:center}.mt-f>span{font-size:12px;color:#cfcbe8;min-width:44px}
@@ -580,7 +588,7 @@ body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
     <button data-tab="sim">Simulateur</button>
     <button data-tab="regles">Règles</button>
   </div>
-  <div class="pane" id="pane-sons"><p class="note">Touche une carte pour l'écouter seule, à son tempo idéal, pendant 4 mesures.</p><div class="cardgrid" id="sons"></div></div>
+  <div class="pane" id="pane-sons"><p class="note">Touche une carte pour l'écouter seule pendant 4 mesures.</p><div class="cardgrid" id="sons"></div></div>
   <div class="pane" id="pane-sim" hidden><p class="note">Fait comme si la carte venait d'être scannée.</p><div class="cardgrid" id="sim"></div></div>
   <div class="pane rules" id="pane-regles" hidden>
     <h3>But</h3>
@@ -644,7 +652,6 @@ body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
 <div id="mp3t" hidden>
   <div class="rp-top"><span class="t">🎧 TEST DES MP3</span><span class="rp-btns"><button id="mtStop">■ Tout arrêter</button><button id="mtQuit" title="Quitter">✕</button></span></div>
   <section class="rp-cycle" id="mtCycle"><span class="rc-bpm" id="mtBpm"></span><b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></b></section>
-  <div class="mt-tempo"><button data-b="-5">−5</button><button data-b="120">120</button><button data-b="140">140</button><button data-b="5">+5</button></div>
   <div id="mtList"></div>
 </div>
 <div id="rope" hidden>
@@ -667,7 +674,7 @@ body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
 <canvas id="grab" hidden></canvas>
 
 <script>
-const VERSION="v87";
+const VERSION="v89";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -874,6 +881,7 @@ function setup(){stopEverything();document.body.classList.remove("cd-on");try{if
         <small>Enceinte Bluetooth : lance le test et règle jusqu'à ce que le rond clignote pile sur le bip.</small></div>
       <p class="note" style="margin:0">${modeChoice==="mp3"?"Chaque joueur choisit sa tribu. Les cartes de chacun s'affichent sous le jeu : touche-les pour simuler un scan.":"Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale."}</p>
       <p class="note" id="mp3Status" style="margin:0">${mp3Info||"Recherche des boucles MP3…"}</p>
+      <p class="note" id="offStatus" style="margin:0">${offHTML()}</p>
       <button class="btn main" id="go">${modeChoice==="mp3"?"Lancer l'essai":"Lancer le concert"}</button></div></div>`;
     document.querySelectorAll(".count button").forEach(b=>b.onclick=()=>{save();n=+b.dataset.n;draw();});
     document.querySelectorAll(".mode button").forEach(b=>b.onclick=()=>{save();modeChoice=b.dataset.m;try{localStorage.setItem("ts-mode",modeChoice);}catch(e){}draw();});
@@ -966,7 +974,7 @@ $("arcQuit").onclick=()=>$("newBtn").click();
    - À 2 joueurs, la corde démarre à 2 crans vers le premier joueur (jouer en dernier dans une manche est un avantage).
    - Dernière manche : toutes les cartes comptent double, bonus de corde +5 (le tempo ne change plus).
    - Option objectifs secrets : chaque joueur scanne une carte Objectif à son premier tour ; révélés et comptés à la fin. */
-const ROPE={BPM:120,R:10,CAMP:3,PENTE:.75,BONUS:3,BONUS_FINAL:5,CHOIR:3,CHOIR_MIN:3,ROUNDS:8,FINAL_BPM:0,MODAL_MS:5000,DUCK:.2,START2:2};
+const ROPE={BPM:120,R:10,CAMP:3,PENTE:.75,BONUS:3,BONUS_FINAL:5,CHOIR:3,CHOIR_MIN:3,ROUNDS:8,MODAL_MS:5000,DUCK:.2,START2:2};
 const RV={RF2:[1,5],RF4:[4,2],BF2:[2,4],BF4:[5,1],HF2:[3,3],HF4:[2,4],MF2:[4,2],MF4:[3,3],
   RN2:[3,3],RN4:[2,4],BN2:[4,2],BN4:[1,5],HN2:[5,1],HN4:[3,3],MN2:[2,4],MN4:[4,2],
   RE2:[2,4],RE4:[5,1],BE2:[3,3],BE4:[4,2],HE2:[1,5],HE4:[4,2],ME2:[3,3],ME4:[2,4],
@@ -1161,12 +1169,11 @@ function ropeRound(){if(!S||!S.rope||S.ended)return;if($("sabWho"))return setTim
   /* la pente : la corde recule de moitié ; nouvel ordre ; verrous levés */
   R.projo={};R.projoNext=null;R.lastPlace=null;R.actUsed=false;
   R.order=ropeOrder();R.d=+(R.d*ROPE.PENTE).toFixed(3);rSync();R.locks={};R.played=[];R.round++;S.turn=R.order[0];
-  if(ROPE.FINAL_BPM){if(isFinal())rampStart();else if(R.round===ROPE.ROUNDS-1)prepRamp();}   /* montée de tempo désactivée (FINAL_BPM:0) */
   R.log=`Manche ${R.round} : ${esc(S.players[S.turn].name)} commence (en tête au score)`;render();cheer();
   const L=leaderOf(),lead=L.who.length>1?null:L.who[0];
   const head=lead?`<div class="ann-crown">👑</div><b class="ann-name" style="--gc:${lead.color}">${esc(lead.name)}</b><div class="ann-score">${lead.score}<small>PTS</small></div>`
     :`<b class="ann-name">ÉGALITÉ</b><div class="ann-gain">${L.who.map(p=>esc(p.name)).join(" · ")} · ${L.mx} pts</div>`;
-  const next=isFinal()?`<span class="ann-next fin">🔥 DERNIÈRE MANCHE 🔥</span><span class="ann-gain">${ROPE.FINAL_BPM?`tempo +${ROPE.FINAL_BPM} · `:""}cartes ×2 · corde +${ROPE.BONUS_FINAL}</span>`:`<span class="ann-next">MANCHE ${R.round}</span>`;
+  const next=isFinal()?`<span class="ann-next fin">🔥 DERNIÈRE MANCHE 🔥</span><span class="ann-gain">cartes ×2 · corde +${ROPE.BONUS_FINAL}</span>`:`<span class="ann-next">MANCHE ${R.round}</span>`;
   ropeModal(`<span class="ann-k">EN TÊTE</span>${head}${notes.map(t=>`<span class="ann-note">${t}</span>`).join("")}${next}<span class="ann-gain" style="font-size:13px">${esc(S.players[S.turn].name)} commence (en tête)</span>`,ROPE.MODAL_MS,null);}
 /* fin de partie : podium animé, dernière manche, objectifs révélés */
 function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
@@ -1266,8 +1273,6 @@ function renderMp3(){$("mtBpm").textContent="♩ "+Math.round(S.bpm)+" BPM";
 $("mtList").onclick=e=>{const b=e.target.closest("button[data-k]");if(!b||!S||!S.mp3t)return;startAudio();mtToggle(b.dataset.p,b.dataset.k);};
 $("mtStop").onclick=()=>{if(!S||!S.mp3t)return;PORDER.forEach(p=>S.stacks[p]=[]);render();};
 $("mtQuit").onclick=()=>setup();
-document.querySelector(".mt-tempo").onclick=e=>{const b=e.target.closest("button[data-b]");if(!b||!S||!S.mp3t)return;const v=+b.dataset.b;
-  S.bpm=Math.abs(v)<=10?Math.max(60,Math.min(200,S.bpm+v)):v;render();};
 /* ============ Fond de la corde : ondes sonores dans la brume ============
    Brume : grandes nappes floues qui dérivent lentement et s'éclairent sur les coups de basse.
    Ondes : la forme d'onde de la musique, lissée, en trois lignes lumineuses superposées. Couleur du joueur actif. */
@@ -1330,7 +1335,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
   g+=`<line id="rpPullL" x1="0" y1="0" x2="${V.x}" y2="${V.y}" class="rp-pull" stroke="${col}"/><circle id="rpRing" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-ring"/><circle id="rpKnot" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-knot" fill="${col}"/><text id="rpKnotN" x="${V.x}" y="${V.y}" class="rp-kn"></text>`+bonTxt;
   const vb=n===2?"-11.9 -2.4 23.8 6.2":n===3?"-11.6 -11.9 23.2 18.8":"-9.4 -9.4 18.8 18.8";
   $("rpGauge").style.setProperty("--pc",pl.color);$("rpGauge").classList.toggle("act",!S.ended);
-  $("rpBpm").textContent="♩ "+Math.round(S.rope&&S.rope.ramp?curBpm:S.bpm)+" BPM";
+  $("rpBpm").textContent="♩ "+Math.round(curBpm)+" BPM";
   $("rpGauge").innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg>`;
   $("rpGauge").prepend(spiralCanvas());spiralStart();
   ropeAnimate();
@@ -1521,7 +1526,7 @@ function ranking(){
    - Batteries pré-rendues une fois (3 kits), réverbe à convolution, écho calé sur le tempo,
      saturation + baffle pour les guitares, pompe (sidechain) pour l'électro.
    ===================================================================== */
-let ctx=null,masterIn,revIn,delIn,delNode,buses={},pumps={},drives={},BUF={},schedTimer=null,nextT=0,step=0,preview=null,curBpm=BPM_START,SPB=60/BPM_START/4;
+let ctx=null,masterIn,revIn,delIn,delNode,buses={},pumps={},drives={},BUF={},schedTimer=null,nextT=0,step=0,preview=null,curBpm=ROPE.BPM,SPB=60/ROPE.BPM/4;
 const LOOP=64,DEFAULT_PROG="Am F C G";
 let KEY=0;   /* transposition globale en demi-tons (5 = ré mineur, pour suivre les boucles enregistrées) */
 const mtof=m=>440*Math.pow(2,(m+KEY-69)/12);
@@ -1608,17 +1613,15 @@ function startAudio(){
   if(!schedTimer){nextT=ctx.currentTime+.1;step=0;
     schedTimer=setInterval(()=>{
       const tgt=targetBpm();
-      if(tgt!==targetBpm.last){targetBpm.last=tgt;if(window.prepTempo&&S)prepTempo(tgt);}
       while(nextT<ctx.currentTime-.02){nextT+=SPB;step=(step+1)%LOOP;}
       while(nextT<ctx.currentTime+.25){if(step%4===0)curBpm=tgt;SPB=60/curBpm/4;
         try{step=plTick(step,nextT);playStep(step,nextT);}catch(e){console.error(e);}nextT+=SPB;step=(step+1)%LOOP;}
       delNode.delayTime.setTargetAtTime(SPB*3,ctx.currentTime,.05);
     },25);}
 }
-function targetBpm(){if(preview)return preview.bpm;if(!S)return BPM_START;
-  if(S.rope&&S.rope.ramp){const r=S.rope.ramp,k=ABS+1-r.at;   /* k = n° du temps dans la mesure de montée (0 à 3) */
-    if(k<0)return r.from;if(k>=3){S.bpm=r.to;S.rope.ramp=null;return r.to;}return Math.round(r.from+(r.to-r.from)*(k+1)/4);}
-  return !S.ended||S.rope?S.bpm:BPM_START;}   /* La Corde : les boucles gardent le tempo de la dernière manche sous l'écran de résultat */
+/* Tempo unique : toutes les boucles MP3 sont enregistrées au tempo de sons/reglages.json (120 BPM).
+   On ne les recalcule plus sur le téléphone : la musique reste toujours à ce tempo, et la hauteur des MP3 ne change jamais. */
+function targetBpm(){return ROPE.BPM;}
 /* envoi d'un nœud vers une piste, avec réverbe / écho / pompe */
 function out(node,piste,rev,del,pump){node.connect(pump?pumps[piste]:buses[piste]);
   if(rev){const g=ctx.createGain();g.gain.value=rev;node.connect(g);g.connect(revIn);}
@@ -1807,20 +1810,19 @@ const VOICE={
   JE2:(i)=>{if(i.st===0){riser(i.t,SPB*44,i.p,.5);}if(i.st===48){hit("eKick",i.t,1,i.p,.2);hit("cCym",i.t,.5,i.p,.3);}}
 };
 /* ---------- boucles enregistrées (MP3) ----------
-   Chaque boucle fait 16 temps (4 mesures de 4 temps) à 100 BPM, soit 9,6 s, comme la boucle du jeu.
+   Chaque boucle fait 16 temps (4 mesures de 4 temps) à 120 BPM, soit 8 s, comme la boucle du jeu.
    Synchronisation :
    - les 3 boucles sont décodées en tampons audio et programmées sur la même horloge que le reste
      du morceau, à l'échantillon près (plus de lecteur audio séparé qui démarre en retard) ;
    - le début réel du son est détecté dans la batterie (le MP3 ajoute un petit silence au début),
      et le même décalage est appliqué aux 3 boucles, exportées ensemble ;
-   - pour suivre le tempo sans changer la hauteur, chaque boucle est étirée ou compressée
-     (algorithme WSOLA) une fois par tempo, puis gardée en cache ;
+   - tout est au même tempo (120 BPM) : les boucles sont jouées telles quelles, sans recalcul ;
    - une carte posée attend le début de la mesure suivante (au plus 4 temps) et démarre au début de sa boucle ;
      sa boucle de 16 temps tourne ensuite à partir de cette mesure.
    Basse et voix sont en ré mineur (grille Ré m – La – Si♭ – Sol m) : quand l'une d'elles joue,
    tout le groupe synthétisé se transpose en ré mineur et suit cette grille. */
 /* Réglages des boucles : modifiables sans toucher au code, dans le fichier sons/reglages.json */
-let SET={bpm:100,temps:16,tonalite:"Dm",grille:"Dm A Bb Gm"};
+let SET={bpm:120,temps:16,tonalite:"Dm",grille:"Dm A Bb Gm"};
 const SAMPLES={};                  /* rempli au démarrage : une entrée par fichier sons/<REF>.mp3 trouvé */
 /* Référence de son : piste + tribu (RF, BF, HF, MF…). Les deux cartes d'une même piste d'un deck partagent le même MP3.
    Nom du fichier : A Rythme, B Basse, C Harmonie, D Mélodie + « tribu » + numéro de la tribu (1, 2, 3), ex. sons/Btribu1.mp3 */
@@ -1920,6 +1922,7 @@ async function initSamples(){
   const pre=await preloadSons();
   if(pre.setErr)toast("sons/reglages.json est mal écrit : réglages par défaut utilisés",true);
   if(pre.set)Object.assign(SET,pre.set);
+  if(+SET.bpm>=40&&+SET.bpm<=240)ROPE.BPM=+SET.bpm;   /* le tempo de la partie est celui des MP3 */
   /* tonalité : écart avec la mineur (référence du moteur), ramené entre -6 et +6 */
   const tc=chordOf(String(SET.tonalite).trim());let k=((tc.root-9)%12+12)%12;if(k>6)k-=12;SAMPLE_KEY=k;
   SAMPLE_PROG=String(SET.grille).trim().split(/\s+/).slice(0,4).map(n=>chordShift(n,k)).join(" ");
@@ -1931,7 +1934,7 @@ async function initSamples(){
   const isPool=id=>id[0]==="P"&&id[2]===":";
   for(const id of Object.keys(pre.files)){const c=isPool(id)?{piste:id[1]}:CARDS[id]||CARDS[Object.keys(CARDS).find(i=>i.slice(0,2)===id)];
     SAMPLES[id]={piste:c.joker?"M":c.piste,bpm:+SET.bpm||100,beats:+SET.temps||16,tonal:c.piste!=="R"};
-    SMP[id]={D:SAMPLES[id],g:ctx.createGain(),ab:pre.files[id],raw:null,ready:false,playing:false,cache:{}};}
+    SMP[id]={D:SAMPLES[id],g:ctx.createGain(),ab:pre.files[id],raw:null,ready:false,playing:false};}
   const pools=Object.keys(SMP).filter(isPool),first=[...Object.keys(SMP).filter(id=>!isPool(id)),...pools.filter(k=>k[1]==="R").slice(0,10),...pools.filter(k=>k[1]!=="R").slice(0,6)];
   await Promise.all(first.map(async id=>{try{SMP[id].raw=await decode(SMP[id].ab.slice(0));}catch(e){console.error(id,e);}}));
   const an=first.filter(id=>SMP[id].raw);
@@ -1945,7 +1948,7 @@ async function initSamples(){
      d'après sa durée, sinon il se décalerait de la grille et laisserait un blanc à chaque tour */
   const fixes=[];for(const id of an){const f=fitDur(id);if(f)fixes.push(f);}
   if(fixes.length>3){const g={};fixes.forEach(f=>{const k=f.split(" : ")[1]||f;g[k]=(g[k]||0)+1;});
-    toast(fixes.length+" MP3 ne correspondent pas à reglages.json → "+Object.entries(g).map(([k,n])=>n+" × "+k).join(" · ")+" (corrigé automatiquement)",true);console.warn("MP3",fixes);
+    toast(fixes.length+" MP3 ne correspondent pas à reglages.json → "+Object.entries(g).map(([k,n])=>n+" × "+k).join(" · "),true);console.warn("MP3",fixes);
     mp3Info+=" · ⚠ "+Object.entries(g).map(([k,n])=>n+" × "+k).join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
   else if(fixes.length){toast("Durée différente de reglages.json → "+fixes.join(" · "),true);console.warn("MP3",fixes);mp3Info+=" · ⚠ "+fixes.join(" · ");const el=$("mp3Status");if(el)el.textContent=mp3Info;}
   GRIDFRAC=gridPhase(an);
@@ -1953,28 +1956,23 @@ async function initSamples(){
   const n=Object.keys(SMP).length,rdy=Object.keys(SMP).filter(k=>SMP[k].ready).length;
   if(n)toast(n+" boucle"+(n>1?"s":"")+" MP3 trouvée"+(n>1?"s":"")+(n>rdy?` · ${rdy} prêtes, les autres se préparent quand une carte les tire`:""));
   $("arcCam").dataset.mp3=n?"🎵"+n:"";
-  cardButtons($("sons"));prepTempo(targetBpm());if(S&&S.mp3t)render();
+  cardButtons($("sons"));if(S&&S.mp3t)render();
 }
 /* durée du fichier ≠ reglages.json : on retrouve son tempo (et son nombre de temps) d'après sa durée */
 function fitDur(id){const s=SMP[id],D=s.D,len=s.raw.duration-smpOffset,fits=(b,n)=>{const L=n*60/b;return len-L>-.04&&len-L<.13;};
-  if(fits(D.bpm,D.beats))return null;let found=null;
-  for(const n of [D.beats,16,32,8,64]){if(found)break;let bestB=null;
-    /* plusieurs tempos possibles (le MP3 ajoute un peu de silence) : on préfère un tempo rond (120 plutôt que 119) */
-    const rk=b=>b%10===0?0:b%5===0?1:b%2===0?2:3;
-    for(let b=60;b<=200;b++)if(fits(b,n)&&(bestB===null||rk(b)<rk(bestB)||rk(b)===rk(bestB)&&Math.abs(b-D.bpm)<Math.abs(bestB-D.bpm)))bestB=b;
-    if(bestB)found={bpm:bestB,beats:n};}
-  if(found){s.D=SAMPLES[id]=Object.assign({},D,found);return KFILE(id)+".mp3 : "+found.beats+" temps à "+found.bpm+" BPM";}
-  return KFILE(id)+".mp3 dure "+len.toFixed(2)+" s (attendu "+(D.beats*60/D.bpm).toFixed(2)+" s)";}
+  if(fits(D.bpm,D.beats))return null;
+  /* même tempo, autre longueur (8, 32 ou 64 temps) : on l'accepte tel quel */
+  for(const n of [16,32,8,64])if(fits(D.bpm,n)){s.D=SAMPLES[id]=Object.assign({},D,{beats:n});return KFILE(id)+".mp3 : "+n+" temps";}
+  /* autre tempo : on ne le recalcule plus (la hauteur ne doit pas changer) → il faut réexporter le fichier à ce tempo */
+  return KFILE(id)+".mp3 dure "+len.toFixed(2)+" s, pas "+(D.beats*60/D.bpm).toFixed(2)+" s : à réexporter à "+D.bpm+" BPM";}
 /* boucle prête : découpe calée sur la grille, volume normalisé ; le fichier brut est libéré */
 function finishSample(id){const s=SMP[id];if(!s.raw)return;
-  s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm,GRIDFRAC*60/s.D.bpm);s.cache[s.D.bpm]=s.base;
+  s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm,GRIDFRAC*60/s.D.bpm);
   let ss=0;const d=s.base.getChannelData(0);for(let i=0;i<d.length;i+=4)ss+=d[i]*d[i];const rms=Math.sqrt(ss/(d.length/4))||.1;s.norm=Math.min(1.5,.1/rms);s.g.gain.value=s.norm;
   s.raw=null;s.ab=null;s.ready=true;}
 /* décode un son à la demande (carte qui tire ce son, test) ; then = appelé quand il est prêt */
 function ensureSample(id,then){const s=SMP[id];if(!s)return;if(s.ready){if(then)then();return;}
-  if(!s.loading)s.loading=decode(s.ab.slice(0)).then(raw=>{s.raw=raw;fitDur(id);finishSample(id);
-      if(S&&S.rope&&ROPE.FINAL_BPM){if(S.rope.round>=ROPE.ROUNDS-1)for(let k=1;k<=4;k++)prepTempo(S.rope.baseBpm+ROPE.FINAL_BPM*k/4,[id]);   /* fin de partie proche : toute la montée */
-        else prepTempo(ROPE.BPM+ROPE.FINAL_BPM,[id]);}   /* version « dernière manche » préparée d'avance */
+  if(!s.loading)s.loading=decode(s.ab.slice(0)).then(raw=>{s.raw=raw;const f=fitDur(id);if(f)toast(f,true);finishSample(id);
       if(S&&S.mp3t)render();}).catch(e=>{console.error(id,e);toast("sons/"+KFILE(id)+".mp3 n'a pas pu être lu",true);});
   if(then)s.loading.then(then);}
 /* extrait exactement les 16 temps de la boucle */
@@ -2000,52 +1998,13 @@ function gridPhase(an){
   let fr=((best+.5+(isFinite(dd)?dd:0))/NB+1)%1;
   if(fr>.85)fr=0;   /* temps à peine en avance : on laisse */
   const b0=ids.length?SMP[ids[0]].D.bpm:120;console.log("Calage des boucles : premier temps à",Math.round(fr*60/b0*1000),"ms");return fr;}
-/* WSOLA : change la durée sans changer la hauteur. ratio = durée finale / durée d'origine */
-function* wsola(buf,ratio){   /* WSOLA circulaire : la fin de la boucle s'enchaîne sans coupure sur son début. Générateur pour ne pas bloquer la musique. */
-  const sr=buf.sampleRate,C=buf.numberOfChannels,inL=buf.length,outL=Math.round(inL*ratio);
-  const N=1024*Math.max(1,Math.round(sr/44100)),K=Math.ceil(outL/(N>>1)),Hs=outL/K,Ha=inL/K,tol=Math.round(sr*.01);
-  const ch=[];for(let c=0;c<C;c++)ch.push(buf.getChannelData(c));
-  const mono=new Float32Array(inL);for(let c=0;c<C;c++)for(let i=0;i<inL;i++)mono[i]+=ch[c][i]/C;
-  const win=new Float32Array(N);for(let i=0;i<N;i++)win[i]=.5-.5*Math.cos(2*Math.PI*i/N);
-  const out=[],norm=new Float32Array(outL);for(let c=0;c<C;c++)out.push(new Float32Array(outL));
-  const M=(i,n)=>((i%n)+n)%n;let prev=0;
-  for(let k=0;k<K;k++){
-    const nom=Math.round(k*Ha);let best=nom;
-    if(k>0){let bv=-Infinity;const ref=prev+Math.round(Hs);
-      for(let d=-tol;d<=tol;d+=2){const p=nom+d;let v=0;for(let j=0;j<N/2;j+=4)v+=mono[M(ref+j,inL)]*mono[M(p+j,inL)];if(v>bv){bv=v;best=p;}}}
-    const o=Math.round(k*Hs);
-    for(let j=0;j<N;j++){const oi=M(o+j,outL),si=M(best+j,inL),w=win[j];norm[oi]+=w;for(let c=0;c<C;c++)out[c][oi]+=ch[c][si]*w;}
-    prev=best;if(k%6===5)yield;}
-  const res=ctx.createBuffer(C,outL,sr);
-  for(let c=0;c<C;c++){const d=res.getChannelData(c),o=out[c];for(let i=0;i<outL;i++)d[i]=o[i]/(norm[i]||1);}
-  return res;}
-function runGen(g){let r;do{r=g.next();}while(!r.done);return r.value;}
-/* prépare en tâche de fond les boucles au tempo demandé */
-let prepQueue=[];
-function prepTempo(bpm,only){bpm=Math.round(bpm);
-  const inUse=new Set(PORDER.map(p=>PL.tr[p]&&PL.tr[p].ref).filter(Boolean));
-  const want=only||(S&&S.rope?[...new Set([...Object.values(ASSIGN),...inUse,...Object.keys(SMP).filter(k=>!(k[0]==="P"&&k[2]===":"))])]:Object.keys(SMP));
-  for(const id of want){const s=SMP[id];if(s&&s.ready&&!s.cache[bpm]&&!prepQueue.some(q=>q[0]===id&&q[1]===bpm))prepQueue.push([id,bpm]);}
-  prepQueue.sort((a,b)=>inUse.has(b[0])-inUse.has(a[0]));
-  if(prepQueue.length&&!prepTempo.busy){prepTempo.busy=true;let job=null;
-    setTimeout(function run(){const t0=performance.now();
-      while(performance.now()-t0<8){
-        if(!job){const q=prepQueue.shift();if(!q)break;const s=SMP[q[0]];if(s.cache[q[1]])continue;job={q,s,g:wsola(s.base,s.D.bpm/q[1])};}
-        const r=job.g.next();if(r.done){const c=job.s.cache;c[job.q[1]]=r.value;const ks=Object.keys(c).map(Number).filter(k=>k!==job.s.D.bpm);
-          /* on garde les tempos utiles (actuel, visé, montée de la dernière manche) et on libère les autres en premier */
-          const keep=new Set([Math.round(curBpm),Math.round(targetBpm()),...(S&&S.rope?[1,2,3,4].map(k=>S.rope.baseBpm+ROPE.FINAL_BPM*k/4):[])]);
-          if(ks.length>5){ks.sort((a,b)=>(keep.has(a)-keep.has(b))||(Math.abs(b-curBpm)-Math.abs(a-curBpm)));while(ks.length>5)delete c[ks.shift()];}job=null;}}
-      if(job||prepQueue.length)setTimeout(run,12);else prepTempo.busy=false;},12);}}
 const smpOn=id=>SMP[id]&&SMP[id].ready;
 /* beat = temps de la boucle (0 à 15) où la lecture démarre.
-   La boucle tourne toute seule (lecture en boucle native du navigateur, à l'échantillon près, sans blanc) ;
-   on ne la relance que si le tempo change ou si elle s'est décalée de la grille des temps. */
-function startSample(id,t,beat){const s=SMP[id],D=s.D,bpm=Math.round(curBpm),pp=s.at||D.piste;
+   La boucle tourne toute seule (lecture en boucle native du navigateur, à l'échantillon près, sans blanc), à sa vitesse d'origine ;
+   on ne la relance que si elle s'est décalée de la grille des temps. */
+function startSample(id,t,beat){const s=SMP[id],D=s.D,pp=s.at||D.piste;
   if(s.bus!==pp){try{s.g.disconnect();}catch(e){}s.g.connect(buses[pp]);s.bus=pp;}
-  let buf=s.cache[bpm],rate=1,real=bpm;
-  if(!buf){/* tempo pas encore préparé : on prend la version la plus proche, SANS changer sa vitesse (la hauteur des notes ne bouge jamais) ;
-       elle est recalée sur la grille à chaque temps jusqu'à ce que la bonne version soit prête */
-    let bestB=D.bpm;for(const k in s.cache)if(Math.abs(k-bpm)<Math.abs(bestB-bpm))bestB=+k;buf=s.cache[bestB];real=bestB;prepTempo(bpm);}
+  const buf=s.base,rate=1,real=D.bpm;
   const loopDur=buf.duration;let off=beat/D.beats*loopDur;
   /* départ demandé dans le passé (téléphone ralenti) : on part tout de suite, à la bonne position */
   const now=ctx.currentTime+.01;if(t<now){off+=(now-t)*rate;t=now;}
@@ -2063,11 +2022,6 @@ function stopAllSamples(){for(const id in SMP)stopSample(id);}
 /* indicateur de position dans le cycle : 4 mesures × 4 temps */
 let curBeat=0;
 function mtBeat(b){const rc=$("mtCycle");if(rc&&S&&S.mp3t)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});}
-/* Dernière manche : le tempo monte progressivement sur une mesure, en partant de la prochaine mesure (+5 à chaque temps → +20 à la fin des 4 temps) */
-function rampStart(){const R=S.rope,last=((step-1+LOOP)%LOOP)>>2,inBar=last%4;   /* dernier temps déjà programmé, et sa place dans la mesure */
-  R.ramp={from:S.bpm,to:R.baseBpm+ROPE.FINAL_BPM,at:ABS+(4-inBar)};prepRamp();}
-function prepRamp(){const R=S.rope,refs=[...new Set([...PORDER.map(p=>PL.tr[p]&&PL.tr[p].ref),...PORDER.map(p=>{const t=topOf(p);return t&&SREF(sndOf(t));})].filter(r=>r&&SMP[r]))];
-  for(let k=1;k<=4;k++)prepTempo(R.baseBpm+ROPE.FINAL_BPM*k/4,refs);}
 function ropeBeat(b){mtBeat(b);const bp=$("rpBpm");if(bp&&S&&S.rope)bp.textContent="♩ "+Math.round(curBpm)+" BPM";const rc=$("rpCycle");if(rc)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});
   if(b<12||!S||!S.rope||S.ended||plIdle())return;
   const last=b===15,k=$("rpKnot"),rg=$("rpRing"),cd=$("rpCd");
@@ -2151,9 +2105,7 @@ function plTick(st,t){
 function sampleStep(st,t){
   const vis=plVisible();tonalOn=vis.some(v=>{const r=SREF(sndOf(v.t));return SAMPLES[r]&&smpOn(r)&&SAMPLES[r].tonal;});KEY=tonalOn?SAMPLE_KEY:0;
   if(preview){const r=SREF(preview.id);if(SAMPLES[r]&&smpOn(r)){const s=SMP[r];s.at=preview.piste;
-      if(!s.playing&&st===0)startSample(r,t,0);else if(s.playing&&st%4===0&&s.bpm!==Math.round(curBpm))startSample(r,t,(st/4)%16);return[r];}}
-  else if(st%4===0)for(const p of PORDER){const c=PL.tr[p];if(!c||!c.ref)continue;const s=SMP[c.ref];
-    if(s.playing&&s.bpm!==Math.round(curBpm))startSample(c.ref,t,((ABS-(s.absStart||0))%s.D.beats+s.D.beats)%s.D.beats);}
+      if(!s.playing&&st===0)startSample(r,t,0);return[r];}}
   if(st%4===0){const b=st/4;visAt(t,()=>showBeat(b));}
   return PORDER.map(p=>PL.tr[p]&&PL.tr[p].ref).filter(Boolean);
 }
@@ -2191,7 +2143,7 @@ function auditionCard(id){
   if(c.kind==="action"){preview=null;sfx(id);markPlaying(id);setTimeout(()=>markPlaying(null),900);return;}
   if(c.kind==="ract"||c.kind==="obj"){preview=null;if(!playOne(c.kind==="obj"?"OBJ":c.act))sfx("XMUTE");markPlaying(id);setTimeout(()=>markPlaying(null),900);return;}
   if(c.joker&&!(SAMPLES[SREF(id)]&&smpOn(SREF(id)))){toast("Pas encore de fichier "+CFILE(id)+".mp3 : le Joker joue le son de sa tribu sur la piste choisie");return;}
-  const bpm=DECKS[c.deck].ideal;curBpm=bpm;SPB=60/bpm/4;
+  const bpm=ROPE.BPM;curBpm=bpm;SPB=60/bpm/4;
   preview={id,piste:c.joker?"M":c.piste,bpm,until:ctx.currentTime+SPB*LOOP+.3};markPlaying(id);
   nextT=ctx.currentTime+.05;step=0;
 }
@@ -2281,7 +2233,55 @@ $("newBtn").onclick=()=>{
   $("yesNew").onclick=()=>{document.body.classList.remove("solo");stopLarsen();clearTimeout(mesureTimer);setup();};
 };
 
-preloadSons();
+/* ===== App installable et hors ligne (PWA) =====
+   sw.js garde la page, le lecteur de QR, les polices et tous les sons sur le téléphone.
+   Pour publier une nouvelle version : change seulement VERSION en haut du script (ex. "v89"). */
+let offInfo="",installEvt=null;
+const standalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+function offHTML(){
+  let h=offInfo;
+  if(installEvt)h+=` <button class="chip" id="installBtn">📲 Installer l'app</button>`;
+  else if(!standalone()&&/iP(hone|ad|od)/.test(navigator.userAgent))h+=(h?"<br>":"")+"📲 Pour l'installer : Safari → bouton Partager → « Sur l'écran d'accueil »";
+  return h;}
+function showOff(){const el=$("offStatus");if(!el)return;el.innerHTML=offHTML();const b=$("installBtn");
+  if(b)b.onclick=async()=>{const ev=installEvt;installEvt=null;showOff();try{ev.prompt();await ev.userChoice;}catch(e){}};}
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;showOff();});
+addEventListener("appinstalled",()=>{installEvt=null;showOff();toast("App installée sur l'écran d'accueil");});
+/* liste des sons du dépôt (celle que l'app a récupérée au démarrage) */
+function treeSons(){try{const c=JSON.parse(localStorage.getItem("ts-tree")||"null");return c&&Array.isArray(c.list)?c.list:null;}catch(e){return null;}}
+const sonURL=p=>new URL(p.split("/").map(encodeURIComponent).join("/"),location.href).href;
+/* télécharge ce qui manque encore sur le téléphone (ex. la toute première ouverture, avant que sw.js soit actif) */
+let filling=false;
+async function remplirHorsLigne(){
+  if(filling||!navigator.serviceWorker||!navigator.serviceWorker.controller||!window.caches)return;
+  const list=treeSons();if(!list)return majOff();
+  filling=true;
+  try{const c=await caches.open("ts-sons");const have=new Set((await c.keys()).map(r=>r.url));
+    const todo=list.filter(p=>!have.has(sonURL(p)));let i=0;
+    const worker=async()=>{while(i<todo.length){const p=todo[i++];try{const r=await fetch(sonURL(p));if(r.ok)await r.arrayBuffer();}catch(e){}majOff();}};
+    await Promise.all([worker(),worker(),worker(),worker()]);}
+  finally{filling=false;}
+  majOff();}
+async function majOff(){
+  if(!window.caches||!navigator.serviceWorker||!navigator.serviceWorker.controller){showOff();return;}
+  try{const c=await caches.open("ts-sons");const keys=(await c.keys()).map(r=>r.url);
+    const list=treeSons();const mp3=keys.filter(u=>/\.mp3$/i.test(u)).length;
+    if(list){const want=list.filter(p=>/\.mp3$/i.test(p)),have=new Set(keys),ok=want.filter(p=>have.has(sonURL(p))).length;
+      offInfo=ok>=want.length?`✈️ Hors ligne : prêt · ${want.length} sons sur le téléphone`:`⏳ Hors ligne : ${ok} / ${want.length} sons sur le téléphone… garde l'app ouverte avec du réseau`;}
+    else offInfo=mp3?`✈️ ${mp3} sons sur le téléphone`:"";
+  }catch(e){}
+  showOff();}
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){
+  const had=!!navigator.serviceWorker.controller,lastV=(()=>{try{return localStorage.getItem("ts-ver");}catch(e){return null;}})();
+  navigator.serviceWorker.register("sw.js?v="+encodeURIComponent(VERSION)).catch(e=>console.warn("sw",e));
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{majOff();PRE&&PRE.then(remplirHorsLigne);});
+  if(had&&lastV&&lastV!==VERSION)setTimeout(()=>toast("Mise à jour installée : "+VERSION),1200);
+  try{localStorage.setItem("ts-ver",VERSION);}catch(e){}
+  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});   /* évite que le téléphone efface les sons pour faire de la place */
+}
+showOff();
+
+preloadSons().then(remplirHorsLigne);
 S=fresh([{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"}]);render();camOff("Caméra pas encore lancée","Elle démarre avec la partie.",true);setup();
 </script>
 
