@@ -772,7 +772,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v97";
+const VERSION="v98";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -1952,12 +1952,26 @@ function micAnalyse(parts,T,sr){
   const so=[...res].sort((p,q)=>p-q),med=so[so.length>>1],good=res.filter(r=>Math.abs(r-med)<.006);
   if(good.length<5)return{ok:false,n:good.length};
   return{ok:true,n:good.length,lag:good.reduce((p,q)=>p+q,0)/good.length,all:res};}
-let QUITMUTE=false,QUITT=0;
+let QUITMUTE=false,QUITT=0,HIDG=null;
+function audioHide(){if(!ctx||ctx.state!=="running")return;const g=window.__masterOut&&window.__masterOut.gain,n=ctx.currentTime;
+  if(g){if(HIDG===null)HIDG=QUITMUTE?0:g.value;g.cancelScheduledValues(n);g.setValueAtTime(g.value,n);g.linearRampToValueAtTime(0,n+.04);}
+  if(!schedTimer)QUITMUTE=true;   /* pas de partie en cours : le son reviendra au prochain son joué */
+  setTimeout(()=>{if(document.hidden&&ctx&&ctx.state==="running")ctx.suspend().catch(()=>{});},70);}
+function audioShow(){if(!ctx){HIDG=null;return;}
+  if(schedTimer&&!QUITMUTE){const g=window.__masterOut&&window.__masterOut.gain,back=HIDG===null?.9:HIDG;
+    Promise.resolve(ctx.resume()).catch(()=>{}).then(()=>{if(!g)return;const n=ctx.currentTime;g.cancelScheduledValues(n);g.setValueAtTime(0,n);g.linearRampToValueAtTime(back,n+.15);});}
+  HIDG=null;}
+document.addEventListener("visibilitychange",()=>{if(document.hidden)audioHide();else audioShow();});
+window.addEventListener("pagehide",audioHide);
 function startAudio(){
   if(ctx){clearTimeout(QUITT);
     if(QUITMUTE&&window.__masterOut){QUITMUTE=false;const g=window.__masterOut.gain,n=ctx.currentTime;g.cancelScheduledValues(n);g.setValueAtTime(0,n);g.linearRampToValueAtTime(.9,n+.05);}}
   if(!ctx){
-    ctx=new (window.AudioContext||window.webkitAudioContext)();
+    /* « playback » : le téléphone prépare le son plus à l'avance (marge plus grande). Le jeu n'y perd rien : tout est programmé
+       à l'avance sur l'horloge du son, et les visuels sont calés sur ce qu'on entend. Avant (« interactive », marge minimale),
+       un téléphone occupé (caméra, lecture des QR, dessin) pouvait manquer de son à jouer : micro-coupure. */
+    const AC=window.AudioContext||window.webkitAudioContext;
+    try{ctx=new AC({latencyHint:"playback"});}catch(e){ctx=new AC();}
     masterIn=ctx.createGain();masterIn.gain.value=.9;
     const glue=ctx.createDynamicsCompressor();glue.threshold.value=-18;glue.ratio.value=3;glue.attack.value=.01;glue.release.value=.2;glue.knee.value=8;
     const lim=ctx.createDynamicsCompressor();lim.threshold.value=-4;lim.ratio.value=20;lim.attack.value=.002;lim.release.value=.12;lim.knee.value=0;
@@ -2362,8 +2376,16 @@ function ensureSample(id,then){const s=SMP[id];if(!s)return;if(s.ready){if(then)
 /* rot : la boucle est « tournée » de rot secondes, pour que le premier temps de la musique tombe pile au début (la fin repasse devant) */
 function cutLoop(buf,off,dur,rot){const sr=buf.sampleRate,a=Math.round(off*sr),n=Math.round(dur*sr),r=Math.round((rot||0)*sr)%n,out=ctx.createBuffer(buf.numberOfChannels,n,sr);
   const w=new Float32Array(n),K=Math.min(n>>2,Math.round(sr*.003));
+  /* Raccord : beaucoup de boucles ont été enregistrées en partant du silence ; ce qui résonne à la fin (charleston, réverbe,
+     note tenue) s'arrête net au début du tour suivant (creux de 7 à 49 dB). Quand le son chute au raccord, la fin continue
+     de résonner 20 ms en s'éteignant au début (copie inversée de la fin, sans saut). Réglable : "raccord_ms" dans reglages.json (0 = sans). */
+  const X=Math.min(n>>3,Math.round(sr*(SET.raccord_ms!==undefined&&isFinite(+SET.raccord_ms)?Math.max(0,+SET.raccord_ms):20)/1000));
+  let fillOn=false;
+  if(X>0){const c=Math.round(sr*.012),e2=(i0,i1)=>{let q=0;for(let ch=0;ch<buf.numberOfChannels;ch++){const d=buf.getChannelData(ch);for(let i=i0;i<i1;i++){const v=d[a+i]||0;q+=v*v;}}return q;};
+    fillOn=e2(n-c,n)>e2(0,c)*Math.pow(10,6/10);}   /* fin plus forte que le début de plus de 6 dB */
   for(let c=0;c<buf.numberOfChannels;c++){const src=buf.getChannelData(c),dst=out.getChannelData(c);
     for(let i=0;i<n;i++)w[i]=src[a+i]||0;
+    if(fillOn)for(let i=0;i<X;i++)w[i]+=w[n-1-i]*(.5+.5*Math.cos(Math.PI*i/X));
     /* jointure : les fichiers sont coupés net à 8 s, la fin ne retombe pas exactement sur le début (clic).
        Sur les 3 dernières ms, la fin glisse en douceur vers le premier échantillon de la boucle. */
     const dl=(2*w[0]-w[1])-w[n-1];for(let i=0;i<K;i++){const u=(i+1)/K;w[n-K+i]+=dl*u*u*(3-2*u);}
@@ -2409,7 +2431,7 @@ function startSample(id,t,beat){const s=SMP[id],D=s.D,pp=s.at||D.piste;
   const now=ctx.currentTime+.01;if(t<now){off+=(now-t)*rate;t=now;}
   off%=loopDur;
   if(s.src){const old=s.src;try{old.stop(t+.003);}catch(e){}}
-  const src=ctx.createBufferSource();src.buffer=buf;src.playbackRate.value=rate;src.loop=true;src.loopStart=0;src.loopEnd=loopDur;src.connect(s.g);
+  const src=ctx.createBufferSource();src.buffer=buf;src.playbackRate.value=rate;src.loop=true;   /* la mémoire tampon EST la boucle : pas de bornes en secondes, arrondies différemment selon les téléphones */src.connect(s.g);
   src.start(t,off);
   (s.srcs=s.srcs||[]).push(src);src.onended=()=>{s.srcs=s.srcs.filter(x=>x!==src);};
   Object.assign(s,{src,bpm:real,rate,t0:t,off0:off,loopDur,playing:true});}
