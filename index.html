@@ -485,6 +485,8 @@ body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:va
 .rp-bon.on{fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.35);stroke-width:.15}
 .rp-halo{fill:none;stroke-width:.5;transform-box:fill-box;transform-origin:center;animation:rphalo 1.2s ease-out infinite}
 @keyframes rphalo{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+.rp-px{position:absolute;inset:0;width:100%!important;height:100%!important;pointer-events:none;border-radius:inherit}
+#rpBpm{cursor:pointer}
 .rp-spiral{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;opacity:.9}
 .rp-gauge>svg{position:relative}.rp-gauge>.rp-cd{position:absolute;z-index:2}
 .rp-gauge{overflow:hidden;contain:paint;position:relative;transition:border-color .3s,box-shadow .3s}.rp-gauge.act{border-color:var(--pc)!important;box-shadow:0 0 14px color-mix(in srgb,var(--pc) 55%,transparent)}
@@ -770,7 +772,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v90";
+const VERSION="v92";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -976,7 +978,8 @@ function setup(){stopEverything();document.body.classList.remove("cd-on");try{if
         <div class="cal-row"><button class="chip" data-lat="0">Haut-parleur</button><button class="chip" data-lat="250">Bluetooth</button><button class="chip" id="calTest">▶ Tester</button><button class="chip" id="calMic">🎤 Mesurer</button><i id="calDot"></i></div>
         <small id="calMicS">🎤 Mesurer : le téléphone, posé à sa place de jeu, écoute 8 clics au micro et règle le décalage tout seul (silence autour pendant 8 s).</small>
         <small>▶ Tester pour vérifier : le rond doit clignoter pile sur le bip, sinon règle à la main.</small>
-        <small id="motS">⚙️ Moteur audio : ${MOTINFO||"démarre au premier son"}</small></div>
+        <small id="motS">⚙️ Moteur audio : ${MOTINFO||"démarre au premier son"}</small>
+        <small>🎨 Visuels : ${PX.on?"carte graphique ✓":PX.fail?"ancien dessin (carte graphique indisponible)":"chargement…"}</small></div>
       <p class="note" style="margin:0">${modeChoice==="mp3"?"Chaque joueur choisit sa tribu. Les cartes de chacun s'affichent sous le jeu : touche-les pour simuler un scan.":"Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale."}</p>
       <p class="note" id="mp3Status" style="margin:0">${mp3Info||"Recherche des boucles MP3…"}</p>
       <p class="note" id="offStatus" style="margin:0">${offHTML()}</p>
@@ -1410,6 +1413,134 @@ function spiralFrame(now){SPRAF=0;
     c.lineTo(LX,LY);
     c.strokeStyle=col;c.globalAlpha=al*(.5+SPEN*.5+SPBASS*.5);c.lineWidth=lw*dpr*(1+SPBASS*.5);c.lineJoin="round";c.stroke();}
   c.globalAlpha=1;c.globalCompositeOperation="source-over";}
+/* ============ Visuels de la corde par la carte graphique (PixiJS / WebGL) ============
+   Brume, ondes, corde, nœud et décompte du nœud sont dessinés par la carte graphique, sans repeindre la page.
+   Les parties fixes (rails, graduations, nombres, bouts) ne sont redessinées que quand elles changent
+   (nombre de joueurs, camp, dernière manche, taille de l'écran) ; à chaque image on ne bouge que ce qui vit.
+   Sans carte graphique utilisable, l'ancien dessin (SVG + canvas) prend le relais tout seul.
+   Touche « ♩ 120 BPM » pour afficher le nombre d'images par seconde. */
+const PX={app:null,on:false,fail:false,key:"",box:null,m:null,beat:null,fps:0,fpsN:0,fpsT:0,showFps:false,fonts:false};
+function pxBoot(){if(PX.app||PX.fail)return;
+  if(window.PIXI)return pxInit();
+  const sc=document.createElement("script");sc.src="pixi.min.js";sc.onload=pxInit;sc.onerror=()=>{PX.fail=true;};document.head.appendChild(sc);}
+async function pxInit(){if(PX.app||PX.fail||!window.PIXI)return;
+  try{
+    const app=new PIXI.Application();
+    await app.init({backgroundAlpha:0,antialias:true,resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true,
+      preference:"webgl",powerPreference:"default",autoStart:false,width:320,height:200});
+    const cv=app.canvas;cv.className="rp-px";
+    cv.addEventListener("webglcontextlost",e=>{e.preventDefault();console.warn("carte graphique perdue : ancien dessin");PX.on=false;PX.fail=true;try{app.stop();}catch(_){}if(S&&S.rope)render();});
+    /* texture de brume : un disque flou blanc, teinté à la couleur du joueur */
+    const bc=document.createElement("canvas");bc.width=bc.height=256;const bx=bc.getContext("2d"),rg=bx.createRadialGradient(128,128,0,128,128,128);
+    rg.addColorStop(0,"#fff");rg.addColorStop(1,"transparent");   /* même dégradé que l'ancien dessin */bx.fillStyle=rg;bx.fillRect(0,0,256,256);
+    const tex=PIXI.Texture.from(bc);
+    const fond=new PIXI.Container();fond.alpha=.9;
+    PX.brume=[...Array(6)].map(()=>{const s=new PIXI.Sprite(tex);s.anchor.set(.5);s.blendMode="add";fond.addChild(s);return s;});
+    /* ondes : dessinées à part puis ajoutées en lumière (évite les surépaisseurs aux virages des traits épais) */
+    PX.wc=new PIXI.Container();PX.ondes=[0,1,2].map(()=>{const g=new PIXI.Graphics();g.blendMode="max";PX.wc.addChild(g);return g;});
+    PX.rt=PIXI.RenderTexture.create({width:320,height:200,resolution:app.renderer.resolution});
+    const os=new PIXI.Sprite(PX.rt);os.blendMode="add";fond.addChild(os);
+    PX.fixe=new PIXI.Container();
+    PX.halo=new PIXI.Graphics();PX.ends=new PIXI.Container();PX.pull=new PIXI.Graphics();PX.ring=new PIXI.Graphics();PX.knot=new PIXI.Graphics();PX.knotG=new PIXI.Graphics();
+    PX.bon=new PIXI.Container();
+    PX.knN=new PIXI.Text({text:"",style:{fontFamily:"Bungee, 'Chakra Petch', Impact, sans-serif",fontWeight:"700",fontSize:20,fill:0xffd23f}});PX.knN.anchor.set(.5);PX.knN.alpha=0;
+    PX.corde=new PIXI.Container();PX.corde.addChild(PX.fixe,PX.halo,PX.ends,PX.pull,PX.ring,PX.knot,PX.knotG,PX.knN,PX.bon);
+    PX.fpsTx=new PIXI.Text({text:"",style:{fontFamily:"ui-monospace, Menlo, monospace",fontSize:11,fill:0xffffff}});PX.fpsTx.position.set(8,6);PX.fpsTx.alpha=.75;
+    app.stage.addChild(fond,PX.corde,PX.fpsTx);
+    app.ticker.add(pxFrame);
+    PX.app=app;PX.on=true;
+    if(window.ResizeObserver){PX.ro=new ResizeObserver(()=>{PX.box=null;});PX.ro.observe($("rpGauge"));}
+    /* les nombres attendent les polices du jeu (sinon ils seraient dessinés dans une police de secours) */
+    const fl=Promise.all(["700 20px 'Bricolage Grotesque'","800 20px Bungee"].map(f=>document.fonts?document.fonts.load(f).catch(()=>{}):0));
+    Promise.race([fl,wait(1500)]).then(()=>{PX.fonts=true;PX.key="";});fl.then(()=>{PX.key="";});
+    if(S&&S.rope)render();
+  }catch(e){console.warn("PixiJS indisponible : ancien dessin",e);PX.fail=true;PX.on=false;}}
+const pxReady=()=>PX.on&&PX.app&&PX.fonts;
+const pxHex=c=>{const m=/^#?([0-9a-f]{6})$/i.exec(String(c).trim());return m?parseInt(m[1],16):0xffffff;};
+const pxMix=(a,b,k)=>{const A=pxHex(a),B=pxHex(b),f=s=>Math.round(((A>>s)&255)*k+((B>>s)&255)*(1-k));return (f(16)<<16)|(f(8)<<8)|f(0);};
+/* appelée par renderRope : ce qu'il faut dessiner */
+function pxSync(m){PX.m=m;const gz=$("rpGauge");
+  if(PX.app.canvas.parentNode!==gz)gz.prepend(PX.app.canvas);
+  if(!PX.app.ticker.started)PX.app.start();}
+/* dimensions : le cadre de la corde est la place qu'occupait le dessin SVG (invisible, il ne sert plus qu'à la mise en page) */
+function pxMeasure(){const gz=$("rpGauge"),sv=gz&&gz.querySelector("svg.rp-svg");if(!sv)return null;
+  const gr=gz.getBoundingClientRect(),sr=sv.getBoundingClientRect(),W=gz.clientWidth,H=gz.clientHeight;
+  const v=PX.m.vb.split(" ").map(Number),bx=sr.left-gr.left-gz.clientLeft,by=sr.top-gr.top-gz.clientTop;
+  const k=Math.min(sr.width/v[2],sr.height/v[3]);
+  return{W,H,k,ox:bx+(sr.width-v[2]*k)/2-v[0]*k,oy:by+(sr.height-v[3]*k)/2-v[1]*k};}
+/* parties fixes de la corde */
+function pxBuild(){const m=PX.m,b=PX.box,k=b.k,R=ROPE.R,C=m.C,n=m.n;
+  for(const c of [...PX.fixe.removeChildren(),...PX.ends.removeChildren()])c.destroy(true);for(const c of PX.bon.removeChildren())c.destroy(true);
+  PX.corde.position.set(b.ox,b.oy);
+  const g=new PIXI.Graphics();
+  C.forEach((q,i)=>{const ux=q.x/R,uy=q.y/R,px=-uy,py=ux,ang=Math.atan2(uy,ux);
+    const z=new PIXI.Graphics();z.roundRect(ROPE.CAMP*k,-1.6*k,(R-ROPE.CAMP)*k,3.2*k,.6*k).fill({color:pxHex(m.colors[i]),alpha:.22});z.rotation=ang;PX.fixe.addChild(z);
+    g.moveTo(0,0).lineTo(q.x*k,q.y*k).stroke({width:.5*k,color:0xffffff,alpha:.4});
+    for(let j=1;j<=R;j++){const x=ux*j,y=uy*j,h=j%5?.7:1.3;
+      g.moveTo((x-px*h)*k,(y-py*h)*k).lineTo((x+px*h)*k,(y+py*h)*k).stroke({width:.25*k,color:0xffffff,alpha:j%5?.3:.45});
+      if(j%2===0&&(n===2||j<R)){let tx=x+px*2.2,ty=y+py*2.2;if(n===2){tx=x;ty=3.1;}
+        const t=new PIXI.Text({text:String(j),style:{fontFamily:"'Bricolage Grotesque', 'Avenir Next', system-ui, sans-serif",fontWeight:"700",fontSize:1.45*k,fill:0xffffff}});
+        t.anchor.set(.5);t.alpha=.55;t.position.set(tx*k,ty*k);PX.fixe.addChild(t);}}});
+  if(n===2)g.moveTo(0,-1.3*k).lineTo(0,1.3*k).stroke({width:.25*k,color:0xffffff,alpha:.45});else g.circle(0,0,.45*k).fill({color:0xffffff,alpha:.4});
+  PX.fixe.addChildAt(g,0);
+  const cr=n===2?1.9:1.6,bon="+"+(m.fin?ROPE.BONUS_FINAL:ROPE.BONUS),e=new PIXI.Graphics();
+  C.forEach((q,i)=>{const on=m.camp===i;e.circle(q.x*k,q.y*k,cr*k).fill({color:on?pxHex(m.colors[i]):pxMix(m.colors[i],"#141026",.5)});
+    if(on)e.stroke({width:.3*k,color:0xffffff});
+    const t=new PIXI.Text({text:bon,style:{fontFamily:"Bungee, 'Chakra Petch', Impact, sans-serif",fontWeight:"800",fontSize:cr*.95*k,fill:0xffffff,
+      ...(on?{stroke:{color:0x000000,width:.15*k,alpha:.35}}:{})}});
+    t.anchor.set(.5);t.alpha=on?1:.6;t.position.set(q.x*k,q.y*k);PX.bon.addChild(t);});
+  PX.ends.addChild(e);
+  /* nœud, anneau, halo du camp */
+  const col=pxHex(m.col);
+  PX.knot.clear().circle(0,0,1.4*k).fill({color:col}).stroke({width:.35*k,color:0xffffff});
+  PX.knotG.clear().circle(0,0,1.4*k).stroke({width:.3*k,color:0xffd23f});PX.knotG.alpha=0;
+  PX.ring.clear().circle(0,0,1.4*k).stroke({width:.35*k,color:0xffd23f});PX.ring.alpha=0;
+  PX.halo.clear();PX.halo.visible=m.camp!==null;
+  if(m.camp!==null){const q=C[m.camp];PX.halo.circle(0,0,cr*k).stroke({width:.5*k,color:pxHex(m.colors[m.camp])});PX.halo.position.set(q.x*k,q.y*k);}
+  PX.knN.style.fontSize=2.1*k;}
+/* décompte des 4 derniers temps sur le nœud (appelé à l'instant où le temps est entendu) */
+function pxBeat(left,last){PX.beat={t:performance.now(),left,last};PX.knN.text=String(left);}
+const easeOut=x=>1-Math.pow(1-x,3);
+function pxFrame(){const app=PX.app,gz=$("rpGauge");
+  if(!S||!S.rope||$("rope").hidden||!gz||PX.app.canvas.parentNode!==gz||!PX.m){app.stop();return;}
+  const now=performance.now();
+  if(!PX.box||PX.box.W!==gz.clientWidth||PX.box.H!==gz.clientHeight){PX.box=pxMeasure();if(!PX.box)return;app.renderer.resize(PX.box.W,PX.box.H);PX.rt.resize(PX.box.W,PX.box.H);PX.key="";}
+  const key=JSON.stringify([PX.m.n,PX.m.C,PX.m.colors,PX.m.camp,PX.m.fin,PX.m.col,PX.m.vb,PX.box.k]);
+  if(key!==PX.key){PX.key=key;pxBuild();}
+  const b=PX.box,k=b.k,W=b.W,H=b.H;
+  /* --- brume et ondes (même calcul que l'ancien dessin) --- */
+  const dt=Math.min(.1,(now-(SPLAST||now))/1000);SPLAST=now;
+  let bass=0,mid=0,T=null;const A=window.__ana;
+  if(A&&soundOn){const F=SPF&&SPF.length===A.frequencyBinCount?SPF:(SPF=new Uint8Array(A.frequencyBinCount));A.getByteFrequencyData(F);for(let i=1;i<6;i++)bass+=F[i];bass/=5*255;for(let i=6;i<60;i++)mid+=F[i];mid/=54*255;
+    T=SPTD&&SPTD.length===A.fftSize?SPTD:(SPTD=new Uint8Array(A.fftSize));A.getByteTimeDomainData(T);}
+  SPAVG+=(bass-SPAVG)*.03;const kick=Math.max(0,Math.min(1,(bass-SPAVG)*6));SPBASS+=(kick-SPBASS)*(kick>SPBASS?.6:.08);SPEN+=((bass+mid)/2-SPEN)*.05;
+  SPT+=dt*(.35+SPEN*.6);
+  const col=pxHex(S.players[S.turn].color);
+  PX.brume.forEach((s,i)=>{const ph=i*1.7,r=Math.max(W,H)*(.32+.1*Math.sin(SPT*.8+ph))*(1+SPBASS*.25);
+    s.position.set(W*(.5+.42*Math.sin(SPT*.5+ph)),H*(.5+.38*Math.cos(SPT*.37+ph*1.3)));s.width=s.height=2*r;s.tint=col;s.alpha=.09+SPEN*.07+SPBASS*.16;});
+  const P=40,pts=[];
+  for(let i=0;i<=P;i++){let v=0;if(T){const a=Math.floor(i/P*(T.length-1)),w=10;let s2=0,n2=0;for(let q=-w;q<=w;q++){const z=a+q;if(z>=0&&z<T.length){s2+=T[z];n2++;}}v=(s2/n2-128)/128;}pts.push(v);}
+  [[0,2,.6,1],[.18,6,.16,.8],[-.22,14,.07,.6]].forEach(([off,lw,al,sp],li)=>{let LX=0,LY=0;const og=PX.ondes[li].clear();
+    for(let i=0;i<=P;i++){const u=i/P,env=Math.sin(Math.PI*u),
+        y=H*(.5+off*.25)+(pts[i]*H*.42*(.6+SPEN)+Math.sin(u*9+SPT*3*sp+off*5)*H*.04*(.4+SPBASS))*env,x=u*W;
+      if(!i)og.moveTo(x,y);else og.quadraticCurveTo(LX,LY,(LX+x)/2,(LY+y)/2);LX=x;LY=y;}
+    og.lineTo(LX,LY).stroke({width:lw*(1+SPBASS*.5),color:col,alpha:Math.min(1,al*(.5+SPEN*.5+SPBASS*.5)),join:"round",cap:"round"});});
+  app.renderer.render({container:PX.wc,target:PX.rt,clear:true});
+  /* --- nœud, ligne de traction, halo du camp, décompte --- */
+  const V=ropeViewPos(),x=V.x*k,y=V.y*k;
+  PX.knot.position.set(x,y);PX.knotG.position.set(x,y);PX.ring.position.set(x,y);PX.knN.position.set(x,y);
+  PX.pull.clear().moveTo(0,0).lineTo(x,y).stroke({width:.7*k,color:pxHex(PX.m.col),alpha:.85});
+  if(PX.halo.visible){const h=(now%1200)/1200,e=easeOut(h);PX.halo.scale.set(1+.9*e);PX.halo.alpha=.9*(1-e);}
+  const bt=PX.beat;let ks=1,kg=0,ra=0,rs=1,na=0;
+  if(bt){const age=now-bt.t,dur=bt.last?450:320;
+    if(age<dur){const e=easeOut(age/dur);ks=(bt.last?2.2:1.8)+(1-(bt.last?2.2:1.8))*e;kg=1-e;}
+    if(age<500){const e=easeOut(age/500);rs=1+2.4*e;ra=1-e;}
+    if(age<480)na=age<360?1:1-(age-360)/120;
+    if(age>600)PX.beat=null;}
+  PX.knot.scale.set(ks);PX.knotG.scale.set(ks);PX.knotG.alpha=kg;PX.ring.scale.set(rs);PX.ring.alpha=ra;PX.knN.alpha=na;
+  /* --- images par seconde --- */
+  PX.fpsN++;if(now-PX.fpsT>=1000){PX.fps=Math.round(PX.fpsN*1000/(now-PX.fpsT));PX.fpsN=0;PX.fpsT=now;PX.fpsTx.text=PX.showFps?PX.fps+" i/s":"";}
+}
 function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],camp=rCamp(),fin=isFinal();
   $("rpScores").style.setProperty("--np",n);$("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><b>${p.score}</b></div>`).join("");
   /* jauge des tours : un segment par joueur, dans l'ordre de la manche */
@@ -1437,8 +1568,13 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],cam
   const vb=n===2?"-11.9 -2.4 23.8 6.2":n===3?"-11.6 -11.9 23.2 18.8":"-9.4 -9.4 18.8 18.8";
   $("rpGauge").style.setProperty("--pc",pl.color);$("rpGauge").classList.toggle("act",!S.ended);
   $("rpBpm").textContent="♩ "+Math.round(curBpm)+" BPM";
-  $("rpGauge").innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg>`;
-  $("rpGauge").prepend(spiralCanvas());spiralStart();
+  if(pxReady()){/* carte graphique : le SVG, vide et invisible, ne sert plus qu'à la mise en page */
+    const gz=$("rpGauge");
+    if(gz.dataset.lk!==vb||!gz.querySelector("svg.rp-svg")){gz.innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}" style="visibility:hidden"></svg>`;gz.dataset.lk=vb;PX.box=null;}
+    pxSync({n,C,colors:S.players.map(p=>p.color),camp,fin,col,vb});}
+  else{$("rpGauge").dataset.lk="";
+    $("rpGauge").innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg>`;
+    $("rpGauge").prepend(spiralCanvas());spiralStart();}
   ropeAnimate();
   const LKN=new Set(PORDER.filter(p=>R.locks[p]!==undefined&&!(LKSEEN.S===S&&LKSEEN.k.has(p+":"+R.round))));
   LKSEEN={S,k:new Set(PORDER.filter(p=>R.locks[p]!==undefined).map(p=>p+":"+R.round))};
@@ -2147,11 +2283,7 @@ async function initSamples(){
   await Promise.all(first.map(async id=>{try{SMP[id].raw=await decode(SMP[id].ab.slice(0));}catch(e){console.error(id,e);}}));
   const an=first.filter(id=>SMP[id].raw);
   /* silence ajouté par l'encodeur MP3 au début : le plus petit décalage trouvé, commun à des boucles exportées ensemble */
-  smpOffset=0;let best=Infinity;
-  for(const id of an){const d=SMP[id].raw.getChannelData(0),sr=SMP[id].raw.sampleRate,lim=Math.min(d.length,sr*.08);
-    for(let i=0;i<lim;i++)if(Math.abs(d[i])>.01){best=Math.min(best,i/sr);break;}}
-  best=Math.min(best,.03);   /* le silence d'encodeur ne dépasse pas ~30 ms : au-delà, c'est un silence voulu dans la boucle */
-  if(isFinite(best))smpOffset=best;
+  smpOffset=encDelay(an);
   /* contrôle de la durée : si un fichier ne fait pas la durée prévue par reglages.json, on retrouve son tempo (et son nombre de temps)
      d'après sa durée, sinon il se décalerait de la grille et laisserait un blanc à chaque tour */
   const fixes=[];for(const id of an){const f=fitDur(id);if(f)fixes.push(f);}
@@ -2166,6 +2298,25 @@ async function initSamples(){
   $("arcCam").dataset.mp3=n?"🎵"+n:"";
   cardButtons($("sons"));if(S&&S.mp3t)render();
 }
+/* Silence ajouté par l'encodeur MP3 au début de chaque fichier (le même pour tout un export, ~24 ms) : la boucle de 16 temps
+   commence là et s'arrête 8 s plus loin. On le retrouve par les deux bouts de chaque fichier (où le son démarre, où il s'arrête
+   8 s plus loin) et on garde la valeur médiane de tous les fichiers. Avant, le fichier qui démarrait le plus tôt (pré-écho d'un
+   coup fort) imposait sa valeur à toutes les boucles : elles commençaient ~7 ms trop tôt, d'où une petite saute à chaque tour.
+   Réglable à la main dans reglages.json : "debut_ms". */
+function encDelay(ids){
+  if(SET.debut_ms!==undefined&&isFinite(+SET.debut_ms))return Math.max(0,+SET.debut_ms/1000);
+  const st=[],en=[];
+  for(const id of ids){const b=SMP[id].raw;if(!b)continue;const sr=b.sampleRate,D=SMP[id].D,N=Math.round(D.beats*60/D.bpm*sr),
+      d=b.getChannelData(0),d2=b.numberOfChannels>1?b.getChannelData(1):d,a=i=>Math.max(Math.abs(d[i]),Math.abs(d2[i]));
+    let mx=0;for(let i=0;i<d.length;i+=2){const v=a(i);if(v>mx)mx=v;}if(!mx)continue;
+    const th=Math.max(.003,mx*.02),lim=Math.min(d.length,Math.round(sr*.1));
+    let s=0;while(s<lim&&a(s)<=th)s++;if(s<lim&&s/sr<.06)st.push(s/sr);
+    if(d.length>N){const e0=Math.max(N,d.length-Math.round(sr*.15));let e=d.length-1;while(e>e0&&a(e)<=th)e--;const v=(e+1-N)/sr;if(e>e0&&v>=0&&v<.06)en.push(v);}}
+  const med=v=>{v.sort((x,y)=>x-y);return v[v.length>>1];};
+  const S=st.length?med(st):null,E=en.length>=3?med(en):null;
+  const off=E!==null?(S!==null&&Math.abs(E-S)<.003?(E+S)/2:E):S!==null?S:0;
+  console.log("Début des boucles (silence d'encodeur) :",(off*1000).toFixed(1),"ms",{debut:S,fin:E,fichiers:ids.length});
+  return off;}
 /* durée du fichier ≠ reglages.json : on retrouve son tempo (et son nombre de temps) d'après sa durée */
 function fitDur(id){const s=SMP[id],D=s.D,len=s.raw.duration-smpOffset,fits=(b,n)=>{const L=n*60/b;return len-L>-.04&&len-L<.13;};
   if(fits(D.bpm,D.beats))return null;
@@ -2186,7 +2337,14 @@ function ensureSample(id,then){const s=SMP[id];if(!s)return;if(s.ready){if(then)
 /* extrait exactement les 16 temps de la boucle */
 /* rot : la boucle est « tournée » de rot secondes, pour que le premier temps de la musique tombe pile au début (la fin repasse devant) */
 function cutLoop(buf,off,dur,rot){const sr=buf.sampleRate,a=Math.round(off*sr),n=Math.round(dur*sr),r=Math.round((rot||0)*sr)%n,out=ctx.createBuffer(buf.numberOfChannels,n,sr);
-  for(let c=0;c<buf.numberOfChannels;c++){const src=buf.getChannelData(c),dst=out.getChannelData(c);for(let i=0;i<n;i++)dst[i]=src[a+(i+r)%n]||0;}return out;}
+  const w=new Float32Array(n),K=Math.min(n>>2,Math.round(sr*.003));
+  for(let c=0;c<buf.numberOfChannels;c++){const src=buf.getChannelData(c),dst=out.getChannelData(c);
+    for(let i=0;i<n;i++)w[i]=src[a+i]||0;
+    /* jointure : les fichiers sont coupés net à 8 s, la fin ne retombe pas exactement sur le début (clic).
+       Sur les 3 dernières ms, la fin glisse en douceur vers le premier échantillon de la boucle. */
+    const dl=(2*w[0]-w[1])-w[n-1];for(let i=0;i<K;i++){const u=(i+1)/K;w[n-K+i]+=dl*u*u*(3-2*u);}
+    for(let i=0;i<n;i++)dst[i]=w[(i+r)%n];}
+  return out;}
 /* Où tombent les temps dans les MP3 ? Beaucoup de boucles exportées commencent un peu AVANT le premier temps (ici ~80 ms) :
    la musique était alors en retard sur les visuels. On repère la position des attaques (coups de batterie, notes) dans chaque temps,
    sur l'ensemble des boucles, et on recale toutes les boucles sur ce point. Réglable à la main dans reglages.json : "decalage_ms". */
@@ -2238,6 +2396,7 @@ function mtBeat(b){const rc=$("mtCycle");if(rc&&S&&S.mp3t)rc.querySelectorAll("i
 function ropeBeat(b){mtBeat(b);const bp=$("rpBpm");if(bp&&S&&S.rope)bp.textContent="♩ "+Math.round(curBpm)+" BPM";const rc=$("rpCycle");if(rc)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});
   if(b<12||!S||!S.rope||S.ended||plIdle())return;
   const last=b===15,k=$("rpKnot"),rg=$("rpRing"),cd=$("rpCd");
+  if(pxReady())pxBeat(16-b,last);
   if(k){k.classList.remove("beat","last");void k.getBoundingClientRect();k.classList.add("beat");if(last)k.classList.add("last");}
   if(rg){rg.classList.remove("go");void rg.getBoundingClientRect();rg.classList.add("go");}
   const kn=$("rpKnotN");if(kn){kn.textContent=16-b;kn.classList.remove("go");void kn.getBoundingClientRect();kn.classList.add("go");}}
@@ -2495,6 +2654,8 @@ if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostnam
 }
 showOff();
 
+$("rpBpm").onclick=()=>{if(!PX.on)return toast("Visuels : ancien dessin (carte graphique indisponible)");PX.showFps=!PX.showFps;if(PX.fpsTx)PX.fpsTx.text=PX.showFps?"…":"";};
+pxBoot();
 preloadSons().then(remplirHorsLigne);
 S=fresh([{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"}]);render();camOff("Caméra pas encore lancée","Elle démarre avec la partie.",true);setup();
 </script>

@@ -5,7 +5,7 @@
    - polices (Google Fonts) et lecteur de QR (jsQR.js) : gardés sur le téléphone */
 const V = new URL(self.location).searchParams.get("v") || "dev";
 const APP = "ts-app-" + V, SONS = "ts-sons", EXT = "ts-ext";
-const SHELL = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png", "jsQR.js"];
+const SHELL = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png", "jsQR.js", "pixi.min.js"];
 const EXT_URLS = [
   "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Bungee&family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&display=swap"
 ];
