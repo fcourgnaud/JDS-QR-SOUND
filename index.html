@@ -673,8 +673,104 @@ body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
 <video id="video" class="camfeed" playsinline muted autoplay></video>
 <canvas id="grab" hidden></canvas>
 
+<script type="text/plain" id="moteurSrc">
+/* Moteur audio de Tribes Showdown — tourne dans le FIL AUDIO (AudioWorklet), à l'écart de l'écran et de la caméra.
+   « ts-moteur » : joue les boucles MP3 des 4 pistes (sorties 0 à 3 = Rythme, Basse, Harmonie, Mélodie),
+                   chaque départ / arrêt tombe sur l'échantillon exact demandé ; un ordre arrivé en retard
+                   rejoint la boucle à la bonne position (elle reste calée sur les temps) ;
+                   donne aussi la cadence à l'app (message « tic » toutes les ~20 ms).
+   « ts-micro »   : enregistre le micro pendant le calibrage automatique, avec l'heure exacte de chaque morceau. */
+const FADE_IN = 32, FADE_OUT = 128;
+class Moteur extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this.sons = new Map();     /* id → { ch:[gauche, droite], len, g } */
+    this.voix = new Map();     /* id → { son, out, pos, fi } */
+    this.queues = [];          /* voix en train de s'éteindre (fondu de 3 ms, pas de clic) */
+    this.ev = [];              /* ordres datés, triés par échantillon */
+    this.q = 0;
+    this.port.onmessage = e => this.msg(e.data);
+    this.port.postMessage({ k: "pret", sr: sampleRate });
+  }
+  msg(m) {
+    if (m.k === "son") { this.sons.set(m.id, { ch: m.ch, len: m.ch[0].length, g: m.g }); return; }
+    if (m.k === "gain") { const s = this.sons.get(m.id); if (s) s.g = m.g; return; }
+    if (m.k === "stop" && !m.f) {            /* arrêt immédiat : on annule aussi ses départs prévus */
+      this.ev = this.ev.filter(x => x.id !== m.id); this.eteindre(m.id); return; }
+    if (m.k === "tout") { this.ev = []; for (const id of [...this.voix.keys()]) this.eteindre(id); return; }
+    this.ev.push(m); this.ev.sort((a, b) => a.f - b.f);
+  }
+  eteindre(id) { const v = this.voix.get(id); if (!v) return; this.voix.delete(id); v.fo = FADE_OUT; this.queues.push(v); }
+  appliquer(m, now) {
+    if (m.k === "stop") {   /* arrêt daté d'UNE lecture précise (tok) : une relance du même son au même instant n'est pas coupée */
+      const v = this.voix.get(m.id);
+      if (v && (m.tok === undefined || v.tok === m.tok)) this.eteindre(m.id);
+      if (m.tok !== undefined) this.ev = this.ev.filter(x => !(x.k === "jouer" && x.tok === m.tok));
+      return; }
+    if (m.k === "jouer") {
+      const son = this.sons.get(m.id);
+      if (!son) { this.port.postMessage({ k: "manque", id: m.id }); return; }
+      const len = son.len, pos = (((m.pos + (now - m.f)) % len) + len) % len;
+      this.eteindre(m.id);
+      this.voix.set(m.id, { son, out: m.out, pos: Math.round(pos), fi: 0, tok: m.tok });
+    }
+  }
+  rendre(outputs, a, b) {
+    for (const v of this.voix.values()) this.mixer(outputs, v, a, b, false);
+    for (const v of this.queues) this.mixer(outputs, v, a, b, true);
+    if (this.queues.length) this.queues = this.queues.filter(v => v.fo > 0);
+  }
+  mixer(outputs, v, a, b, sortie) {
+    const o = outputs[v.out]; if (!o || !o[0]) return;
+    const L = o[0], R = o[1] || o[0], s = v.son, c0 = s.ch[0], c1 = s.ch[1] || c0, len = s.len, g = s.g;
+    let p = v.pos;
+    for (let i = a; i < b; i++) {
+      let k = g;
+      if (sortie) { if (v.fo <= 0) break; k *= v.fo / FADE_OUT; v.fo--; }
+      else if (v.fi < FADE_IN) { k *= v.fi / FADE_IN; v.fi++; }
+      L[i] += c0[p] * k; if (R !== L) R[i] += c1[p] * k;
+      if (++p >= len) p = 0;
+    }
+    v.pos = p;
+  }
+  process(inputs, outputs) {
+    const n = outputs[0][0].length, f0 = currentFrame;
+    let i = 0;
+    while (i < n) {
+      while (this.ev.length && this.ev[0].f <= f0 + i) this.appliquer(this.ev.shift(), f0 + i);
+      let fin = n;
+      if (this.ev.length && this.ev[0].f < f0 + n) fin = Math.max(i + 1, this.ev[0].f - f0);
+      this.rendre(outputs, i, fin);
+      i = fin;
+    }
+    if (this.q++ % 8 === 0) this.port.postMessage({ k: "tic" });
+    return true;
+  }
+}
+registerProcessor("ts-moteur", Moteur);
+
+class Micro extends AudioWorkletProcessor {
+  constructor() {
+    super(); this.on = true; this.buf = new Float32Array(8192); this.n = 0; this.f = 0;
+    this.port.onmessage = e => { if (e.data === "fin") { this.envoyer(); this.on = false; } };
+  }
+  envoyer() { if (!this.n) return; const d = this.buf.slice(0, this.n); this.port.postMessage({ f: this.f, d }, [d.buffer]); this.n = 0; }
+  process(inputs) {
+    if (!this.on) return false;
+    const x = inputs[0] && inputs[0][0];
+    if (x && x.length) {
+      /* trou dans l'enregistrement, ou tampon plein : on envoie et on commence un nouveau morceau */
+      if (this.n && (this.f + this.n !== currentFrame || this.n + x.length > this.buf.length)) this.envoyer();
+      if (!this.n) this.f = currentFrame;
+      this.buf.set(x, this.n); this.n += x.length;
+    }
+    return true;
+  }
+}
+registerProcessor("ts-micro", Micro);
+</script>
 <script>
-const VERSION="v89";
+const VERSION="v90";
 /* ================= Données ================= */
 const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
@@ -877,8 +973,10 @@ function setup(){stopEverything();document.body.classList.remove("cd-on");try{if
         <div class="decks">${Object.keys(DECKS).map(d=>`<button data-i="${i}" data-d="${d}" class="${p.deck===d?"sel":""}" style="--dc:${DECKS[d].color}">${DECKS[d].glyph} ${DECKS[d].short}</button>`).join("")}</div></div>`).join("")}
       <div class="calib"><div class="cal-h"><b>🎧 Décalage du son</b><span id="calV">${USERLAT} ms</span></div>
         <div class="cal-sl"><button class="chip" id="calM" aria-label="moins 10 ms">◀</button><input type="range" id="calR" min="-200" max="700" step="10" value="${USERLAT}"><button class="chip" id="calP" aria-label="plus 10 ms">▶</button></div>
-        <div class="cal-row"><button class="chip" data-lat="0">Haut-parleur</button><button class="chip" data-lat="250">Bluetooth</button><button class="chip" id="calTest">▶ Tester</button><i id="calDot"></i></div>
-        <small>Enceinte Bluetooth : lance le test et règle jusqu'à ce que le rond clignote pile sur le bip.</small></div>
+        <div class="cal-row"><button class="chip" data-lat="0">Haut-parleur</button><button class="chip" data-lat="250">Bluetooth</button><button class="chip" id="calTest">▶ Tester</button><button class="chip" id="calMic">🎤 Mesurer</button><i id="calDot"></i></div>
+        <small id="calMicS">🎤 Mesurer : le téléphone, posé à sa place de jeu, écoute 8 clics au micro et règle le décalage tout seul (silence autour pendant 8 s).</small>
+        <small>▶ Tester pour vérifier : le rond doit clignoter pile sur le bip, sinon règle à la main.</small>
+        <small id="motS">⚙️ Moteur audio : ${MOTINFO||"démarre au premier son"}</small></div>
       <p class="note" style="margin:0">${modeChoice==="mp3"?"Chaque joueur choisit sa tribu. Les cartes de chacun s'affichent sous le jeu : touche-les pour simuler un scan.":"Chaque joueur choisit sa tribu. Le bouton lance la musique et la caméra frontale."}</p>
       <p class="note" id="mp3Status" style="margin:0">${mp3Info||"Recherche des boucles MP3…"}</p>
       <p class="note" id="offStatus" style="margin:0">${offHTML()}</p>
@@ -892,8 +990,11 @@ function setup(){stopEverything();document.body.classList.remove("cd-on");try{if
     $("calM").onclick=()=>setLat(USERLAT-10);$("calP").onclick=()=>setLat(USERLAT+10);
     document.querySelectorAll(".calib [data-lat]").forEach(b=>b.onclick=()=>setLat(b.dataset.lat));
     $("calTest").onclick=()=>{if(CALT)calStop();else calStart();};
+    $("calMic").onclick=async()=>{const b=$("calMic");if(b)b.disabled=true;
+      const v=await micCalib(t=>{const e=$("calMicS");if(e)e.textContent=t;});
+      const b2=$("calMic");if(b2)b2.disabled=false;if(v!==null&&$("calV"))setLat(v);};
     const oo=$("objOpt");if(oo)oo.onchange=()=>{ropeObjOpt=oo.checked;try{localStorage.setItem("ts-obj",oo.checked?"1":"0");}catch(e){}};
-    $("go").onclick=()=>{calStop();save();stopLarsen();clearTimeout(mesureTimer);
+    $("go").onclick=()=>{if(MICBUSY)return toast("Attends la fin de la mesure au micro",true);calStop();save();stopLarsen();clearTimeout(mesureTimer);
       if(modeChoice==="corde"||modeChoice==="mp3")return startRope(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})),modeChoice==="mp3");
       S=fresh(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})));plReset();poolReset();undoStack=[];picking=null;pending=null;
       layoutZones(S.players.map(p=>p.deck));S.arcade=modeChoice==="arcade";setArcade(S.arcade);
@@ -1574,9 +1675,11 @@ function makeDrive(piste,level){
 const VISQ=[];let VISRAF=0;
 /* USERLAT : retard en plus, réglé à la main (enceinte Bluetooth : le téléphone ne le signale pas toujours) */
 let USERLAT=0;try{USERLAT=+localStorage.getItem("ts-lat")||0;}catch(e){}
-function heardNow(){if(!ctx)return 0;const u=USERLAT/1000;
-  try{if(ctx.getOutputTimestamp){const o=ctx.getOutputTimestamp();if(o&&o.contextTime>0&&o.performanceTime>0)return o.contextTime+(performance.now()-o.performanceTime)/1000-u;}}catch(e){}
-  return ctx.currentTime-(ctx.outputLatency||ctx.baseLatency||0)-u;}
+/* instant entendu, d'après ce que le téléphone annonce de son retard de sortie */
+function heardRaw(){
+  try{if(ctx.getOutputTimestamp){const o=ctx.getOutputTimestamp();if(o&&o.contextTime>0&&o.performanceTime>0)return o.contextTime+(performance.now()-o.performanceTime)/1000;}}catch(e){}
+  return ctx.currentTime-(ctx.outputLatency||ctx.baseLatency||0);}
+function heardNow(){if(!ctx)return 0;return heardRaw()-USERLAT/1000;}
 /* test de calage : un bip par temps (120 BPM) et un rond qui clignote ; on règle le retard jusqu'à ce qu'ils tombent ensemble */
 let CALT=null,CALN=0;
 function calStop(){clearInterval(CALT);CALT=null;const b=$("calTest");if(b)b.textContent="▶ Tester";}
@@ -1588,6 +1691,110 @@ function visAt(t,fn){VISQ.push({t,fn});if(!VISRAF)VISRAF=requestAnimationFrame(v
 function visRun(){VISRAF=0;const h=heardNow()+.022;   /* +1 image : le temps que l'écran affiche le changement */
   for(let i=0;i<VISQ.length;){if(VISQ[i].t<=h||document.hidden){const f=VISQ[i].fn;VISQ.splice(i,1);try{f();}catch(e){console.error(e);}}else i++;}
   if(VISQ.length)VISRAF=requestAnimationFrame(visRun);}
+/* ===== Moteur audio dans le fil audio (AudioWorklet) =====
+   Les boucles MP3 et la cadence tournent dans le fil audio : l'écran, la caméra ou un téléphone occupé ne peuvent plus
+   les décaler ni faire sauter un temps. Si le téléphone ne le permet pas, l'ancien moteur prend le relais tout seul. */
+let MOT=null,MOTOK=false,MOTINFO="",MOTTOK=0,PREFILES=null;
+function motInfo(t){MOTINFO=t;const el=$("motS");if(el)el.textContent="⚙️ Moteur audio : "+t;}
+async function moteurInit(){
+  if(MOT)return;
+  if(!ctx.audioWorklet||!window.AudioWorkletNode){motInfo("classique (ce navigateur n'a pas de fil audio séparé)");return;}
+  MOT="chargement";
+  const src=$("moteurSrc").textContent,urls=[];
+  try{urls.push(URL.createObjectURL(new Blob([src],{type:"application/javascript"})));}catch(e){}
+  urls.push("data:application/javascript;charset=utf-8,"+encodeURIComponent(src));
+  let ok=false;for(const u of urls){try{await ctx.audioWorklet.addModule(u);ok=true;break;}catch(e){console.warn("moteur audio",u.slice(0,5),e);}}
+  if(!ok){MOT=null;motInfo("classique (fil audio séparé indisponible)");return;}
+  try{const n=new AudioWorkletNode(ctx,"ts-moteur",{numberOfInputs:0,numberOfOutputs:4,outputChannelCount:[2,2,2,2]});
+    PORDER.forEach((p,i)=>n.connect(buses[p],i));
+    n.onprocessorerror=moteurPanne;
+    n.port.onmessage=e=>{const m=e.data;
+      if(m.k==="tic"){if(schedTimer)schedRun();}
+      else if(m.k==="pret"){MOTOK=true;motInfo("fil audio séparé ✓");for(const id in SMP)moteurSon(id);}
+      else if(m.k==="manque")console.warn("moteur audio : son pas encore reçu",m.id);};
+    MOT=n;
+  }catch(e){console.warn("moteur audio",e);MOT=null;motInfo("classique");}
+}
+/* une boucle prête part dans le fil audio ; la page ne garde plus sa copie (mémoire du téléphone) */
+function moteurSon(id){const s=SMP[id];if(!MOTOK||!s||!s.ready||!s.base||s.envoye)return;const b=s.base,ch=[];
+  for(let c=0;c<Math.min(2,b.numberOfChannels);c++)ch.push(b.getChannelData(c).slice());
+  try{MOT.port.postMessage({k:"son",id,ch,g:s.norm},ch.map(x=>x.buffer));}catch(e){console.warn(e);return;}
+  s.len=b.length;s.envoye=true;s.base=null;}
+/* le fil audio s'est arrêté (très rare) : retour à l'ancien moteur, les boucles sont redécodées et repartent au cycle suivant */
+function moteurPanne(){if(!MOT||!MOTOK)return;console.warn("moteur audio arrêté : retour à l'ancien moteur");
+  MOTOK=false;try{MOT.disconnect();}catch(e){}MOT=null;motInfo("classique (le fil audio s'est arrêté)");
+  for(const id in SMP){const s=SMP[id];if(s.envoye){Object.assign(s,{envoye:false,ready:false,loading:null,playing:false,moteur:false,ab:PREFILES&&PREFILES[id]||null});}}
+  PORDER.forEach(p=>{PL.tr[p]=null;});}
+/* ===== Calibrage automatique du décalage au micro =====
+   L'app joue 8 clics par le même chemin que la musique et les écoute au micro : le temps entre l'envoi et l'arrivée
+   est le retard réel du son. On retire ce que le téléphone annonce déjà (compté automatiquement) : le reste devient le décalage. */
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const repLat=()=>ctx.currentTime-heardRaw();
+let MICBUSY=false,CLICBUF=null;
+function clic(t){if(!CLICBUF){const n=Math.round(ctx.sampleRate*.006),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);
+    for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(n/5));CLICBUF=b;}
+  const s=ctx.createBufferSource();s.buffer=CLICBUF;s.connect(masterIn);s.start(t);}
+async function micCalib(say){if(MICBUSY)return null;MICBUSY=true;
+  try{return await micMesure(say);}
+  catch(e){console.error(e);say("Mesure impossible : règle à la main avec ▶ Tester.");return null;}
+  finally{MICBUSY=false;try{if(navigator.audioSession)navigator.audioSession.type="auto";}catch(e){}}}
+async function micMesure(say){
+  calStop();preview=null;startAudio();try{await ctx.resume();}catch(e){}
+  if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){say("Micro indisponible ici : règle à la main avec ▶ Tester.");return null;}
+  for(let i=0;i<30&&!MOTOK&&MOT;i++)await wait(100);
+  if(!MOTOK){say("Mesure impossible sur ce téléphone : règle à la main avec ▶ Tester.");return null;}
+  const R0=repLat();say("Autorise le micro…");
+  let stream;
+  try{try{if(navigator.audioSession)navigator.audioSession.type="play-and-record";}catch(e){}
+    stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}
+  catch(e){say(e&&e.name==="NotAllowedError"?"Micro refusé : autorise-le pour ce site, ou règle à la main.":"Micro indisponible : règle à la main avec ▶ Tester.");return null;}
+  const tr=stream.getAudioTracks()[0],st=tr&&tr.getSettings?tr.getSettings():{};
+  const inLat=typeof st.latency==="number"&&st.latency>=0&&st.latency<.2?st.latency:.01;   /* retard du micro lui-même (≈ 10 ms si le téléphone ne le dit pas) */
+  const mic=ctx.createMediaStreamSource(stream),rec=new AudioWorkletNode(ctx,"ts-micro",{numberOfInputs:1,numberOfOutputs:1,outputChannelCount:[1]}),z=ctx.createGain();
+  z.gain.value=0;mic.connect(rec);rec.connect(z);z.connect(ctx.destination);
+  const parts=[],lats=[];rec.port.onmessage=e=>parts.push(e.data);
+  let T=[];
+  try{
+    say("🤫 Silence… mesure en cours (8 s)");
+    await wait(800);   /* le micro s'installe (le téléphone peut changer de sortie audio à ce moment) */
+    let t=ctx.currentTime+.3;for(const g of [0,.93,1.01,.88,.97,.91,1.04,.86]){t+=g;T.push(t);clic(t);}
+    const li=setInterval(()=>lats.push(repLat()),100);
+    await wait((T[T.length-1]-ctx.currentTime+1)*1000);clearInterval(li);
+    rec.port.postMessage("fin");await wait(200);
+  }finally{try{mic.disconnect();rec.disconnect();z.disconnect();}catch(e){}stream.getTracks().forEach(x=>x.stop());}
+  const r=micAnalyse(parts,T,ctx.sampleRate);
+  if(!r.ok){say(`Mesure ratée (${r.n} clic${r.n>1?"s":""} entendu${r.n>1?"s":""} sur 8) : monte le volume, fais le silence et recommence, ou règle à la main.`);return null;}
+  lats.sort((a,b)=>a-b);const R=lats.length?lats[lats.length>>1]:R0;
+  const v=Math.max(-200,Math.min(700,Math.round((r.lag-inLat-R)*1000)));
+  const route=Math.abs(R-R0)>.04;   /* la sortie a changé quand le micro s'est allumé (enceinte Bluetooth avec micro) */
+  say(`✓ Mesuré : ${v} ms (${r.n} clics sur 8, son reçu après ${Math.round(r.lag*1000)} ms). Vérifie avec ▶ Tester.`+(route?" ⚠ La sortie audio a changé pendant la mesure : vérifie bien, ou règle à la main.":""));
+  console.log("Calibrage micro",{lag:r.lag,micro:inLat,annonce:R,avant:R0,clics:r.all});
+  return v;}
+/* retrouve l'arrivée de chaque clic dans l'enregistrement */
+function micAnalyse(parts,T,sr){
+  if(!parts.length)return{ok:false,n:0};
+  parts.sort((a,b)=>a.f-b.f);const F0=parts[0].f,L=parts[parts.length-1],N=L.f+L.d.length-F0,x=new Float32Array(N);
+  for(const p of parts)x.set(p.d,p.f-F0);
+  const a=Math.exp(-2*Math.PI*300/sr);let py=0,px=0;for(let i=0;i<N;i++){const v=x[i];py=a*(py+v-px);px=v;x[i]=py;}   /* coupe les graves (bruit de table) */
+  const H=32,M=Math.floor(N/H),e=new Float32Array(M),on=new Float32Array(M);
+  for(let j=0;j<M;j++){let q=0;for(let k=0;k<H;k++){const v=x[j*H+k];q+=v*v;}e[j]=10*Math.log10(q/H+1e-12);}
+  for(let j=4;j<M;j++)on[j]=Math.max(0,e[j]-Math.max(e[j-1],e[j-2],e[j-3],e[j-4]));
+  /* 1) le retard commun qui fait coïncider le plus d'attaques avec les 8 clics */
+  let best=-1,bL=0;const idx=t=>Math.round((t*sr-F0)/H);
+  for(let l=0;l<=Math.round(.85*sr/H);l++){let q=0;for(const t of T){const j=idx(t)+l;if(j>0&&j<M-1)q+=Math.max(on[j-1],on[j],on[j+1]);}if(q>best){best=q;bL=l;}}
+  /* 2) affinage clic par clic : premier échantillon franchement au-dessus du bruit */
+  const res=[];
+  for(const t of T){const c=Math.round(t*sr-F0)+bL*H,a0=c-Math.round(.012*sr),a1=c+Math.round(.015*sr),n0=c-Math.round(.08*sr),n1=c-Math.round(.02*sr);
+    if(n0<0||a1>=N)continue;
+    let pk=0;for(let i=a0;i<a1;i++)pk=Math.max(pk,Math.abs(x[i]));
+    let ns=0;for(let i=n0;i<n1;i++)ns+=x[i]*x[i];const nf=Math.sqrt(ns/(n1-n0));
+    if(pk<6*nf||pk<2e-4)continue;
+    const th=Math.max(.3*pk,4*nf);let o=a0;while(o<a1&&Math.abs(x[o])<th)o++;
+    res.push((o+F0)/sr-t);}
+  if(res.length<5)return{ok:false,n:res.length};
+  const so=[...res].sort((p,q)=>p-q),med=so[so.length>>1],good=res.filter(r=>Math.abs(r-med)<.006);
+  if(good.length<5)return{ok:false,n:good.length};
+  return{ok:true,n:good.length,lag:good.reduce((p,q)=>p+q,0)/good.length,all:res};}
 function startAudio(){
   if(!ctx){
     ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -1607,18 +1814,19 @@ function startAudio(){
     for(const p of PORDER){const g=ctx.createGain();g.gain.value=1;g.connect(mkPan(pans[p])).connect(masterIn);buses[p]=g;
       const pu=ctx.createGain();pu.gain.value=1;pu.connect(g);pumps[p]=pu;}
     drives.H=makeDrive("H",.3);drives.M=makeDrive("M",.19);
-    renderKits();initSamples();setTimeout(warmup,50);
+    renderKits();initSamples();setTimeout(warmup,50);moteurInit();
   }
   ctx.resume();   /* toujours : couvre le cas d'une pause encore en cours après « Quitter » */
-  if(!schedTimer){nextT=ctx.currentTime+.1;step=0;
-    schedTimer=setInterval(()=>{
-      const tgt=targetBpm();
-      while(nextT<ctx.currentTime-.02){nextT+=SPB;step=(step+1)%LOOP;}
-      while(nextT<ctx.currentTime+.25){if(step%4===0)curBpm=tgt;SPB=60/curBpm/4;
-        try{step=plTick(step,nextT);playStep(step,nextT);}catch(e){console.error(e);}nextT+=SPB;step=(step+1)%LOOP;}
-      delNode.delayTime.setTargetAtTime(SPB*3,ctx.currentTime,.05);
-    },25);}
+  if(!schedTimer){nextT=ctx.currentTime+.1;step=0;schedTimer=setInterval(schedRun,25);}   /* le fil audio envoie aussi la cadence (« tic ») : la minuterie n'est plus qu'un secours */
 }
+/* Cadence : chaque pas (double-croche) est traité dans l'ordre et AUCUN n'est sauté, même si le téléphone a été occupé.
+   Un pas en retard garde la logique du jeu (départs des boucles, temps, décomptes) et saute seulement les notes synthétisées. */
+function schedRun(){if(!ctx||!schedTimer)return;const now=ctx.currentTime;
+  if(now-nextT>4){const k=Math.ceil((now-nextT)/SPB);nextT+=k*SPB;step=(step+k)%LOOP;}   /* longue pause (app en arrière-plan) : on rattrape d'un coup */
+  const tgt=targetBpm();
+  while(nextT<now+.25){if(step%4===0)curBpm=tgt;SPB=60/curBpm/4;
+    try{step=plTick(step,nextT);playStep(step,nextT,now-nextT>.06);}catch(e){console.error(e);}nextT+=SPB;step=(step+1)%LOOP;}
+  delNode.delayTime.setTargetAtTime(SPB*3,now,.05);}
 /* Tempo unique : toutes les boucles MP3 sont enregistrées au tempo de sons/reglages.json (120 BPM).
    On ne les recalcule plus sur le téléphone : la musique reste toujours à ce tempo, et la hauteur des MP3 ne change jamais. */
 function targetBpm(){return ROPE.BPM;}
@@ -1919,7 +2127,7 @@ function preloadSons(){
     const el=$("mp3Status");if(el)el.textContent=mp3Info;return out;})();
   return PRE;}
 async function initSamples(){
-  const pre=await preloadSons();
+  const pre=await preloadSons();PREFILES=pre.files;
   if(pre.setErr)toast("sons/reglages.json est mal écrit : réglages par défaut utilisés",true);
   if(pre.set)Object.assign(SET,pre.set);
   if(+SET.bpm>=40&&+SET.bpm<=240)ROPE.BPM=+SET.bpm;   /* le tempo de la partie est celui des MP3 */
@@ -1969,12 +2177,12 @@ function fitDur(id){const s=SMP[id],D=s.D,len=s.raw.duration-smpOffset,fits=(b,n
 function finishSample(id){const s=SMP[id];if(!s.raw)return;
   s.base=cutLoop(s.raw,smpOffset,s.D.beats*60/s.D.bpm,GRIDFRAC*60/s.D.bpm);
   let ss=0;const d=s.base.getChannelData(0);for(let i=0;i<d.length;i+=4)ss+=d[i]*d[i];const rms=Math.sqrt(ss/(d.length/4))||.1;s.norm=Math.min(1.5,.1/rms);s.g.gain.value=s.norm;
-  s.raw=null;s.ab=null;s.ready=true;}
+  s.raw=null;s.ab=null;s.ready=true;moteurSon(id);}
 /* décode un son à la demande (carte qui tire ce son, test) ; then = appelé quand il est prêt */
 function ensureSample(id,then){const s=SMP[id];if(!s)return;if(s.ready){if(then)then();return;}
-  if(!s.loading)s.loading=decode(s.ab.slice(0)).then(raw=>{s.raw=raw;const f=fitDur(id);if(f)toast(f,true);finishSample(id);
+  if(!s.loading&&s.ab)s.loading=decode(s.ab.slice(0)).then(raw=>{s.raw=raw;const f=fitDur(id);if(f)toast(f,true);finishSample(id);
       if(S&&S.mp3t)render();}).catch(e=>{console.error(id,e);toast("sons/"+KFILE(id)+".mp3 n'a pas pu être lu",true);});
-  if(then)s.loading.then(then);}
+  if(then&&s.loading)s.loading.then(then);}
 /* extrait exactement les 16 temps de la boucle */
 /* rot : la boucle est « tournée » de rot secondes, pour que le premier temps de la musique tombe pile au début (la fin repasse devant) */
 function cutLoop(buf,off,dur,rot){const sr=buf.sampleRate,a=Math.round(off*sr),n=Math.round(dur*sr),r=Math.round((rot||0)*sr)%n,out=ctx.createBuffer(buf.numberOfChannels,n,sr);
@@ -2003,6 +2211,11 @@ const smpOn=id=>SMP[id]&&SMP[id].ready;
    La boucle tourne toute seule (lecture en boucle native du navigateur, à l'échantillon près, sans blanc), à sa vitesse d'origine ;
    on ne la relance que si elle s'est décalée de la grille des temps. */
 function startSample(id,t,beat){const s=SMP[id],D=s.D,pp=s.at||D.piste;
+  if(MOTOK){moteurSon(id);
+    if(s.envoye){/* fil audio : départ à l'échantillon près ; s'il arrive en retard, la boucle rejoint sa position calée sur les temps */
+      const sr=ctx.sampleRate,pos=Math.round(beat/D.beats*s.len),tok=++MOTTOK;
+      MOT.port.postMessage({k:"jouer",id,tok,out:PORDER.indexOf(pp),f:Math.round(t*sr),pos});
+      Object.assign(s,{src:null,bpm:D.bpm,rate:1,t0:t,off0:pos/sr,loopDur:s.len/sr,playing:true,moteur:tok});return;}}
   if(s.bus!==pp){try{s.g.disconnect();}catch(e){}s.g.connect(buses[pp]);s.bus=pp;}
   const buf=s.base,rate=1,real=D.bpm;
   const loopDur=buf.duration;let off=beat/D.beats*loopDur;
@@ -2017,7 +2230,7 @@ function startSample(id,t,beat){const s=SMP[id],D=s.D,pp=s.at||D.piste;
 /* position (en secondes dans la boucle) que la lecture aura à l'instant t */
 function samplePos(s,t){return ((s.off0+(t-s.t0)*s.rate)%s.loopDur+s.loopDur)%s.loopDur;}
 /* arrêt immédiat (carte retirée, recouverte, mutée, fin de partie) */
-function stopSample(id){const s=SMP[id];if(!s||!s.playing)return;(s.srcs||[]).forEach(x=>{try{x.stop();}catch(e){}});s.srcs=[];s.src=null;s.playing=false;}
+function stopSample(id){const s=SMP[id];if(!s||!s.playing)return;if(s.moteur&&MOT&&MOTOK)MOT.port.postMessage({k:"stop",id,f:0});s.moteur=false;(s.srcs||[]).forEach(x=>{try{x.stop();}catch(e){}});s.srcs=[];s.src=null;s.playing=false;}
 function stopAllSamples(){for(const id in SMP)stopSample(id);}
 /* indicateur de position dans le cycle : 4 mesures × 4 temps */
 let curBeat=0;
@@ -2075,6 +2288,7 @@ const plIsPending=seq=>!plIsPlaying(seq)&&plVisible().some(v=>v.t.seq===seq);
 function plWait(seq){if(plIdle())return (4-curBeat%4)%4||4;return (16-curBeat%16)%16||16;}
 function plStopTrack(p,t){const c=PL.tr[p];PL.tr[p]=null;if(!c||!c.ref||!SMP[c.ref])return;const s=SMP[c.ref];
   if(PORDER.some(q=>PL.tr[q]&&PL.tr[q].ref===c.ref))return;
+  if(s.moteur&&MOT&&MOTOK)MOT.port.postMessage({k:"stop",id:c.ref,tok:s.moteur,f:Math.round((t+.003)*ctx.sampleRate)});s.moteur=false;
   (s.srcs||[]).forEach(x=>{try{x.stop(t+.003);}catch(e){}});s.src=null;s.playing=false;}
 function plStartTrack(p,v,t,beat){const id=sndOf(v.t),r=SREF(id),mp3=!!(SAMPLES[r]&&smpOn(r));beat=beat||0;
   if(PL.tr[p])plStopTrack(p,t);
@@ -2116,17 +2330,17 @@ function progNow(){
   for(const q of ["H","M"]){const c=PL.tr[q];if(c&&INFO[c.id]&&INFO[c.id].prog)return prog(INFO[c.id].prog);}
   return prog(DEFAULT_PROG);
 }
-function playStep(st,t){
+function playStep(st,t,late){
   if(!soundOn){stopAllSamples();return;}
   const smp=sampleStep(st,t);
   const P=progNow(),bar=(st>>4)%4,info={st,t,s:st%16,bar,ch:P[bar],next:P[(bar+1)%4]};
   if(preview){
     if(ctx.currentTime>preview.until){preview=null;markPlaying(null);return;}
-    if(!smp.includes(SREF(preview.id))){curGain=CG[preview.id]||1;VOICE[preview.id]({...info,p:preview.piste});curGain=1;}return;
+    if(!late&&!smp.includes(SREF(preview.id))){curGain=CG[preview.id]||1;VOICE[preview.id]({...info,p:preview.piste});curGain=1;}return;
   }
   if(!S||S.ended&&!S.rope)return;
   for(const p of PORDER){const c=PL.tr[p];if(!c)continue;if(st%4===0)pulseLater(p,t);
-    if(c.ref)continue;                   /* boucle MP3 : elle joue toute seule */
+    if(c.ref||late)continue;             /* boucle MP3 : elle joue toute seule ; pas en retard : on ne joue pas les notes en retard */
     curGain=CG[c.id]||1;VOICE[c.id]({...info,p});curGain=1;}
 }
 /* Sons des cartes Action */
@@ -2241,7 +2455,7 @@ const standalone=()=>matchMedia("(display-mode: standalone)").matches||navigator
 function offHTML(){
   let h=offInfo;
   if(installEvt)h+=` <button class="chip" id="installBtn">📲 Installer l'app</button>`;
-  else if(!standalone()&&/iP(hone|ad|od)/.test(navigator.userAgent))h+=(h?"<br>":"")+"📲 Pour l'installer : Safari → bouton Partager → « Sur l'écran d'accueil »";
+  else if(!standalone()&&/iP(hone|ad|od)/.test(navigator.userAgent))h+=(h?"<br>":"")+"📲 Pour l'installer : bouton Partager (en bas dans Safari, en haut à droite dans Chrome) → « Sur l'écran d'accueil »";
   return h;}
 function showOff(){const el=$("offStatus");if(!el)return;el.innerHTML=offHTML();const b=$("installBtn");
   if(b)b.onclick=async()=>{const ev=installEvt;installEvt=null;showOff();try{ev.prompt();await ev.userChoice;}catch(e){}};}
