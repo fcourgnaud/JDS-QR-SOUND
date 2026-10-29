@@ -8,7 +8,7 @@
    - les cartes viennent de ton Google Sheet (lues par la page elle-même, la dernière copie est gardée par la page) */
 const V = new URL(self.location).searchParams.get("v") || "dev";
 const APP = "ts-app-" + V, SONS = "ts-sons", EXT = "ts-ext", DESIGN = "ts-design";
-const SHELL = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png", "jsQR.js", "theme.css"];
+const SHELL = ["./", "manifest.webmanifest", "icons/icon-192.png?v=2", "icons/icon-512.png?v=2", "icons/icon-maskable-512.png?v=2", "icons/apple-touch-icon.png?v=2", "icons/favicon-32.png?v=2", "jsQR.js", "theme.css"];
 const EXT_URLS = [
   "https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Bungee&family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;700;800;900&display=swap"
 ];
