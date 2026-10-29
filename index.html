@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="Tribes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Bungee&family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Bungee&family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;700;800;900&display=swap">
 <script src="jsQR.js"></script><!-- lecteur de QR (jsQR 1.4.0, licence Apache 2.0), gardé dans le dépôt pour marcher hors ligne -->
 <style>
 /* Une scène vue d'en haut : jauge de tempo en haut (la caméra frontale lit les cartes en arrière-plan), 4 pistes, scores, régie. Thème sombre assumé.
@@ -76,25 +76,25 @@ body.fx .piste{animation:fxpiste .9s ease-out}
 
 /* bloc tour */
 
-.at-k{font-size:12px;font-weight:700;letter-spacing:.35em;color:var(--pc)}
-.at-name{font-family:var(--arc-d);font-size:clamp(30px,10vw,52px);line-height:1.05;color:#fff;text-shadow:0 0 18px var(--pc);margin:4px 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.at-tribe{font-weight:700;font-size:15px;color:#d8d4f2}
+
+
+
 
 /* bonus */
 
 /* annonce de fin de manche */
-.arc-ann{position:fixed;inset:0;z-index:14;display:flex;align-items:center;justify-content:center;background:rgba(7,6,26,.78);pointer-events:none;animation:cmIn .3s ease-out}
-.arc-ann[hidden]{display:none}
-#ropeAnn{cursor:pointer;pointer-events:auto}
-.ann-box{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;animation:annBox .6s cubic-bezier(.2,1.5,.4,1)}
-@keyframes annBox{from{transform:scale(.4) rotate(-6deg);opacity:0}}
-.ann-k{font-family:var(--arc-d);font-size:15px;letter-spacing:.12em;color:var(--neon2);text-shadow:0 0 10px var(--neon2)}
-.ann-crown{font-size:64px;filter:drop-shadow(0 0 16px var(--gold));animation:crown .7s cubic-bezier(.3,1.6,.5,1)}
-@keyframes crown{from{transform:translateY(-80px) rotate(-30deg);opacity:0}}
-.ann-name{font-family:var(--arc-d);font-size:clamp(34px,12vw,60px);line-height:1;text-shadow:0 0 22px currentColor}
-.ann-score{font-family:var(--arc-d);font-size:clamp(60px,22vw,110px);line-height:1;color:var(--gold);text-shadow:0 0 26px var(--gold)}
-.ann-score small{font-size:.3em;margin-left:6px}
-.ann-gain{font-weight:700;font-size:16px;letter-spacing:.1em;color:#ffe9a3}
+
+
+
+
+
+
+
+
+
+
+
+
 /* fenêtres en mode arcade */
 
 .mode{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -105,23 +105,23 @@ body.fx .piste{animation:fxpiste .9s ease-out}
 /* Tirage au sort de départ */
 
 /* Fenêtre de décompte */
-#countModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:35;pointer-events:none;background:rgba(6,7,16,.55);backdrop-filter:blur(2px)}
-#countModal.show{display:flex;animation:cmIn .25s ease-out}
-@keyframes cmIn{from{opacity:0}}
 
-@keyframes cmPop{0%{transform:scale(1.35);opacity:1}100%{transform:scale(1);opacity:1}}
 
-#countModal.mini.out{animation:mcOut .35s ease-in forwards}@keyframes mcOut{to{opacity:0}}
-.mc-box{display:flex;flex-direction:column;align-items:center;gap:22px}
-.mc-num{font-family:var(--arc-d);font-size:120px;line-height:1;height:120px;color:#fff;text-shadow:0 0 22px var(--dc),0 0 6px var(--dc)}
-.mc-num.pop{animation:cmPop .4s ease-out}.mc-num.gold{color:var(--gold);text-shadow:0 0 24px var(--gold),0 0 6px #fff}
-.mc-dots{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;width:min(300px,78vw)}
-.mc-dots i{height:12px;border-radius:3px;background:rgba(255,255,255,.08)}
-.mc-dots i.bar{box-shadow:inset 3px 0 0 rgba(255,255,255,.35)}
-.mc-dots i.done{background:rgba(255,255,255,.28)}
-.mc-dots i.now{background:#fff;box-shadow:0 0 8px #fff}
-.mc-dots i.last{background:rgba(255,200,60,.25)}.mc-dots i.last.done{background:rgba(255,200,60,.55)}
-.mc-dots i.last.now{background:var(--gold);box-shadow:0 0 14px var(--gold),0 0 4px #fff}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Cycle de 16 temps */
 .cycle{display:flex;align-items:center;gap:8px}
 .cycle b{flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
@@ -156,7 +156,7 @@ body.fx .piste{animation:fxpiste .9s ease-out}
 .piste .body{flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .piste .glyph{font-size:24px;line-height:1}
 .tdot{display:inline-block;width:.8em;height:.8em;border-radius:50%;vertical-align:-.05em;flex-shrink:0;box-shadow:0 0 0 1.5px rgba(255,255,255,.25)}
-.piste .glyph .tdot,.rp-gl .tdot{width:22px;height:22px}
+
 
 .owner{font-size:11.5px;padding:2px 8px;border-radius:99px;background:var(--oc);color:#14121f;font-weight:800;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .piste .empty{color:var(--muted);font-size:13px}
@@ -209,146 +209,145 @@ body.fx .score .gain{animation:gain 1.6s ease-out}
 /* ===== mode La Corde ===== */
 body.rope .wrap{display:none}
 
-body.rope{background:var(--arc-bg);background-image:none}
-#rope{position:relative;min-height:100dvh;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 18px;display:flex;flex-direction:column;gap:10px;font-family:var(--arc-t);color:#fff;max-width:640px;margin:0 auto}
-.rp-log{display:none!important}
-.rp-lat{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;padding:8px;border-radius:12px;border:1px solid rgba(255,255,255,.12);font-size:13px;color:#cfcbe8}
-.rp-lat button{font:inherit;font-size:15px;color:#fff;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);border-radius:10px;padding:6px 14px}
-.rp-lat b{font-family:var(--mono);color:var(--gold);min-width:64px;text-align:center}
-.rp-sim{display:flex;flex-direction:column;gap:10px;margin-top:4px}.rp-sim[hidden]{display:none!important}
-.sim-g{border-radius:14px;padding:8px 10px;border:2px dashed color-mix(in srgb,var(--pc,#fff) 40%,transparent);background:rgba(255,255,255,.03)}
-.sim-g.on{border-style:solid;border-color:var(--pc);box-shadow:0 0 12px color-mix(in srgb,var(--pc) 45%,transparent)}
-.sim-g h4{margin:0 0 6px;font-size:14px;color:var(--pc,#fff);display:flex;gap:8px;align-items:baseline}.sim-g h4 small{color:#cfcbe8;font-weight:400}
-.sim-g.act{--pc:#ffd23f}
-.sim-row{display:flex;flex-wrap:wrap;gap:5px}
-.sim-c{font:inherit;color:#fff;border:1px solid color-mix(in srgb,var(--pc,#fff) 45%,transparent);background:rgba(255,255,255,.06);border-radius:10px;padding:5px 8px;display:flex;flex-direction:column;align-items:center;min-width:52px;line-height:1.1}
-.sim-c b{font-size:13px}.sim-c small{font-size:11px;color:#cfcbe8}
-.sim-c.re{border-color:#ff5468}.sim-c.used,.sim-c:disabled{opacity:.35}
-.sim-c:active{transform:scale(.95)}
-#rope[hidden]{display:none!important}
-.rp-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.rp-top .t{font-family:var(--arc-d);font-size:18px;color:var(--neon2);text-shadow:0 0 10px var(--neon2)}
-.rp-btns{display:flex;gap:6px;flex-shrink:0}.rp-top .t{white-space:nowrap}
-.rp-top button{font:inherit;font-size:13px;padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff}
-.rp-top button:disabled{opacity:.35}
-.rp-scores{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
-.rp-sc{position:relative;overflow:hidden;border:2px solid color-mix(in srgb,var(--pc) 55%,transparent);border-radius:14px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.04)}
-.rp-sc.on{border-color:var(--pc);box-shadow:0 0 14px var(--pc)}
-.rp-sc span{font-weight:700;color:var(--pc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rp-sc b{font-family:var(--arc-d);font-size:26px}
-.rp-sc i{position:absolute;left:0;bottom:0;height:3px;background:var(--pc)}
-.rp-turn{width:100%;padding:5px 12px;border-radius:14px;border:2px solid var(--pc);background:linear-gradient(90deg,color-mix(in srgb,var(--pc) 24%,transparent),transparent);
-  display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:nowrap;min-width:0}
-.rp-turn .at-k{font-size:10px;letter-spacing:.2em;white-space:nowrap}
-.rp-turn .at-name{font-size:clamp(18px,5.5vw,24px);margin:0;text-shadow:0 0 10px var(--pc);min-width:0}
-.rp-turn .at-tribe{font-size:12px;color:#cfcbe8;white-space:nowrap}
-.rp-tracks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.rp-tr{position:relative;border-radius:16px;padding:8px 8px 10px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);transition:box-shadow .2s,border-color .2s}
-.rp-tr.now{border-color:var(--kc);box-shadow:0 0 18px color-mix(in srgb,var(--kc) 70%,transparent)}
-.rp-h{display:flex;gap:6px;align-items:center}.rp-h b{font-size:15px}.rp-now{color:var(--gold);animation:rpblink .6s infinite alternate}
-.rp-svg{width:100%;height:auto;display:block;margin:4px 0;overflow:visible}
-.rp-rope{fill:none;stroke:rgba(255,255,255,.4);stroke-width:.5}
-.rp-tick{stroke:rgba(255,255,255,.3);stroke-width:.25}
-.rp-pull{stroke-width:.7;opacity:.85}
-.rp-knot{stroke:#fff;stroke-width:.35}.sab-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
 
-.rp-log{min-height:2.4em;text-align:center;font-size:14px;color:#e8e6ff;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.05)}
 
-.rp-ban{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:30;background:#0d0b2b;border:2px solid var(--neon2);border-radius:20px;padding:16px 22px;text-align:center;display:flex;flex-direction:column;gap:4px;box-shadow:0 0 30px rgba(56,243,255,.35);animation:rpban 3.7s ease forwards;min-width:240px}
-.rp-ban[hidden]{display:none}.rp-ban b{font-family:var(--arc-d);font-size:30px;text-shadow:0 0 14px currentColor}.rp-ban span{color:#e8e6ff}
-@keyframes rpban{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}80%{opacity:1}100%{opacity:0}}
-body.rope .sheet{background:#0d0b2b;border:2px solid var(--neon2);font-family:var(--arc-t);color:#fff}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .mode{flex-wrap:wrap}
-.rp-hint{display:block;font-size:11px;color:#9a96bf;margin-top:4px}
-.rp-react{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:25;background:#2a0f1a;border:2px solid #ff5468;border-radius:16px;padding:10px 16px;font-weight:700;box-shadow:0 0 20px rgba(255,84,104,.5);white-space:nowrap}
-.rp-react{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(92vw,420px);text-align:center}
-.rp-react.full{inset:0;left:0;right:0;bottom:0;top:0;transform:none;width:auto;border:0;border-radius:0;box-shadow:none;background:rgba(3,3,10,.72);justify-content:center;gap:20px;z-index:30;padding:20px}
-.rp-react.full[hidden]{display:none}
-.rr-k{font-family:var(--arc-d);font-size:clamp(28px,9vw,44px);line-height:1.05;letter-spacing:.06em;color:#ff5468;text-shadow:0 0 18px #ff5468;text-align:center}
-.rr-q{font-size:16px;color:#e8e4ff}.rr-q b{color:#ff8a9a}
-.rr-num{font-family:var(--arc-d);font-size:120px;line-height:1;color:#fff;text-shadow:0 0 22px #ff5468,0 0 6px #ff5468}
-.rr-num.gold{color:var(--gold);text-shadow:0 0 24px var(--gold),0 0 6px #fff}
-.rp-react.full .rr-bar{width:min(300px,78vw)}
-.rr-bar{width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}.rr-bar i{display:block;height:100%;background:#ff5468;transition:width .2s linear}
-.rp-react .btn{padding:8px 16px;font-size:14px}
-.rp-react span{font-family:var(--arc-d);color:#ffd23f;margin-left:6px}.rp-react[hidden]{display:none}
-/* fenêtre finale de La Corde */
-.fin-ov{align-items:center;background:rgba(5,4,20,.86);backdrop-filter:blur(4px);overflow:auto}
-.fin-modal{position:relative;width:min(460px,100%);margin:auto;padding:22px 18px 18px;border-radius:26px;background:linear-gradient(180deg,#15123d,#0b0a24);border:2px solid var(--neon2);box-shadow:0 0 40px rgba(56,243,255,.35);color:#fff;font-family:var(--arc-t);text-align:center;display:flex;flex-direction:column;gap:12px;overflow:hidden;animation:annBox .6s cubic-bezier(.2,1.5,.4,1)}
-.fin-glow{position:absolute;inset:-40% -20% auto;height:70%;background:radial-gradient(closest-side,rgba(255,210,63,.25),transparent);pointer-events:none}
-.fin-k{font-family:var(--arc-d);font-size:13px;letter-spacing:.14em;color:var(--neon2);text-shadow:0 0 10px var(--neon2)}
-.fin-t{margin:0;font-family:var(--arc-d);font-weight:400;font-size:clamp(28px,9vw,44px);line-height:1.05;text-shadow:0 0 20px currentColor}
-.fp{display:flex;align-items:flex-end;justify-content:center;gap:10px;height:200px;margin-top:4px}
-.fp-col{flex:1;max-width:120px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
-.fp-name{font-weight:800;color:var(--pc);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.fp-score{font-family:var(--arc-d);font-size:30px;line-height:1.1;text-shadow:0 0 14px var(--pc)}
-.fp-bar{width:100%;height:var(--h);border-radius:14px 14px 4px 4px;background:linear-gradient(180deg,var(--pc),color-mix(in srgb,var(--pc) 35%,#0b0a24));box-shadow:0 0 18px color-mix(in srgb,var(--pc) 60%,transparent);display:flex;justify-content:center;padding-top:6px;transform-origin:bottom;animation:fpUp .9s cubic-bezier(.2,1.3,.4,1) both}
-.fp-bar b{font-family:var(--arc-d);font-size:26px;color:#0b0a24;opacity:.8}
-.fp-col:nth-child(1) .fp-bar{animation-delay:.25s}.fp-col:nth-child(3) .fp-bar{animation-delay:.45s}
-@keyframes fpUp{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-.fp-rest{font-size:13px;display:flex;justify-content:center;gap:12px}
-.fin-notes{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#ffe9a3;font-weight:700}
-.fin-rows{display:flex;flex-direction:column;gap:6px;text-align:left}
-.fr-row{display:grid;grid-template-columns:12px 1fr auto;gap:4px 8px;align-items:center;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.05);border-left:4px solid var(--pc)}
-.fr-dot{width:12px;height:12px;border-radius:50%;background:var(--pc)}.fr-n{font-weight:800}.fr-c{font-size:12px;color:#cfcbe8}.fr-c b{color:#fff}
-.fr-o{grid-column:2/4;font-size:12px;color:#cfcbe8}.fr-o b{margin-left:4px}.fr-o.ok b{color:#4fdc96}.fr-o.ko b{color:#ff5468}
-.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:60}
-.confetti i{position:absolute;top:-12px;width:8px;height:14px;border-radius:2px;opacity:.9;animation:conf linear forwards}
-@keyframes conf{to{transform:translateY(110vh) rotate(720deg);opacity:.2}}
-/* décompte avant le lancement d'une boucle : petite fenêtre en haut */
-#countModal{inset:auto;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:none;backdrop-filter:none;width:auto}
 
-#countModal.mini{inset:0;top:0;left:0;transform:none;width:auto;background:rgba(3,3,10,.72);backdrop-filter:none}
-.ann-next{font-family:var(--arc-d);font-size:clamp(26px,9vw,42px);color:#fff;text-shadow:0 0 16px var(--neon2);margin-top:8px}
-.ann-next.fin{color:#ff8a3d;text-shadow:0 0 20px #ff5468;animation:crown .5s infinite alternate}
-.ann-note{font-size:15px;color:#ffe9a3;font-weight:700}
-.rp-scores{grid-template-columns:repeat(var(--np,2),minmax(0,1fr))!important;gap:6px!important}
-.rp-sc{padding:4px 8px!important;border-radius:11px!important;gap:4px}
-.rp-sc span{font-size:12px}.rp-sc b{font-size:20px!important}
-.rp-cycle{display:flex;align-items:center;gap:8px}
-.rc-bpm{font-family:var(--arc-d);font-size:13px;color:var(--gold);white-space:nowrap;min-width:64px}
-.rp-cycle b{flex:1;display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
-.rp-cycle i{height:12px;border-radius:3px;background:rgba(255,255,255,.08)}
-.rp-cycle i.bar{box-shadow:inset 3px 0 0 rgba(255,255,255,.35)}
-.rp-cycle i.done{background:rgba(255,255,255,.28)}
-.rp-cycle i.now{background:#fff;box-shadow:0 0 8px #fff}
-.rp-cycle i.last{background:rgba(255,200,60,.25)}
-.rp-cycle i.last.done{background:rgba(255,200,60,.55)}
-.rp-cycle i.last.now{background:var(--gold);box-shadow:0 0 14px var(--gold),0 0 4px #fff}
-.rp-end{transition:fill .3s}.rp-end.on{opacity:1;stroke:#fff;stroke-width:.3}
-.rp-bon{pointer-events:none;text-anchor:middle;font-family:var(--arc-d);font-weight:800;fill:rgba(255,255,255,.6)}
-.rp-bon.on{fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.35);stroke-width:.15}
-.rp-halo{fill:none;stroke-width:.5;transform-box:fill-box;transform-origin:center;animation:rphalo 1.2s ease-out infinite}
-@keyframes rphalo{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+
+
+
+
+
+
+
+
+
+
+
+
+/* fenêtre finale de La Corde */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* décompte avant le lancement d'une boucle : petite fenêtre en haut */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 details.outils{border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:6px}
 .outils summary{cursor:pointer;font-weight:700;font-size:14px}.outils .note{margin:6px 0 0}.outils small.note{font-size:11.5px}
 .outils #stUrl{flex:1 1 100%}
 .regles{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text)}.regles b{color:var(--spot)}
 .outils input{flex:1;min-width:0;font:inherit;font-size:13px;color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
-.rp-px{position:absolute;inset:0;width:100%!important;height:100%!important;pointer-events:none;border-radius:inherit}
-#rpBpm{cursor:pointer}
-.rp-spiral{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:inherit;opacity:.9}
-.rp-gauge>svg{position:relative}.rp-gauge>.rp-cd{position:absolute;z-index:2}
-.rp-gauge{overflow:hidden;contain:paint;position:relative;transition:border-color .3s,box-shadow .3s}.rp-gauge.act{border-color:var(--pc)!important;box-shadow:0 0 14px color-mix(in srgb,var(--pc) 55%,transparent)}
-.rp-cd{position:absolute;right:12px;top:6px;font-family:var(--arc-d);font-size:44px;line-height:1;color:var(--gold);text-shadow:0 0 18px var(--gold);opacity:0;pointer-events:none}
-.rp-cd.go{animation:rpcd .5s ease-out}
-@keyframes rpcd{0%{opacity:1;transform:scale(1.6)}60%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9)}}
-#rpKnot{transform-box:fill-box;transform-origin:center}
-#rpKnot.beat{animation:rpknot .32s ease-out}#rpKnot.beat.last{animation:rpknot2 .45s ease-out}
-@keyframes rpknot{0%{transform:scale(1.8);stroke:var(--gold);stroke-width:.3}100%{transform:scale(1)}}
-@keyframes rpknot2{0%{transform:scale(2.2);stroke:var(--gold);stroke-width:.3}100%{transform:scale(1)}}
-.rp-kn{font-family:var(--arc-d);font-weight:700;font-size:2.1px;text-anchor:middle;dominant-baseline:central;fill:var(--gold);pointer-events:none;opacity:0}
-.rp-kn.go{animation:rpkn .48s linear forwards}
-@keyframes rpkn{0%,75%{opacity:1}100%{opacity:0}}
-.rp-ring{fill:none;stroke:var(--gold);stroke-width:.35;transform-box:fill-box;transform-origin:center;opacity:0}
-.rp-ring.go{animation:rpring .5s ease-out}
-@keyframes rpring{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(3.4)}}
-.rp-seg i{position:relative;overflow:hidden;height:12px!important;border-color:rgba(255,255,255,.22)!important;background:rgba(255,255,255,.04)!important;box-shadow:none!important;animation:none!important}
-.rp-seg i.on{background:rgba(255,255,255,.55)!important;border-color:rgba(255,255,255,.55)!important}
-.rp-seg i.now{border-color:rgba(255,255,255,.75)!important}
-.rp-seg i em{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.35)}
-.rp-k.fin{color:#ff8a3d;text-shadow:0 0 10px #ff5468}
-.obj-scan{font-size:54px;margin:6px 0;animation:crown .8s infinite alternate}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .calib{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;border:1px solid var(--line)}
 .cal-h{display:flex;justify-content:space-between;align-items:center}.cal-h span{font-family:var(--mono);color:var(--gold)}
 .cal-sl{display:flex;align-items:center;gap:8px}.cal-sl input[type=range]{flex:1;min-width:0}.cal-sl .chip{padding:6px 12px;font-size:15px}.calib small{color:var(--muted)}
@@ -359,40 +358,43 @@ details.outils{border:1px solid var(--line);border-radius:12px;padding:8px 12px;
 @keyframes calf2{0%{background:var(--gold);box-shadow:0 0 18px var(--gold);transform:scale(1.4)}100%{background:rgba(255,255,255,.12);transform:scale(1)}}
 .objopt{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-weight:700;padding:10px 12px;border-radius:12px;border:1px solid var(--line)}
 .objopt small{flex-basis:100%;font-weight:400;color:var(--muted)}.objopt input{width:20px;height:20px}
-.rp-round{display:flex;align-items:center;gap:10px}.rp-k{font-family:var(--arc-d);font-size:14px;color:var(--gold);white-space:nowrap}
-.rp-seg{flex:1;display:flex;gap:5px}.rp-seg i{flex:1;height:14px;border-radius:7px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.04)}
-.rp-seg i.on{background:var(--pc);border-color:var(--pc);box-shadow:0 0 10px var(--pc)}.rp-seg i.now{border-color:var(--pc);animation:rpblink .7s infinite alternate}@keyframes rpblink{from{opacity:1}to{opacity:.35}}
-.rp-gauge{border-radius:16px;padding:8px;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1)}
-.rp-gauge .rp-svg.line{max-height:170px}.rp-gauge .rp-svg{max-height:min(380px,92vw)}
-.rp-tick.maj{stroke:rgba(255,255,255,.45)}.rp-num{font-size:1.45px;font-weight:700;fill:rgba(255,255,255,.55);text-anchor:middle}.rp-dot{fill:rgba(255,255,255,.4)}
-.rp-tracks{grid-template-columns:repeat(4,1fr)!important;gap:6px!important}
-.rp-tr{padding:6px!important;text-align:center}.rp-tr .rp-h{justify-content:center;font-size:12px}.rp-tr .rp-h b{font-size:12px!important}
-.rp-tr.lk,.rp-tr.lk.now{border:3px solid #ff1f3d;box-shadow:0 0 0 2px rgba(255,31,61,.35),0 0 16px rgba(255,31,61,.7);background:color-mix(in srgb,var(--kc) 14%,transparent)}
-.rp-tr.lk.lknew{animation:rplk .9s ease-out}
-@keyframes rplk{0%{box-shadow:0 0 0 10px rgba(255,31,61,.0),0 0 34px #ff1f3d;transform:scale(1.06)}30%{box-shadow:0 0 0 6px rgba(255,31,61,.6),0 0 30px #ff1f3d}100%{box-shadow:0 0 0 2px rgba(255,31,61,.35),0 0 16px rgba(255,31,61,.7);transform:scale(1)}}
-.rp-card{display:flex;align-items:center;justify-content:center;gap:4px;margin:6px 0 2px}.rp-gl{font-size:22px}
-.rp-star{display:inline-grid;place-items:center;width:30px;height:30px;font-weight:800;color:#1a1530;background:#f4c64e;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
-.rp-L{font-family:var(--arc-d);font-size:20px!important;font-weight:400}.rp-pn{font-size:11px;color:#cfcbe8;margin-top:-2px}
-.rp-own{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rp-empty{opacity:.4;font-size:13px;margin:14px 0}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* ===== Modales : tous les textes en blanc, chacun garde son halo lumineux d'origine ===== */
-#ropeAnn,#ropeAnn *,.rp-ban,.rp-ban *,.rp-react.full,.rp-react.full *,#countModal.mini *,.fin-modal,.fin-modal *,#sabWho .sheet,#sabWho .sheet *,.sheet .glw{color:#fff!important}
-.ann-name{text-shadow:0 0 22px var(--gc,#fff),0 0 8px var(--gc,#fff)!important}
-.fin-t{text-shadow:0 0 20px var(--gc,#fff),0 0 8px var(--gc,#fff)!important}
-.rp-ban b{text-shadow:0 0 14px var(--gc,#fff),0 0 6px var(--gc,#fff)!important}
-.glw{text-shadow:0 0 12px var(--gc),0 0 4px var(--gc)}
-.fp-name{text-shadow:0 0 10px var(--pc)}
-.rr-q b{text-shadow:0 0 10px #ff5468}
-.ann-gain,.ann-note,.fin-notes{text-shadow:0 0 10px rgba(255,210,63,.55)}
-.fr-o.ok b{text-shadow:0 0 8px #4fdc96}.fr-o.ko b{text-shadow:0 0 8px #ff5468}
-.rp-ban{z-index:40}
-#ropeAnn .ann-score,#ropeAnn .ann-score *{color:var(--gold)!important}
-#ropeAnn .ann-gain,#ropeAnn .ann-note{color:#ffe9a3!important}
-body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 </style>
+<!-- apparence du jeu : couleurs, polices, fond et style des écrans (modifiable sans toucher au jeu) -->
+<link rel="stylesheet" href="theme.css">
 
 <body>
+<div id="wfFond"></div>
 
 <div class="wrap">
   <div class="top">
@@ -401,19 +403,19 @@ body.cd-on .rp-ban{top:calc(16% + env(safe-area-inset-top,0px))}
 </div>
 
 <div id="rope" hidden>
-  <div class="rp-top"><span class="t" id="rpTitle">🪢 LA CORDE</span><span class="rp-btns"><button id="undoBtnR" title="Annuler">↶</button><button id="passR">Passer</button><button id="quitR" title="Quitter">✕</button></span></div>
-  <section class="rp-scores" id="rpScores"></section>
-  <section class="rp-round" id="rpRound"></section>
-  <section class="rp-turn" id="rpTurn"></section>
-  <section class="rp-cycle" id="rpCycle"><span class="rc-bpm" id="rpBpm"></span><b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></b></section>
-  <section class="rp-gauge" id="rpGauge"><div class="rp-cd" id="rpCd"></div></section>
-  <section class="rp-tracks" id="rpTracks"></section>
-  <section class="rp-sim" id="rpSim" hidden></section>
-  <section class="rp-lat"><span>🎧 Décalage du son</span><button id="latM" aria-label="moins 10 ms">◀</button><b id="latV"></b><button id="latP" aria-label="plus 10 ms">▶</button></section>
-  <div class="rp-log" id="rpLog"></div>
-  <div class="rp-react" id="rpReact" hidden></div>
-  <div class="rp-ban" id="ropeBan" hidden></div>
-  <div class="arc-ann" id="ropeAnn" hidden></div>
+  <div class="wf-top"><span class="wf-live" id="rpLive"><i></i><span id="rpTitle">Live</span></span><span class="wf-mode" id="rpMode">La Corde</span><span class="wf-cam" id="rpCam">◉ Cam</span><span class="sp"></span><button id="latB" title="Décalage du son">🎧</button><button id="undoBtnR" title="Annuler">↶</button><button id="passR">Passer</button><button id="quitR" title="Quitter">✕</button></div>
+  <section class="wf-round" id="rpRound"></section>
+  <section class="wf-turn" id="rpTurn"></section>
+  <section class="wf-beats" id="rpCycle"><b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></b><span class="bpm" id="rpBpm"></span></section>
+  <div class="wf-camerr" id="rpCamErr" hidden></div>
+  <section class="wf-arena" id="rpGauge"><canvas class="wf-wave" id="wfWave"></canvas><svg class="wf-svg" id="wfSvg" xmlns="http://www.w3.org/2000/svg"></svg><div id="wfTiles"></div></section>
+  <section class="wf-tracks" id="rpTracks"></section>
+  <section class="wf-sim" id="rpSim" hidden></section>
+  <div class="wf-tick" id="rpLog"></div>
+  <div class="wf-ov" id="rpReact" hidden></div>
+  <div class="wf-ban" id="ropeBan" hidden></div>
+  <div class="wf-ov" id="ropeAnn" hidden></div>
+  <div class="wf-ov" id="latBox" hidden style="z-index:55"><div class="wf-k2">🎧 Décalage du son</div><div class="wf-txt">Si la musique et l'écran ne tombent pas ensemble (enceinte Bluetooth…), décale l'image.</div><div class="row"><button id="latM" aria-label="moins 10 ms">◀</button><b id="latV"></b><button id="latP" aria-label="plus 10 ms">▶</button></div><button class="wf-btn main" id="latX">OK</button></div>
 </div>
 <div id="layer"></div>
 <video id="video" class="camfeed" playsinline muted autoplay></video>
@@ -442,7 +444,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v101";
+const VERSION="v102";
 /* Tribes Showdown — deux versions du jeu : 🪢 La Corde (on scanne les cartes) et 🧪 Essai (la même partie, decks à l'écran).
    Les valeurs des cartes et les règles chiffrées viennent de ton Google Sheet (voir « Cartes et règles » plus bas). */
 /* ================= Données ================= */
@@ -450,10 +452,10 @@ const PISTES={R:"Rythme",B:"Basse",H:"Harmonie",M:"Mélodie"};
 const PORDER=["R","B","H","M"];
 /* Les lettres F, N, E, S sont celles des QR codes déjà imprimés : on les garde. Noms et couleurs : onglet « Réglages » du sheet. */
 const DECKS={
-  F:{name:"Tribu 1",short:"Tribu 1",color:"#ff7a3d"},
-  N:{name:"Tribu 2",short:"Tribu 2",color:"#a493ff"},
-  E:{name:"Tribu 3",short:"Tribu 3",color:"#3ccfe0"},
-  S:{name:"Tribu 4",short:"Tribu 4",color:"#ff5fa2"}};
+  F:{name:"Tribu 1",short:"Tribu 1",color:"#FF7A1A"},
+  N:{name:"Tribu 2",short:"Tribu 2",color:"#9B6BFF"},
+  E:{name:"Tribu 3",short:"Tribu 3",color:"#00D8FF"},
+  S:{name:"Tribu 4",short:"Tribu 4",color:"#FF2E88"}};
 /* Symbole d'une tribu : un rond plein de sa couleur */
 for(const k in DECKS)DECKS[k].glyph=`<i class="tdot" style="background:${DECKS[k].color}"></i>`;
 /* Cartes des tribus (QR BOUCLE:RF2…) : piste (R B H M) + tribu + 2 ou 4. Joker : J + tribu + 2. */
@@ -751,17 +753,22 @@ function startRope(players,sim){
   S.sim=!!sim;wakeOn();setRope(true);$("layer").innerHTML="";startAudio();if(!S.sim)startCamera();
   S.rope.log=`🎲 ${esc(S.players[first].name)} commence`;render();
   if(S.rope.objOn)ropeObjRound(0);else ropeStartAnn();}
-function ropeStartAnn(){const first=S.rope.order[0];
-  ropeModal(`<span class="ann-k">🪢 LA CORDE · MANCHE 1</span><b class="ann-name" style="--gc:${S.players[first].color}">${esc(S.players[first].name)}</b><span class="ann-gain">commence</span>`,2500,()=>{});}
+function ropeStartAnn(){const first=S.rope.order[0],p=S.players[first];
+  ropeModal(`<div class="wf-k2" style="text-align:left;margin:0 16px;display:flex;justify-content:space-between"><span>La Corde · manche</span><span style="color:var(--wf-mute);letter-spacing:.1em">sur ${ROPE.ROUNDS}</span></div><div class="wf-big">0<span>1</span></div>
+    <div class="wf-band" style="${pcs(p.color)}"><div><div class="bk">commence</div><div class="bt fit" data-max="44">${esc(colName(p))}</div><div class="bs">${esc(p.name)}</div></div></div>
+    <div class="wf-txt" style="font-size:15px;color:#9a9aa6">${S.sim?"Touche ta première carte en bas de l'écran":"Montre ta première carte à la caméra"}</div>`,2500,()=>{});}
 /* objectifs secrets : tour de table avant la partie, dans l'ordre de jeu ; chacun scanne son objectif (ou joue sans) */
 function ropeObjRound(k){const R=S.rope,n=S.players.length;
   if(k>=n){R.objPhase=false;R.objCur=null;pending=null;$("layer").innerHTML="";render();return ropeStartAnn();}
   const i=R.order[k],p=S.players[i];R.objPhase=true;R.objCur=i;R.objK=k;pending={obj:true};
-  $("layer").innerHTML=`<div class="overlay" style="align-items:center"><div class="sheet" style="text-align:center;--dc:${p.color}"><span class="note" style="margin:0">Tour de table · ${k+1}/${n}</span><h2>🎯 Objectif secret</h2>
-    <p style="margin:0"><b class="glw" style="--gc:${p.color}">${esc(p.name)}</b>, pioche une carte Objectif au hasard, regarde-la sans la montrer, puis scanne son QR code.</p>
-    <div class="obj-scan">📷</div><p class="note" style="margin:0">L'objectif reste secret : il sera révélé et compté à la fin de la partie.</p>
-    ${S.sim?`<div class="sim-row" id="simObj" style="justify-content:center">${Object.keys(OBJ).filter(o=>!R.obj.includes(o)).map(o=>`<button class="sim-c" data-id="${o}" style="--pc:${p.color}"><b>${o}</b><small>${OBJ[o].t.slice(0,22)}…</small></button>`).join("")}</div>`:""}
-    <button class="btn" id="objSkip">Jouer sans objectif</button></div></div>`;
+  $("layer").innerHTML=`<div class="wf-ov" id="objOv"><div class="wf-k2">Tour de table · ${k+1}/${n}</div><div class="wf-h" style="font-size:38px">Objectif secret</div>
+    <div class="wf-band" style="${pcs(p.color)}"><div><div class="bk">à toi</div><div class="bt">${esc(p.name)} <span style="font-size:20px">· ${esc(colName(p))}</span></div></div></div>
+    <div class="wf-txt">Pioche une carte <b>Objectif</b> au hasard, regarde-la <b>sans la montrer</b>, puis ${S.sim?"touche-la ci-dessous":"montre son QR code à la caméra"}.</div>
+    ${S.sim?`<div class="wf-sobj" id="simObj">${Object.keys(OBJ).filter(o=>!R.obj.includes(o)).map(o=>`<button data-id="${o}" style="${pcs(p.color)}"><b>${o}</b>${esc(OBJ[o].t.slice(0,34))}…</button>`).join("")}</div>`
+      :`<svg class="wf-vis" viewBox="0 0 120 120"><g fill="none" stroke="#C8FF00" stroke-width="4"><path d="M4 30V4h26"/><path d="M90 4h26v26"/><path d="M116 90v26H90"/><path d="M30 116H4V90"/></g><line x1="16" y1="60" x2="104" y2="60" stroke="#C8FF00" stroke-width="2"/></svg>`}
+    <div class="wf-txt" style="font-size:13px;color:#80808C">L'objectif reste secret : il sera révélé et compté à la fin de la partie.</div>
+    <div class="wf-prog">${R.order.map((pi,j)=>`<i style="background:${j<k?S.players[pi].color:j===k?"#fff":"#22222a"}"></i>`).join("")}</div>
+    <button class="wf-btn" id="objSkip">Jouer sans objectif</button></div>`;
   $("objSkip").onclick=()=>{$("layer").innerHTML="";ropeObjRound(k+1);};
   const so=$("simObj");if(so)so.onclick=e=>{const b=e.target.closest("button[data-id]");if(!b)return;seen[b.dataset.id]=0;onCode("BOUCLE:"+b.dataset.id);};}
 /* La corde avance sur des rails : une branche graduée par joueur, partant du centre (à 2 joueurs : une seule ligne).
@@ -792,7 +799,7 @@ function ropeObjScan(c){const R=S.rope,i=R.objCur;
   if(R.obj[i]){toast("Tu as déjà un objectif",true);return;}
   if(R.obj.includes(c.id)){toast("Cet objectif est déjà pris : pioches-en un autre",true);return;}
   R.obj[i]=c.id;playOne("OBJ");$("layer").innerHTML="";R.objCur=null;const k=R.objK;render();
-  ropeModal(`<span class="ann-k">🎯 OBJECTIF ENREGISTRÉ</span><b class="ann-name" style="--gc:${S.players[i].color}">${esc(S.players[i].name)}</b><span class="ann-gain">garde ta carte face cachée</span>`,1500,()=>ropeObjRound(k+1),true);}
+  ropeModal(`<div class="wf-k2">🎯 Objectif enregistré</div><div class="wf-band c" style="${pcs(S.players[i].color)}"><div><div class="bt" style="font-style:normal;font-family:var(--wf-texte);font-weight:900;font-size:52px;text-transform:none">${esc(S.players[i].name)}</div></div></div><div class="wf-txt wf-cn" style="font-size:18px">Garde ta carte face cachée</div>`,1500,()=>ropeObjRound(k+1),true);}
 function ropePlay(c){if(S.ended)return;const me=S.turn,R=S.rope;
   if(c.kind==="obj")return ropeObjScan(c);
   if(c.kind==="ract")return ropeAction(c);
@@ -867,8 +874,7 @@ function ropeNextTurn(){const R=S.rope;R.played.push(S.turn);R.actUsed=false;
 function ropeReactWindow(){const el=$("rpReact");if(!el)return;const t0=Date.now(),me=S;el.hidden=false;let end=t0+ROPE_REACT_MS;
   const close=()=>{if(RREACT!==tk)return;RREACT=null;el.hidden=true;el.onclick=null;if(S!==me||!S.rope)return;S.rope.closing=false;ropeRound();};
   const tk={hurry(){end=Math.min(end,Date.now()+2000);},close};RREACT=tk;
-  el.classList.add("full");
-  el.innerHTML=`<span class="rr-k">FIN DE MANCHE</span><div class="rr-q">Dernière carte : <b>Coupure</b> ou <b>Sabotage</b> ?</div><b class="rr-num" id="rrN"></b><div class="rr-bar"><i id="rrBar"></i></div><button class="btn" id="rrSkip">Pas de réaction ▶</button>`;
+  el.innerHTML=`<div class="wf-k2">Fin de manche</div><div class="wf-band c" style="${pcs("#FF3B4E")}"><div><div class="bt" style="font-style:normal">Une réaction ?</div><div class="bs">Dernière carte : <b>Coupure</b> ou <b>Sabotage</b></div></div></div><b class="num" id="rrN"></b><div class="bar"><i id="rrBar"></i></div><button class="wf-btn" id="rrSkip">Pas de réaction ▶</button><div class="hint">ou touche l'écran</div>`;
   $("rrSkip").onclick=e=>{e.stopPropagation();close();};
   el.onclick=e=>{if(e.target.closest("button"))return;if(Date.now()-t0>400)close();};   /* toucher l'écran = pas de réaction */
   (function tick(){if(RREACT!==tk)return;const k=Math.max(0,end-Date.now()),n=$("rrN"),b=$("rrBar");
@@ -891,11 +897,12 @@ function ropeRound(){if(!S||!S.rope||S.ended)return;if($("sabWho"))return setTim
   R.projo={};R.projoNext=null;R.lastPlace=null;R.actUsed=false;
   R.order=ropeOrder();R.d=+(R.d*ROPE.PENTE).toFixed(3);rSync();R.locks={};R.played=[];R.round++;S.turn=R.order[0];
   R.log=`Manche ${R.round} : ${esc(S.players[S.turn].name)} commence (en tête au score)`;render();cheer();
-  const L=leaderOf(),lead=L.who.length>1?null:L.who[0];
-  const head=lead?`<div class="ann-crown">👑</div><b class="ann-name" style="--gc:${lead.color}">${esc(lead.name)}</b><div class="ann-score">${lead.score}<small>PTS</small></div>`
-    :`<b class="ann-name">ÉGALITÉ</b><div class="ann-gain">${L.who.map(p=>esc(p.name)).join(" · ")} · ${L.mx} pts</div>`;
-  const next=isFinal()?`<span class="ann-next fin">🔥 DERNIÈRE MANCHE 🔥</span><span class="ann-gain">cartes ×2 · corde +${ROPE.BONUS_FINAL}</span>`:`<span class="ann-next">MANCHE ${R.round}</span>`;
-  ropeModal(`<span class="ann-k">EN TÊTE</span>${head}${notes.map(t=>`<span class="ann-note">${t}</span>`).join("")}${next}<span class="ann-gain" style="font-size:13px">${esc(S.players[S.turn].name)} commence (en tête)</span>`,ROPE.MODAL_MS,null);}
+  const L=leaderOf(),lead=L.who.length>1?null:L.who[0],rk=S.players.slice().sort((a,b)=>b.score-a.score);
+  const head=lead?`<div class="wf-band" style="${pcs(lead.color)}"><div class="row"><div style="min-width:0;flex:1"><div class="bt fit" data-max="40">👑 ${esc(colName(lead))}</div><div class="bk" style="margin-top:4px">${esc(lead.name)}</div></div><div style="font-weight:900;font-size:56px;letter-spacing:-.05em;line-height:.9;flex:none">${lead.score}<small style="font-size:14px;letter-spacing:.1em;margin-left:4px">PTS</small></div></div></div>`
+    :`<div class="wf-band" style="${pcs("#F4F4F6")}"><div><div class="bt">Égalité</div><div class="bs">${L.who.map(p=>esc(p.name)).join(" · ")} · ${L.mx} pts</div></div></div>`;
+  const next=isFinal()?`<div class="wf-next fin"><b>🔥 Dernière manche</b></div><div class="wf-sub"><b>Cartes ×2 · corde +${ROPE.BONUS_FINAL}</b> · ${esc(S.players[S.turn].name)} commence (en tête)</div>`
+    :`<div class="wf-next"><b>Manche ${R.round}</b><span>sur ${ROPE.ROUNDS}</span></div><div class="wf-sub">${esc(S.players[S.turn].name)} commence (en tête)</div>`;
+  ropeModal(`<div class="wf-k2" style="text-align:left;margin:0 16px">En tête</div>${head}${notes.length?`<div class="wf-notes">${notes.map(t=>`<span>${t}</span>`).join("")}</div>`:""}<div class="wf-rank">${rk.map((p,j)=>`<div style="${pcs(p.color)}"><span class="r">${j+1}</span><span class="c">${esc(colName(p))}</span><span class="p">${esc(p.name)}</span><span class="s">${p.score}</span></div>`).join("")}</div>${next}`,ROPE.MODAL_MS,null);}
 /* fin de partie : podium animé, dernière manche, objectifs révélés */
 function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
   const before=S.players.map(p=>p.score),obj=S.players.map((p,i)=>{const o=R.objOn?R.obj[i]:null;if(!o)return null;const ok=OBJ[o].ok(i,R);if(ok)p.score+=OBJ[o].v;return{o,ok,v:OBJ[o].v};});
@@ -904,23 +911,24 @@ function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
   const rank=S.players.map((p,i)=>({p,i})).sort((a,b)=>b.p.score-a.p.score||PORDER.filter(k=>topOf(k)&&topOf(k).owner===b.i).length-PORDER.filter(k=>topOf(k)&&topOf(k).owner===a.i).length);
   const top=rank[0].p.score,tie=rank.length>1&&rank[1].p.score===top;
   const podOrder=rank.length>=3?[rank[1],rank[0],rank[2]]:rank.length===2?[rank[1],rank[0]]:rank;
-  const hgt=r=>r===rank[0]?110:r===rank[1]?78:52;
-  const pod=podOrder.map(r=>`<div class="fp-col" style="--pc:${r.p.color}"><div class="fp-name">${r===rank[0]&&!tie?"👑 ":""}${esc(r.p.name)}</div><div class="fp-score" data-to="${r.p.score}">0</div><div class="fp-bar" style="--h:${hgt(r)}px"><b>${rank.indexOf(r)+1}</b></div></div>`).join("");
-  const fourth=rank.length>3?`<div class="fp-rest">${rank.slice(3).map(r=>`<span style="color:${r.p.color}">4. ${esc(r.p.name)} · ${r.p.score}</span>`).join("")}</div>`:"";
-  const rows=rank.map(({p,i})=>{const o=obj[i];return `<div class="fr-row" style="--pc:${p.color}"><span class="fr-dot"></span><span class="fr-n">${esc(p.name)}</span>
-    <span class="fr-c">dernière manche <b>+${gains[i]}</b></span>${R.objOn?`<span class="fr-o ${o?(o.ok?"ok":"ko"):""}">${o?`🎯 ${OBJ[o.o].t} <b>${o.ok?"✔ +"+o.v:"✘"}</b>`:"🎯 sans objectif"}</span>`:""}</div>`;}).join("");
-  $("layer").innerHTML=`<div class="overlay fin-ov"><div class="fin-modal"><div class="fin-glow"></div>
-    <span class="fin-k">🪢 FIN DU TIR À LA CORDE</span><h2 class="fin-t" style="--gc:${tie?"#fff":rank[0].p.color}">${tie?"ÉGALITÉ !":esc(rank[0].p.name)+" gagne"}</h2>
-    <div class="fp">${pod}</div>${fourth}
-    ${notes.length?`<div class="fin-notes">${notes.map(t=>`<span>${t}</span>`).join("")}</div>`:""}
-    <div class="fin-rows">${rows}</div>
-    <button class="btn main" id="ok">🔁 Rejouer</button></div></div>`;
+  const hgt=r=>r===rank[0]?140:r===rank[1]?96:66,nm=p=>esc(colName(p));
+  const pod=podOrder.map(r=>`<div class="${r===rank[0]?"first":""}" style="${pcs(r.p.color)}"><div class="nm">${r===rank[0]&&!tie?"👑 ":""}${nm(r.p)}</div><div class="fp-score" data-to="${r.p.score}">0</div><div class="bar" style="--h:${hgt(r)}px">${rank.indexOf(r)+1}</div></div>`).join("");
+  const fourth=rank.length>3?`<div class="wf-4e">${rank.slice(3).map(r=>`4. ${nm(r.p)} · ${r.p.score}`).join(" · ")}</div>`:"";
+  const rows=rank.map(({p,i})=>{const o=obj[i];return `<div style="${pcs(p.color)}"><i></i><span class="c">${nm(p)}<small>${esc(p.name)}</small></span><span class="g">dernière manche <b>+${gains[i]}</b></span>${R.objOn?`<span class="o">🎯 ${o?esc(OBJ[o.o].t):"sans objectif"}</span><b class="v ${o?(o.ok?"ok":"ko"):""}">${o?(o.ok?"✔ +"+o.v:"✘"):""}</b>`:""}</div>`;}).join("");
+  const win=tie?"#F4F4F6":rank[0].p.color;
+  $("layer").innerHTML=`<div class="wf-ov wf-fin fin-ov"><div class="wf-k2">Fin du tir à la corde</div>
+    <div class="wf-band" style="${pcs(win)}"><div><div class="bt fit" data-max="44">${tie?"Égalité !":nm(rank[0].p)+" gagne"}</div>${tie?"":`<div class="bk" style="margin-top:4px">${esc(rank[0].p.name)}</div>`}</div></div>
+    <div class="wf-pod">${pod}</div>${fourth}
+    ${notes.length?`<div class="wf-chips">${notes.map(t=>`<span>${t}</span>`).join("")}</div>`:""}
+    <div class="wf-rows">${rows}</div>
+    <button class="wf-btn main" id="ok">🔁 Rejouer</button></div>`;
+  fitNames($("layer"));
   $("ok").onclick=()=>{duck(false);$("layer").innerHTML="";setup();};
   const t0=performance.now();(function step(){const k=Math.min(1,(performance.now()-t0-500)/1400);document.querySelectorAll(".fp-score").forEach(e=>{e.textContent=Math.max(0,Math.round(+e.dataset.to*Math.max(0,k)));});if(k<1)requestAnimationFrame(step);})();
   const fx=document.createElement("div");fx.className="confetti";fx.innerHTML=[...Array(36)].map((_,j)=>`<i style="left:${Math.random()*100}%;background:${S.players[j%S.players.length].color};animation-delay:${(Math.random()*1.2).toFixed(2)}s;animation-duration:${(2.4+Math.random()*1.6).toFixed(2)}s"></i>`).join("");
   $("layer").querySelector(".fin-ov").appendChild(fx);}
 /* modale de manche : volume à 20 %, ouverte 5 secondes, on ne joue pas pendant ce temps */
-function ropeModal(html,ms,after,noDuck){const el=$("ropeAnn");el.innerHTML=`<div class="ann-box">${html}</div>`;el.hidden=false;pending={modal:true};
+function ropeModal(html,ms,after,noDuck){const el=$("ropeAnn");el.innerHTML=html;el.hidden=false;fitNames(el);pending={modal:true};
   const done=()=>{clearTimeout(ropeModal.t);el.onclick=null;if(el.hidden)return;el.hidden=true;if(pending&&pending.modal)pending=null;render();if(after)after();};
   clearTimeout(ropeModal.t);ropeModal.t=setTimeout(done,ms);
   setTimeout(()=>{el.onclick=done;},350);}   /* un clic sur l'écran le ferme (après un court instant, pour éviter un double clic) */
@@ -928,16 +936,29 @@ function duck(on){if(!ctx||!window.__masterOut||QUITMUTE)return;const g=window._
 /* Sabotage à 3-4 joueurs quand la corde repasse le centre : elle part vers le saboteur, qui se désigne */
 function sabWho(L,o){const R=S.rope,keep=pending;pending={sab:true};
   const others=S.players.map((p,i)=>i).filter(i=>i!==L.owner);
-  const el=document.createElement("div");el.className="overlay";el.style.alignItems="center";el.style.zIndex="40";el.id="sabWho";
-  el.innerHTML=`<div class="sheet" style="text-align:center"><h2>🚫 Sabotage</h2><p style="margin:0">La corde repasse le centre et part vers le saboteur. <b>Qui a joué le Sabotage ?</b></p>
-    <div class="sab-row">${others.map(i=>`<button data-i="${i}" style="--pc:${S.players[i].color};--gc:${S.players[i].color};border-color:${S.players[i].color}" class="btn glw">${esc(S.players[i].name)}</button>`).join("")}</div></div>`;
+  const el=document.createElement("div");el.className="wf-ov";el.style.zIndex="46";el.id="sabWho";
+  el.innerHTML=`<div class="wf-band" style="${pcs("#FF3B4E")}"><div><div class="bt" style="font-style:normal">🚫 Sabotage</div><div class="bs">${PISTES[L.p]} de ${esc(o.name)} ne marque pas</div></div></div>
+    <div class="wf-txt">La corde repasse le centre et part vers le saboteur.</div><div class="wf-h">Qui a joué le Sabotage ?</div>
+    <div style="display:flex;flex-direction:column;gap:10px">${others.map(i=>{const p=S.players[i];return `<button data-i="${i}" class="wf-btn plr" style="${pcs(p.color)}"><span class="wf-ell">${esc(colName(p))}</span><small>${esc(p.name)}</small></button>`;}).join("")}</div>`;
   $("layer").appendChild(el);
   el.onclick=e=>{const b=e.target.closest("button[data-i]");if(!b)return;const who=+b.dataset.i;el.remove();pending=keep&&keep.sab?null:keep;
     rPush(L.owner,2,who);R.log=`🚫 SABOTAGE de ${esc(S.players[who].name)} ! La carte ${PISTES[L.p]} de ${esc(o.name)} ne marquera pas cette manche, et la corde part vers ${esc(S.players[who].name)}`;
     ropeBanner("🚫 SABOTAGE",`${PISTES[L.p]} de ${esc(o.name)} ne marque pas`,"#ff5468");creak(.4);render();};}
-function ropeBanner(a,b,col){const el=$("ropeBan");if(!el)return;el.innerHTML=`<b style="--gc:${col}">${a}</b><span>${b}</span>`;el.hidden=false;el.style.animation="none";void el.offsetWidth;el.style.animation="";
+function ropeBanner(a,b,col){const el=$("ropeBan");if(!el)return;el.innerHTML=`<div class="wf-band" style="${pcs(col)}"><div><div class="bt" style="font-style:normal">${a}</div><div class="bs">${b}</div></div></div>`;el.hidden=false;
   clearTimeout(ropeBanner.t);ropeBanner.t=setTimeout(()=>el.hidden=true,3500);}
-/* ---------- rendu ---------- */
+/* ---------- rendu (thème World Finals : le style est dans theme.css) ---------- */
+/* couleur du texte posé sur un aplat de couleur : noir sur les couleurs claires, blanc sur les foncées */
+const lum=h=>{const m=/^#?([0-9a-f]{6})$/i.exec(String(h||"").trim());if(!m)return 1;const n=parseInt(m[1],16);return(.2126*(n>>16&255)+.7152*(n>>8&255)+.0722*(n&255))/255;};
+const fgOf=c=>lum(c)>.55?"#060608":"#fff";
+const pcs=c=>`--pc:${c};--fg:${fgOf(c)}`;
+const colName=p=>DECKS[p.deck].name;
+const fmtD=d=>String(Math.round(d*10)/10).replace(".",",");
+/* nom long : on rétrécit sur une ligne (taille max → 14 px), puis sur 2 lignes (14 → 11 px), puis « … » */
+function fitNames(root){(root||document).querySelectorAll(".fit").forEach(el=>{if(!el.clientWidth)return;const max=+el.dataset.max||20;
+  el.style.whiteSpace="nowrap";el.style.display="block";el.style.webkitLineClamp="";el.style.lineHeight="";
+  for(let f=max;f>=14;f--){el.style.fontSize=f+"px";if(el.scrollWidth<=el.clientWidth+1)return;}
+  el.style.whiteSpace="normal";el.style.display="-webkit-box";el.style.webkitBoxOrient="vertical";el.style.webkitLineClamp="2";
+  for(let f=14;f>=11;f--){el.style.fontSize=f+"px";el.style.lineHeight="1.02";if(el.scrollHeight<=f*2.2)return;}});}
 /* animation du nœud : il glisse le long des rails (en repassant par le centre pour changer de branche) */
 let RVIEW=null,RANIM=0;
 function ropeXY(br,d){if(br===null||d<=0)return{x:0,y:0};const c=S.rope.corners[br];return{x:+(c.x*d/ROPE.R).toFixed(3),y:+(c.y*d/ROPE.R).toFixed(3)};}
@@ -950,7 +971,7 @@ function ropeAnimate(){if(RANIM)return;let last=performance.now();
       else{/* mauvaise branche : on redescend vers le centre */
         if(RVIEW.d<=step){step-=RVIEW.d;RVIEW.d=0;RVIEW.br=R.br===null?null:R.br;if(R.br===null)step=0;}else{RVIEW.d-=step;step=0;}}}
     if(RVIEW.d<=0&&R.br===null)RVIEW.br=null;
-    const p=ropeXY(RVIEW.br,RVIEW.d),k=$("rpKnot"),l=$("rpPullL");if(k){k.setAttribute("cx",p.x);k.setAttribute("cy",p.y);}const rg=$("rpRing");if(rg){rg.setAttribute("cx",p.x);rg.setAttribute("cy",p.y);}const kn=$("rpKnotN");if(kn){kn.setAttribute("x",p.x);kn.setAttribute("y",p.y);}if(l){l.setAttribute("x2",p.x);l.setAttribute("y2",p.y);}
+    wfKnot();
     if(RVIEW.br===R.br&&Math.abs(RVIEW.d-R.d)<1e-6||R.br===null&&RVIEW.d<=0){RANIM=0;return;}
     RANIM=requestAnimationFrame(f);})(last);}
 let LKSEEN={S:null,k:new Set()};
@@ -965,227 +986,147 @@ function renderSim(){const el=$("rpSim");if(!el)return;el.hidden=!(S&&S.sim);if(
     const disc=new Set([...((R.disc||{})[i]||[]),...(R.jokUsed||[]).filter(j=>j[1]===d)]);
     if(all.every(id=>onTable.has(id)||disc.has(id))&&disc.size){(R.disc=R.disc||{})[i]=[];R.jokUsed=(R.jokUsed||[]).filter(j=>j[1]!==d);toast(p.name+" remélange sa défausse");}});
   const jok=new Set([...(R.jokUsed||[]),...Object.values(R.disc||{}).flat()]);
-  h+=S.players.map((p,i)=>{const d=p.deck,ids=[...PORDER.flatMap(q=>["2","4"].map(v=>q+d+v)),"J"+d+"2"];
-    return `<div class="sim-g${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><h4>${esc(p.name)} <small>${DECKS[d].short}${i===S.turn&&!S.ended?" · à toi":""}</small></h4><div class="sim-row">${ids.map(id=>{const v=RV[id];
+  h+=S.players.map((p,i)=>{const d=p.deck,ids=[...PORDER.flatMap(q=>["2","4"].map(v=>q+d+v)),"J"+d+"2"],me=i===S.turn&&!S.ended;
+    return `<div class="sim-g${me?" on":""}" style="${pcs(p.color)}"><h4>${esc(p.name)} <small class="wf-ell">${esc(DECKS[d].short)}${me?" · à toi":""}</small></h4><div class="sim-row">${ids.map(id=>{const v=RV[id];
       const u=onTable.has(id)||jok.has(id);
       return id[0]==="J"?card(id,"Joker","+"+v[1],u?"used":"",u?"disabled":""):card(id,FLET[id[0]]+" ★"+v[0]*(fin?2:1),"+"+v[1]+(SUR.has(id)?" ⚡":""),u?"used":"",u?"disabled":"");}).join("")}</div></div>`;}).join("");
   h+=`<div class="sim-g act"><h4>⚡ Deck Action <small>une carte = un exemplaire</small></h4><div class="sim-row">${Object.keys(RACT_IDS).map(k=>{const a=RACT[RACT_IDS[k]];
     return card(k,a.n,a.react?"réaction":a.tr?"+"+a.tr:"action",(a.react?"re ":"")+(R.usedA.includes(k)?"used":""),R.usedA.includes(k)?"disabled":"");}).join("")}</div></div>`;
   el.innerHTML=h;}
-/* décalage du son réglable pendant la partie (enregistré, appliqué tout de suite) */
+/* décalage du son réglable pendant la partie (bouton 🎧 ; enregistré, appliqué tout de suite) */
 function latSet(v){USERLAT=Math.max(-200,Math.min(700,Math.round(+v||0)));try{localStorage.setItem("ts-lat",USERLAT);}catch(e){}const e=$("latV");if(e)e.textContent=USERLAT+" ms";}
 $("latM").onclick=()=>latSet(USERLAT-10);$("latP").onclick=()=>latSet(USERLAT+10);
+$("latB").onclick=()=>{$("latV").textContent=USERLAT+" ms";$("latBox").hidden=false;};$("latX").onclick=()=>{$("latBox").hidden=true;};
 $("rpSim").onclick=e=>{const b=e.target.closest("button[data-id]");if(!b||b.disabled||!S||!S.sim)return;startAudio();seen[b.dataset.id]=0;onCode("BOUCLE:"+b.dataset.id);};
-/* ============ Fond de la corde : ondes sonores dans la brume ============
-   Brume : grandes nappes floues qui dérivent lentement et s'éclairent sur les coups de basse.
-   Ondes : la forme d'onde de la musique, lissée, en trois lignes lumineuses superposées. Couleur du joueur actif. */
-let SPC=null,SPRAF=0,SPLAST=0,SPBASS=0,SPAVG=0,SPEN=0,SPT=0,SPF=null,SPTD=null;
-function spiralCanvas(){if(!SPC){SPC=document.createElement("canvas");SPC.className="rp-spiral";}return SPC;}
-function spiralStart(){if(!SPRAF)SPRAF=requestAnimationFrame(spiralFrame);}
-function spiralFrame(now){SPRAF=0;
-  const g=$("rpGauge");if(!S||!S.rope||$("rope").hidden||!g||!SPC||!SPC.isConnected)return;
-  SPRAF=requestAnimationFrame(spiralFrame);if(document.hidden)return;
+
+/* ============ Onde de la musique derrière la corde ============
+   Même calcul que la version d'origine (sans la brume) : la forme d'onde de la musique, lissée, en trois lignes
+   lumineuses superposées, qui s'agitent sur les coups de basse. Couleur du joueur actif. */
+let SPRAF=0,SPLAST=0,SPBASS=0,SPAVG=0,SPEN=0,SPT=0,SPF=null,SPTD=null;
+function waveStart(){if(!SPRAF)SPRAF=requestAnimationFrame(waveFrame);}
+function waveFrame(now){SPRAF=0;
+  const cv=$("wfWave");if(!S||!S.rope||$("rope").hidden||!cv||!WG)return;
+  SPRAF=requestAnimationFrame(waveFrame);if(document.hidden)return;
   const dt=Math.min(.1,(now-(SPLAST||now))/1000);SPLAST=now;
-  const W0=g.clientWidth,H0=g.clientHeight,dpr=.5,W=Math.round(W0*dpr),H=Math.round(H0*dpr);
-  if(SPC.width!==W||SPC.height!==H){SPC.width=W;SPC.height=H;}
-  const c=SPC.getContext("2d");c.clearRect(0,0,W,H);
+  const W=WG.W,H=WG.wh,dpr=Math.min(1.5,window.devicePixelRatio||1),cw=Math.round(W*dpr),ch=Math.round(H*dpr);
+  if(cv.width!==cw||cv.height!==ch){cv.width=cw;cv.height=ch;cv.style.width=W+"px";cv.style.height=H+"px";}
+  cv.style.top=WG.wy+"px";
+  const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);
   let bass=0,mid=0,T=null;const A=window.__ana;
   if(A&&soundOn){const F=SPF&&SPF.length===A.frequencyBinCount?SPF:(SPF=new Uint8Array(A.frequencyBinCount));A.getByteFrequencyData(F);for(let k=1;k<6;k++)bass+=F[k];bass/=5*255;for(let k=6;k<60;k++)mid+=F[k];mid/=54*255;
     T=SPTD&&SPTD.length===A.fftSize?SPTD:(SPTD=new Uint8Array(A.fftSize));A.getByteTimeDomainData(T);}
   SPAVG+=(bass-SPAVG)*.03;const kick=Math.max(0,Math.min(1,(bass-SPAVG)*6));SPBASS+=(kick-SPBASS)*(kick>SPBASS?.6:.08);SPEN+=((bass+mid)/2-SPEN)*.05;
   SPT+=dt*(.35+SPEN*.6);
   const col=S.players[S.turn].color;
-  /* brume */
-  c.globalCompositeOperation="lighter";
-  for(let k=0;k<6;k++){const ph=k*1.7,x=W*(.5+.42*Math.sin(SPT*.5+ph)),y=H*(.5+.38*Math.cos(SPT*.37+ph*1.3)),r=Math.max(W,H)*(.32+.1*Math.sin(SPT*.8+ph))*(1+SPBASS*.25);
-    const rg=c.createRadialGradient(x,y,0,x,y,r);rg.addColorStop(0,col);rg.addColorStop(1,"transparent");
-    c.globalAlpha=(.09+SPEN*.07+SPBASS*.16);c.fillStyle=rg;c.fillRect(x-r,y-r,2*r,2*r);}
-  /* ondes */
   const P=40,pts=[];
   for(let i=0;i<=P;i++){let v=0;if(T){const a=Math.floor(i/P*(T.length-1)),w=10;let s2=0,n2=0;for(let k=-w;k<=w;k++){const q=a+k;if(q>=0&&q<T.length){s2+=T[q];n2++;}}v=(s2/n2-128)/128;}pts.push(v);}
-  let LX=0,LY=0;
-  for(const [off,lw,al,sp] of [[0,2,.6,1],[.18,6,.16,.8],[-.22,14,.07,.6]]){
-    c.beginPath();
+  c.globalCompositeOperation="lighter";
+  for(const [off,lw,al,sp] of [[0,2,.6,1],[.18,6,.16,.8],[-.22,14,.07,.6]]){let LX=0,LY=0;c.beginPath();
     for(let i=0;i<=P;i++){const u=i/P,env=Math.sin(Math.PI*u);   /* les bords restent calmes */
-      const y=H*(.5+off*.25)+(pts[i]*H*.42*(.6+SPEN)+Math.sin(u*9+SPT*3*sp+off*5)*H*.04*(.4+SPBASS))*env;
-      const x=u*W;if(!i){c.moveTo(x,y);}else{const px=(i-.5)/P*W;c.quadraticCurveTo(LX,LY,(LX+x)/2,(LY+y)/2);}LX=x;LY=y;}
-    c.lineTo(LX,LY);
-    c.strokeStyle=col;c.globalAlpha=al*(.5+SPEN*.5+SPBASS*.5);c.lineWidth=lw*dpr*(1+SPBASS*.5);c.lineJoin="round";c.stroke();}
+      const y=H*(.5+off*.25)+(pts[i]*H*.42*(.6+SPEN)+Math.sin(u*9+SPT*3*sp+off*5)*H*.04*(.4+SPBASS))*env,x=u*W;
+      if(!i)c.moveTo(x,y);else c.quadraticCurveTo(LX,LY,(LX+x)/2,(LY+y)/2);LX=x;LY=y;}
+    c.lineTo(LX,LY);c.strokeStyle=col;c.globalAlpha=Math.min(1,al*(.5+SPEN*.5+SPBASS*.5));c.lineWidth=lw*(1+SPBASS*.5);c.lineJoin="round";c.lineCap="round";c.stroke();}
   c.globalAlpha=1;c.globalCompositeOperation="source-over";}
-/* ============ Visuels de la corde par la carte graphique (PixiJS / WebGL) ============
-   Brume, ondes, corde, nœud et décompte du nœud sont dessinés par la carte graphique, sans repeindre la page.
-   Les parties fixes (rails, graduations, nombres, bouts) ne sont redessinées que quand elles changent
-   (nombre de joueurs, camp, dernière manche, taille de l'écran) ; à chaque image on ne bouge que ce qui vit.
-   Sans carte graphique utilisable, l'ancien dessin (SVG + canvas) prend le relais tout seul.
-   Touche « ♩ 120 BPM » pour afficher le nombre d'images par seconde. */
-const PX={app:null,on:false,fail:false,key:"",box:null,m:null,beat:null,fps:0,fpsN:0,fpsT:0,showFps:false,fonts:false};
-function pxBoot(){if(PX.app||PX.fail)return;  if(window.PIXI)return pxInit();
-  const sc=document.createElement("script");sc.src="pixi.min.js";sc.onload=pxInit;sc.onerror=()=>{PX.fail=true;};document.head.appendChild(sc);}
-async function pxInit(){if(PX.app||PX.fail||!window.PIXI)return;
-  try{
-    const app=new PIXI.Application();
-    await app.init({backgroundAlpha:0,antialias:true,resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true,
-      preference:"webgl",powerPreference:"default",autoStart:false,width:320,height:200});
-    const cv=app.canvas;cv.className="rp-px";
-    cv.addEventListener("webglcontextlost",e=>{e.preventDefault();console.warn("carte graphique perdue : ancien dessin");PX.on=false;PX.fail=true;try{app.stop();}catch(_){}if(S&&S.rope)render();});
-    /* texture de brume : un disque flou blanc, teinté à la couleur du joueur */
-    const bc=document.createElement("canvas");bc.width=bc.height=256;const bx=bc.getContext("2d"),rg=bx.createRadialGradient(128,128,0,128,128,128);
-    rg.addColorStop(0,"#fff");rg.addColorStop(1,"transparent");   /* même dégradé que l'ancien dessin */bx.fillStyle=rg;bx.fillRect(0,0,256,256);
-    const tex=PIXI.Texture.from(bc);
-    const fond=new PIXI.Container();fond.alpha=.9;
-    PX.brume=[...Array(6)].map(()=>{const s=new PIXI.Sprite(tex);s.anchor.set(.5);s.blendMode="add";fond.addChild(s);return s;});
-    /* ondes : dessinées à part puis ajoutées en lumière (évite les surépaisseurs aux virages des traits épais) */
-    PX.wc=new PIXI.Container();PX.ondes=[0,1,2].map(()=>{const g=new PIXI.Graphics();g.blendMode="max";PX.wc.addChild(g);return g;});
-    PX.rt=PIXI.RenderTexture.create({width:320,height:200,resolution:app.renderer.resolution});
-    const os=new PIXI.Sprite(PX.rt);os.blendMode="add";fond.addChild(os);
-    PX.fixe=new PIXI.Container();
-    PX.halo=new PIXI.Graphics();PX.ends=new PIXI.Container();PX.pull=new PIXI.Graphics();PX.ring=new PIXI.Graphics();PX.knot=new PIXI.Graphics();PX.knotG=new PIXI.Graphics();
-    PX.bon=new PIXI.Container();
-    PX.knN=new PIXI.Text({text:"",style:{fontFamily:"Bungee, 'Chakra Petch', Impact, sans-serif",fontWeight:"700",fontSize:20,fill:0xffd23f}});PX.knN.anchor.set(.5);PX.knN.alpha=0;
-    PX.corde=new PIXI.Container();PX.corde.addChild(PX.fixe,PX.halo,PX.ends,PX.pull,PX.ring,PX.knot,PX.knotG,PX.knN,PX.bon);
-    PX.fpsTx=new PIXI.Text({text:"",style:{fontFamily:"ui-monospace, Menlo, monospace",fontSize:11,fill:0xffffff}});PX.fpsTx.position.set(8,6);PX.fpsTx.alpha=.75;
-    app.stage.addChild(fond,PX.corde,PX.fpsTx);
-    app.ticker.add(pxFrame);
-    PX.app=app;PX.on=true;
-    if(window.ResizeObserver){PX.ro=new ResizeObserver(()=>{PX.box=null;});PX.ro.observe($("rpGauge"));}
-    /* les nombres attendent les polices du jeu (sinon ils seraient dessinés dans une police de secours) */
-    const fl=Promise.all(["700 20px 'Bricolage Grotesque'","800 20px Bungee"].map(f=>document.fonts?document.fonts.load(f).catch(()=>{}):0));
-    Promise.race([fl,wait(1500)]).then(()=>{PX.fonts=true;PX.key="";});fl.then(()=>{PX.key="";});
-    if(S&&S.rope)render();
-  }catch(e){console.warn("PixiJS indisponible : ancien dessin",e);PX.fail=true;PX.on=false;}}
-const pxReady=()=>PX.on&&PX.app&&PX.fonts;
-const pxHex=c=>{const m=/^#?([0-9a-f]{6})$/i.exec(String(c).trim());return m?parseInt(m[1],16):0xffffff;};
-const pxMix=(a,b,k)=>{const A=pxHex(a),B=pxHex(b),f=s=>Math.round(((A>>s)&255)*k+((B>>s)&255)*(1-k));return (f(16)<<16)|(f(8)<<8)|f(0);};
-/* appelée par renderRope : ce qu'il faut dessiner */
-function pxSync(m){PX.m=m;const gz=$("rpGauge");
-  if(PX.app.canvas.parentNode!==gz)gz.prepend(PX.app.canvas);
-  if(!PX.app.ticker.started)PX.app.start();}
-/* dimensions : le cadre de la corde est la place qu'occupait le dessin SVG (invisible, il ne sert plus qu'à la mise en page) */
-function pxMeasure(){const gz=$("rpGauge"),sv=gz&&gz.querySelector("svg.rp-svg");if(!sv)return null;
-  const gr=gz.getBoundingClientRect(),sr=sv.getBoundingClientRect(),W=gz.clientWidth,H=gz.clientHeight;
-  const v=PX.m.vb.split(" ").map(Number),bx=sr.left-gr.left-gz.clientLeft,by=sr.top-gr.top-gz.clientTop;
-  const k=Math.min(sr.width/v[2],sr.height/v[3]);
-  return{W,H,k,ox:bx+(sr.width-v[2]*k)/2-v[0]*k,oy:by+(sr.height-v[3]*k)/2-v[1]*k};}
-/* parties fixes de la corde */
-function pxBuild(){const m=PX.m,b=PX.box,k=b.k,R=ROPE.R,C=m.C,n=m.n;
-  for(const c of [...PX.fixe.removeChildren(),...PX.ends.removeChildren()])c.destroy(true);for(const c of PX.bon.removeChildren())c.destroy(true);
-  PX.corde.position.set(b.ox,b.oy);
-  const g=new PIXI.Graphics();
-  C.forEach((q,i)=>{const ux=q.x/R,uy=q.y/R,px=-uy,py=ux,ang=Math.atan2(uy,ux);
-    const z=new PIXI.Graphics();z.roundRect(ROPE.CAMP*k,-1.6*k,(R-ROPE.CAMP)*k,3.2*k,.6*k).fill({color:pxHex(m.colors[i]),alpha:.22});z.rotation=ang;PX.fixe.addChild(z);
-    g.moveTo(0,0).lineTo(q.x*k,q.y*k).stroke({width:.5*k,color:0xffffff,alpha:.4});
-    for(let j=1;j<=R;j++){const x=ux*j,y=uy*j,h=j%5?.7:1.3;
-      g.moveTo((x-px*h)*k,(y-py*h)*k).lineTo((x+px*h)*k,(y+py*h)*k).stroke({width:.25*k,color:0xffffff,alpha:j%5?.3:.45});
-      if(j%2===0&&(n===2||j<R)){let tx=x+px*2.2,ty=y+py*2.2;if(n===2){tx=x;ty=3.1;}
-        const t=new PIXI.Text({text:String(j),style:{fontFamily:"'Bricolage Grotesque', 'Avenir Next', system-ui, sans-serif",fontWeight:"700",fontSize:1.45*k,fill:0xffffff}});
-        t.anchor.set(.5);t.alpha=.55;t.position.set(tx*k,ty*k);PX.fixe.addChild(t);}}});
-  if(n===2)g.moveTo(0,-1.3*k).lineTo(0,1.3*k).stroke({width:.25*k,color:0xffffff,alpha:.45});else g.circle(0,0,.45*k).fill({color:0xffffff,alpha:.4});
-  PX.fixe.addChildAt(g,0);
-  const cr=n===2?1.9:1.6,bon="+"+(m.fin?ROPE.BONUS_FINAL:ROPE.BONUS),e=new PIXI.Graphics();
-  C.forEach((q,i)=>{const on=m.camp===i;e.circle(q.x*k,q.y*k,cr*k).fill({color:on?pxHex(m.colors[i]):pxMix(m.colors[i],"#141026",.5)});
-    if(on)e.stroke({width:.3*k,color:0xffffff});
-    const t=new PIXI.Text({text:bon,style:{fontFamily:"Bungee, 'Chakra Petch', Impact, sans-serif",fontWeight:"800",fontSize:cr*.95*k,fill:0xffffff,
-      ...(on?{stroke:{color:0x000000,width:.15*k,alpha:.35}}:{})}});
-    t.anchor.set(.5);t.alpha=on?1:.6;t.position.set(q.x*k,q.y*k);PX.bon.addChild(t);});
-  PX.ends.addChild(e);
-  /* nœud, anneau, halo du camp */
-  const col=pxHex(m.col);
-  PX.knot.clear().circle(0,0,1.4*k).fill({color:col}).stroke({width:.35*k,color:0xffffff});
-  PX.knotG.clear().circle(0,0,1.4*k).stroke({width:.3*k,color:0xffd23f});PX.knotG.alpha=0;
-  PX.ring.clear().circle(0,0,1.4*k).stroke({width:.35*k,color:0xffd23f});PX.ring.alpha=0;
-  PX.halo.clear();PX.halo.visible=m.camp!==null;
-  if(m.camp!==null){const q=C[m.camp];PX.halo.circle(0,0,cr*k).stroke({width:.5*k,color:pxHex(m.colors[m.camp])});PX.halo.position.set(q.x*k,q.y*k);}
-  PX.knN.style.fontSize=2.1*k;}
-/* décompte des 4 derniers temps sur le nœud (appelé à l'instant où le temps est entendu) */
-function pxBeat(left,last){PX.beat={t:performance.now(),left,last};PX.knN.text=String(left);}
-const easeOut=x=>1-Math.pow(1-x,3);
-function pxFrame(){const app=PX.app,gz=$("rpGauge");
-  if(!S||!S.rope||$("rope").hidden||!gz||PX.app.canvas.parentNode!==gz||!PX.m){app.stop();return;}
-  const now=performance.now();
-  if(!PX.box||PX.box.W!==gz.clientWidth||PX.box.H!==gz.clientHeight){PX.box=pxMeasure();if(!PX.box)return;app.renderer.resize(PX.box.W,PX.box.H);PX.rt.resize(PX.box.W,PX.box.H);PX.key="";}
-  const key=JSON.stringify([PX.m.n,PX.m.C,PX.m.colors,PX.m.camp,PX.m.fin,PX.m.col,PX.m.vb,PX.box.k]);
-  if(key!==PX.key){PX.key=key;pxBuild();}
-  const b=PX.box,k=b.k,W=b.W,H=b.H;
-  /* --- brume et ondes (même calcul que l'ancien dessin) --- */
-  const dt=Math.min(.1,(now-(SPLAST||now))/1000);SPLAST=now;
-  let bass=0,mid=0,T=null;const A=window.__ana;
-  if(A&&soundOn){const F=SPF&&SPF.length===A.frequencyBinCount?SPF:(SPF=new Uint8Array(A.frequencyBinCount));A.getByteFrequencyData(F);for(let i=1;i<6;i++)bass+=F[i];bass/=5*255;for(let i=6;i<60;i++)mid+=F[i];mid/=54*255;
-    T=SPTD&&SPTD.length===A.fftSize?SPTD:(SPTD=new Uint8Array(A.fftSize));A.getByteTimeDomainData(T);}
-  SPAVG+=(bass-SPAVG)*.03;const kick=Math.max(0,Math.min(1,(bass-SPAVG)*6));SPBASS+=(kick-SPBASS)*(kick>SPBASS?.6:.08);SPEN+=((bass+mid)/2-SPEN)*.05;
-  SPT+=dt*(.35+SPEN*.6);
-  const col=pxHex(S.players[S.turn].color);
-  PX.brume.forEach((s,i)=>{const ph=i*1.7,r=Math.max(W,H)*(.32+.1*Math.sin(SPT*.8+ph))*(1+SPBASS*.25);
-    s.position.set(W*(.5+.42*Math.sin(SPT*.5+ph)),H*(.5+.38*Math.cos(SPT*.37+ph*1.3)));s.width=s.height=2*r;s.tint=col;s.alpha=.09+SPEN*.07+SPBASS*.16;});
-  const P=40,pts=[];
-  for(let i=0;i<=P;i++){let v=0;if(T){const a=Math.floor(i/P*(T.length-1)),w=10;let s2=0,n2=0;for(let q=-w;q<=w;q++){const z=a+q;if(z>=0&&z<T.length){s2+=T[z];n2++;}}v=(s2/n2-128)/128;}pts.push(v);}
-  [[0,2,.6,1],[.18,6,.16,.8],[-.22,14,.07,.6]].forEach(([off,lw,al,sp],li)=>{let LX=0,LY=0;const og=PX.ondes[li].clear();
-    for(let i=0;i<=P;i++){const u=i/P,env=Math.sin(Math.PI*u),
-        y=H*(.5+off*.25)+(pts[i]*H*.42*(.6+SPEN)+Math.sin(u*9+SPT*3*sp+off*5)*H*.04*(.4+SPBASS))*env,x=u*W;
-      if(!i)og.moveTo(x,y);else og.quadraticCurveTo(LX,LY,(LX+x)/2,(LY+y)/2);LX=x;LY=y;}
-    og.lineTo(LX,LY).stroke({width:lw*(1+SPBASS*.5),color:col,alpha:Math.min(1,al*(.5+SPEN*.5+SPBASS*.5)),join:"round",cap:"round"});});
-  app.renderer.render({container:PX.wc,target:PX.rt,clear:true});
-  /* --- nœud, ligne de traction, halo du camp, décompte --- */
-  const V=ropeViewPos(),x=V.x*k,y=V.y*k;
-  PX.knot.position.set(x,y);PX.knotG.position.set(x,y);PX.ring.position.set(x,y);PX.knN.position.set(x,y);
-  PX.pull.clear().moveTo(0,0).lineTo(x,y).stroke({width:.7*k,color:pxHex(PX.m.col),alpha:.85});
-  if(PX.halo.visible){const h=(now%1200)/1200,e=easeOut(h);PX.halo.scale.set(1+.9*e);PX.halo.alpha=.9*(1-e);}
-  const bt=PX.beat;let ks=1,kg=0,ra=0,rs=1,na=0;
-  if(bt){const age=now-bt.t,dur=bt.last?450:320;
-    if(age<dur){const e=easeOut(age/dur);ks=(bt.last?2.2:1.8)+(1-(bt.last?2.2:1.8))*e;kg=1-e;}
-    if(age<500){const e=easeOut(age/500);rs=1+2.4*e;ra=1-e;}
-    if(age<480)na=age<360?1:1-(age-360)/120;
-    if(age>600)PX.beat=null;}
-  PX.knot.scale.set(ks);PX.knotG.scale.set(ks);PX.knotG.alpha=kg;PX.ring.scale.set(rs);PX.ring.alpha=ra;PX.knN.alpha=na;
-  /* --- images par seconde --- */
-  PX.fpsN++;if(now-PX.fpsT>=1000){PX.fps=Math.round(PX.fpsN*1000/(now-PX.fpsT));PX.fpsN=0;PX.fpsT=now;PX.fpsTx.text=PX.showFps?PX.fps+" i/s"+(scanning?" · QR "+(detector?"natif":QR.rate+" lectures/s"):""):"";}
-}
-function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],camp=rCamp(),fin=isFinal();
-  $("rpScores").style.setProperty("--np",n);$("rpScores").innerHTML=S.players.map((p,i)=>`<div class="rp-sc${i===S.turn&&!S.ended?" on":""}" style="--pc:${p.color}"><span>${DECKS[p.deck].glyph} ${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><b>${p.score}</b></div>`).join("");
-  /* jauge des tours : un segment par joueur, dans l'ordre de la manche */
-  $("rpRound").innerHTML=`<span class="rp-k${fin?" fin":""}">${fin?"🔥 DERNIÈRE":"MANCHE "+R.round+"/"+ROPE.ROUNDS}</span><div class="rp-seg">${[...Array(ROPE.ROUNDS)].map((_,k)=>{const r=k+1,done=r<R.round||S.ended,now=r===R.round&&!S.ended;
-    return `<i class="${done?"on":now?"now":""}">${now?`<em style="width:${Math.round(R.played.length/n*100)}%"></em>`:""}</i>`;}).join("")}</div>`;
-  $("rpTurn").style.setProperty("--pc",pl.color);
-  $("rpTurn").innerHTML=S.ended?`<span class="at-k">PARTIE TERMINÉE</span>`:`<span class="at-k">À TOI DE JOUER</span><div class="at-name">${esc(pl.name)}</div><div class="at-tribe">${DECKS[pl.deck].glyph} ${DECKS[pl.deck].short}${fin?" · cartes ×2":""}</div>`;
-  const C=R.corners,col=camp!==null?S.players[camp].color:"#fff";let g="";
-  /* une branche graduée par joueur (à 2 joueurs, les deux branches forment la ligne) : zone du camp, traits, nombres 2-4-6-8-10 */
-  C.forEach((q,i)=>{const ux=q.x/ROPE.R,uy=q.y/ROPE.R,px=-uy,py=ux,P=k=>[ux*k,uy*k],ang=Math.atan2(uy,ux)*180/Math.PI;
-    g+=`<rect x="${ROPE.CAMP}" y="-1.6" width="${ROPE.R-ROPE.CAMP}" height="3.2" rx=".6" fill="${S.players[i].color}" opacity=".22" transform="rotate(${ang.toFixed(2)})"/>`;
-    g+=`<line x1="0" y1="0" x2="${q.x}" y2="${q.y}" class="rp-rope"/>`;
-    for(let k=1;k<=ROPE.R;k++){const [x,y]=P(k),h=k%5?.7:1.3;
-      g+=`<line x1="${(x-px*h).toFixed(3)}" y1="${(y-py*h).toFixed(3)}" x2="${(x+px*h).toFixed(3)}" y2="${(y+py*h).toFixed(3)}" class="rp-tick${k%5?"":" maj"}"/>`;
-      if(k%2===0&&(n===2||k<ROPE.R)){let tx=x+px*2.2,ty=y+py*2.2;if(n===2){tx=x;ty=3.1;}g+=`<text x="${tx.toFixed(3)}" y="${(ty+.38).toFixed(3)}" class="rp-num">${k}</text>`;}}});
-  g+=n===2?`<line x1="0" y1="-1.3" x2="0" y2="1.3" class="rp-tick maj"/>`:`<circle cx="0" cy="0" r=".45" class="rp-dot"/>`;
-  /* bouts de la corde : bonus de corde de la manche en cours (+3, +5 à la dernière) ; celui qui a la corde dans son camp est en surbrillance */
-  const bon="+"+(fin?ROPE.BONUS_FINAL:ROPE.BONUS),cr=n===2?1.9:1.6;
-  g+=C.map((q,i)=>{const on=camp===i;return (on?`<circle cx="${q.x}" cy="${q.y}" r="${cr}" class="rp-halo" stroke="${S.players[i].color}"/>`:"")
-    +`<circle cx="${q.x}" cy="${q.y}" r="${cr}" fill="${S.players[i].color}" style="${on?"":`fill:color-mix(in srgb,${S.players[i].color} 50%,#141026)`}" class="rp-end${on?" on":""}"/>`
-;}).join("");
-  const bonTxt=C.map((q,i)=>`<text x="${q.x}" y="${(q.y+cr*.36).toFixed(3)}" class="rp-bon${camp===i?" on":""}" style="font-size:${(cr*.95).toFixed(2)}px">${bon}</text>`).join("");
-  const V=ropeViewPos();
-  g+=`<line id="rpPullL" x1="0" y1="0" x2="${V.x}" y2="${V.y}" class="rp-pull" stroke="${col}"/><circle id="rpRing" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-ring"/><circle id="rpKnot" cx="${V.x}" cy="${V.y}" r="1.4" class="rp-knot" fill="${col}"/><text id="rpKnotN" x="${V.x}" y="${V.y}" class="rp-kn"></text>`+bonTxt;
-  const vb=n===2?"-11.9 -2.4 23.8 6.2":n===3?"-11.6 -11.9 23.2 18.8":"-9.4 -9.4 18.8 18.8";
-  $("rpGauge").style.setProperty("--pc",pl.color);$("rpGauge").classList.toggle("act",!S.ended);
+
+/* ============ L'arène : coins des collectifs, corde en aplats, nœud rond ============
+   La place se calcule sur la taille réelle de l'écran : la corde et ses ronds +3 ne touchent jamais les blocs des joueurs. */
+let WG=null,WKEY="",WPREV=null,WCD=null;
+const WFSIDE={2:[-1,1],3:[1,1,-1],4:[-1,1,-1,1]};
+function wfGeo(n,W,H){const th=H<420?60:72,tw=Math.max(96,Math.min(124,Math.round((W-32)*.36))),gap=H<420?8:12,K=n===2?1.45:n===3?1.1:1,rr=n===2?20:17,sc=W/390;
+  let cx=W/2,cy,A,L,tiles=[],marks=[],duo=n===2;
+  if(n===2){const top=96+8+16;A=Math.max(60,Math.min(145*sc,W/2-12-2*rr));L=A+rr+4;cy=top+(H-top)/2;}
+  else if(n===3){A=142*sc;L=Math.min(A+rr+4,(H-th-16-rr-(th+gap+rr))/1.5,(W/2-8-rr)/.866);L=Math.max(40+rr+4,L);A=L-rr-4;
+    const lo=th+gap+L+rr,hi=H-th-16-.5*L-rr;cy=(lo+hi)/2;
+    tiles=[{c:"L",x:(W-tw)/2,y:0},{c:"RB",x:W-16-tw,y:H-th},{c:"LB",x:16,y:H-th}];}
+  else{A=158*sc;L=Math.min(A+rr+4,(H/2-th-gap-rr-8)/.707,(W/2-8-rr)/.707);L=Math.max(40+rr+4,L);A=L-rr-4;cy=H/2;
+    tiles=[{c:"L",x:16,y:0},{c:"R",x:W-16-tw,y:0},{c:"RB",x:W-16-tw,y:H-th},{c:"LB",x:16,y:H-th}];}
+  const wh=n===2?160:Math.min(340,H*.8);
+  return{n,W,H,th,tw,K,rr,cx,cy,A,L,U:A/ROPE.R,tiles,duo,wh,wy:cy-wh/2};}
+function wfArena(){const R=S.rope,n=S.players.length,gz=$("rpGauge"),W=gz.clientWidth,H=gz.clientHeight;if(!W||!H)return;
+  const fin=isFinal(),camp=rCamp();
+  WG=wfGeo(n,W,H);
+  /* blocs des collectifs (redessinés à chaque fois : scores, joueur actif) */
+  const sc=S.players.map(p=>p.score),prev=WPREV&&WPREV.S===S?WPREV.sc:sc;WPREV={S,sc};
+  const L=leaderOf(),lead=n>2&&L.who.length===1&&L.mx>0?S.players.indexOf(L.who[0]):-1;
+  let h="";
+  if(n===2){const side=(i,cl)=>{const p=S.players[i];return `<div class="h ${cl}${sc[i]>prev[i]?" pop":""}" style="${pcs(p.color)}"><div class="c fit" data-max="26">${esc(colName(p))}</div><div class="row"><span class="p">${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><span class="s">${p.score}</span></div></div>`;};
+    h+=`<div class="wf-duo">${side(0,"l")}<div class="vs">VS</div>${side(1,"r")}</div>`;
+    if(!S.ended)h+=`<div class="wf-mark" style="${S.turn===0?"left:16px":"right:16px"};width:${Math.round(W*.38)}px;top:104px"></div>`;}
+  else WG.tiles.forEach((t,i)=>{const p=S.players[i];
+    h+=`<div class="wf-tile ${t.c}${sc[i]>prev[i]?" pop":""}${WG.th<72?" sm":""}" style="${pcs(p.color)};--tw:${WG.tw}px;height:${WG.th}px;left:${t.x}px;top:${t.y}px"><div class="c fit" data-max="20">${esc(colName(p))}</div><div class="row"><span class="p">${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><span class="s">${p.score}</span></div></div>`;
+    if(i===S.turn&&!S.ended)h+=`<div class="wf-mark" style="left:${t.x+8}px;width:${WG.tw-24}px;top:${t.y===0?WG.th+6:t.y-10}px"></div>`;
+    if(i===lead){const bottom=t.y>0,right=t.c==="R"||t.c==="RB";
+      h+=`<div class="wf-lead" style="${right?`right:${W-t.x+6}px`:`left:${t.x+WG.tw+6}px`};top:${bottom?t.y+46:t.y+4}px">№1 · en tête</div>`;}});
+  $("wfTiles").innerHTML=h;fitNames($("wfTiles"));
+  /* corde : redessinée seulement quand elle change */
+  const key=JSON.stringify([n,W,H,S.players.map(p=>p.color),camp,fin,ROPE.R,ROPE.CAMP,ROPE.BONUS,ROPE.BONUS_FINAL]);
+  const sv=$("wfSvg");
+  if(key!==WKEY||!$("wfKnot")){WKEY=key;sv.setAttribute("width",W);sv.setAttribute("height",H);sv.setAttribute("viewBox",`0 0 ${W} ${H}`);sv.innerHTML=wfRopeSVG(fin,camp);}
+  wfKnot();waveStart();}
+function wfRopeSVG(fin,camp){const G=WG,R=ROPE.R,CP=Math.max(0,Math.min(R,ROPE.CAMP)),U=G.U,K=G.K,rr=G.rr,side=WFSIDE[G.n];let g="";
+  const bon="+"+(fin?ROPE.BONUS_FINAL:ROPE.BONUS),stp=R>14?5:2;
+  S.rope.corners.forEach((q,i)=>{const dx=q.x/ROPE.R,dy=q.y/ROPE.R,nx=-dy,ny=dx,col=S.players[i].color,P=u=>[G.cx+dx*u*U,G.cy+dy*u*U];
+    const [x0,y0]=P(0),[x1,y1]=P(R),[xc,yc]=P(R-CP);
+    g+=`<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" style="stroke:var(--wf-rail)" stroke-width="${12*K}"/>`;
+    if(CP>0){g+=`<line x1="${xc}" y1="${yc}" x2="${x1}" y2="${y1}" stroke="${col}" stroke-opacity=".38" stroke-width="${26*K}"/>`;
+      g+=`<line x1="${xc-nx*13*K}" y1="${yc-ny*13*K}" x2="${xc+nx*13*K}" y2="${yc+ny*13*K}" stroke="${col}" stroke-width="2"/>`;}
+    for(let u=stp;u<R-CP;u+=stp){const [x,y]=P(u),Lh=8*K,s=side[i]*21*K;
+      g+=`<line x1="${x-nx*Lh}" y1="${y-ny*Lh}" x2="${x+nx*Lh}" y2="${y+ny*Lh}" stroke="#3a3a46" stroke-width="2"/>`;
+      g+=`<text x="${x+nx*s}" y="${y+ny*s+5}" text-anchor="middle" class="wf-num">${u}</text>`;}
+    /* bonus du camp : petit rond de la couleur du collectif, au bout de la piste */
+    const [xb,yb]=P(R+(rr+4)/U),on=camp===i;
+    if(on)g+=`<circle cx="${xb}" cy="${yb}" r="${rr}" class="wf-halo" stroke="${col}"/>`;
+    g+=`<circle cx="${xb}" cy="${yb}" r="${rr}" fill="${col}" class="wf-end${on?" on":""}"/><text x="${xb}" y="${yb+rr*.33}" class="wf-bon" font-size="${rr*.94}" fill="${fgOf(col)}">${bon}</text>`;});
+  const kr=21*K;
+  g+=`<line id="wfPull" x1="${G.cx}" y1="${G.cy}" x2="${G.cx}" y2="${G.cy}" stroke-width="${12*K}"/><g id="wfChev"></g>`;
+  g+=`<circle cx="${G.cx}" cy="${G.cy}" r="6" style="fill:var(--wf-bg);stroke:var(--wf-acid)" stroke-width="2"/>`;
+  g+=`<g id="wfKnot" transform="translate(${G.cx} ${G.cy})"><circle id="wfRing" r="${kr}"/><g id="wfKnotS"><circle id="wfKnotC" r="${kr}" fill="#fff" stroke-width="4"/><text id="wfKnotN" y="${7.5*K}" font-size="${21*K}"></text></g></g>`;
+  return g;}
+/* position du nœud (appelée à chaque image pendant qu'il glisse) */
+function wfKnot(){const k=$("wfKnot");if(!k||!WG||!S||!S.rope)return;const V=ropeViewPos(),G=WG,U=G.U,x=G.cx+V.x*U,y=G.cy+V.y*U,br=RVIEW.br,d=RVIEW.d;
+  const col=br!==null&&br!==undefined&&d>0?S.players[br].color:null;
+  k.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+  const pl=$("wfPull");pl.setAttribute("x2",x.toFixed(1));pl.setAttribute("y2",y.toFixed(1));pl.setAttribute("stroke",col||"transparent");
+  const kc=$("wfKnotC");kc.setAttribute("stroke",col||"transparent");
+  let ch="";if(col){const q=S.rope.corners[br],dx=q.x/ROPE.R,dy=q.y/ROPE.R,deg=Math.atan2(dy,dx)*180/Math.PI;
+    for(let j=0;j<2;j++){const u=d-1.3-j;if(u<.6)break;ch+=`<g transform="translate(${(G.cx+dx*u*U).toFixed(1)} ${(G.cy+dy*u*U).toFixed(1)}) rotate(${deg.toFixed(1)}) scale(${G.K})"><polygon points="-6,-9 5,0 -6,9 -11,9 -1,0 -11,-9" fill="#060608" opacity="${.85-j*.35}"/></g>`;}}
+  $("wfChev").innerHTML=ch;
+  const tn=$("wfKnotN");tn.textContent=WCD?WCD.n:fmtD(d);tn.classList.toggle("cd",!!WCD);}
+/* décompte des 4 derniers temps du cycle sur le nœud (appelé à l'instant où le temps est entendu) */
+function wfBeat(left,last){const s=$("wfKnotS"),rg=$("wfRing");if(!s)return;
+  s.classList.remove("beat","last");void s.getBoundingClientRect();s.classList.add("beat");if(last)s.classList.add("last");
+  if(rg){rg.classList.remove("go");void rg.getBoundingClientRect();rg.classList.add("go");}
+  WCD={n:left};wfKnot();clearTimeout(wfBeat.t);wfBeat.t=setTimeout(()=>{WCD=null;wfKnot();},420);}
+/* bandeau du bas : ce qui vient de se passer ; il défile quand le texte est trop long */
+function wfTicker(a,b){const el=$("rpLog"),html=`<div class="in"><span>${a}</span>${b?`<i></i><span>${b}</span>`:""}</div>`;
+  if(el.dataset.h===html)return;el.dataset.h=html;el.innerHTML=html;
+  const over=el.firstChild.scrollWidth-(el.clientWidth-32);el.classList.toggle("defile",over>0);
+  if(over>0){el.style.setProperty("--w",over+"px");el.style.setProperty("--d",Math.max(5,over/28+3).toFixed(1)+"s");}}
+/* pistes en attente : nombre de temps avant le départ de la boucle (mis à jour à chaque temps) */
+function wfWaits(){document.querySelectorAll("#rpTracks .tk.wait[data-seq]").forEach(el=>{const b=el.querySelector(".st b");if(b)b.textContent=plWait(+el.dataset.seq);});}
+function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],fin=isFinal();
+  const rp=$("rope");rp.classList.toggle("sim",!!S.sim);rp.style.setProperty("--ah",n===2?"250px":"430px");
+  $("rpTitle").textContent=S.sim?"Essai":"Live";$("rpLive").classList.toggle("essai",!!S.sim);$("rpMode").textContent="";$("rpCam").hidden=!!S.sim;
+  if(S.sim)$("rpCamErr").hidden=true;
+  $("rpRound").innerHTML=`<b>${fin?"🔥 Dernière manche":"Manche "+R.round+"/"+ROPE.ROUNDS}</b><div class="wf-pips">${[...Array(ROPE.ROUNDS)].map((_,k)=>{const r=k+1,done=r<R.round||S.ended,now=r===R.round&&!S.ended;
+    return `<i class="${done?"on":now?"now":""}${r===ROPE.ROUNDS?" f":""}">${now?`<em style="width:${Math.round(R.played.length/n*100)}%"></em>`:""}</i>`;}).join("")}</div>`;
+  const tu=$("rpTurn");tu.style.setProperty("--pc",pl.color);tu.classList.toggle("fin",!!S.ended);
+  tu.innerHTML=S.ended?`<span class="k">Partie terminée</span>`:`<span class="k">À toi</span><span class="n wf-ell">${esc(pl.name)}</span><span class="t wf-ell">${esc(colName(pl))}${fin?" · ×2":""} ▸</span>`;
   $("rpBpm").textContent="♩ "+Math.round(curBpm)+" BPM";
-  if(pxReady()){/* carte graphique : le SVG, vide et invisible, ne sert plus qu'à la mise en page */
-    const gz=$("rpGauge");
-    if(gz.dataset.lk!==vb||!gz.querySelector("svg.rp-svg")){gz.innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}" style="visibility:hidden"></svg>`;gz.dataset.lk=vb;PX.box=null;}
-    pxSync({n,C,colors:S.players.map(p=>p.color),camp,fin,col,vb});}
-  else{$("rpGauge").dataset.lk="";
-    $("rpGauge").innerHTML=`<div class="rp-cd" id="rpCd"></div><svg viewBox="${vb}" class="rp-svg ${n===2?"line":""}">${g}</svg>`;
-    $("rpGauge").prepend(spiralCanvas());spiralStart();}
-  ropeAnimate();
+  wfArena();ropeAnimate();
   const LKN=new Set(PORDER.filter(p=>R.locks[p]!==undefined&&!(LKSEEN.S===S&&LKSEEN.k.has(p+":"+R.round))));
   LKSEEN={S,k:new Set(PORDER.filter(p=>R.locks[p]!==undefined).map(p=>p+":"+R.round))};
-  $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),now=!!(t&&plIsPlaying(t.seq)),lk=R.locks[p]!==undefined;
-    const hd=`<div class="rp-h"><b class="rp-L">${FLET[p]}</b>${now?'<span class="rp-now">♪</span>':""}${R.projo[p]?'<span>🔦</span>':""}${t&&t.sab?'<span>🚫</span>':""}</div><div class="rp-pn">${PISTES[p]}</div>`;
-    if(!t)return `<div class="rp-tr empty">${hd}<div class="rp-empty">libre</div></div>`;
-    const o=S.players[t.owner],v=RV[t.id];
-    return `<div class="rp-tr${now?" now":""}${lk?" lk":""}${LKN.has(p)?" lknew":""}" style="--kc:${o.color}">${hd}
-      <div class="rp-card"><span class="rp-star">${t.sab?0:v[0]*(fin?2:1)*(R.projo[p]?2:1)}</span><span class="rp-gl">${DECKS[CARDS[t.id].deck].glyph}</span></div><div class="rp-own" style="color:${o.color}">${esc(o.name)}</div></div>`;}).join("");
-  $("rpLog").innerHTML=(R.log||"Scanne une carte.")+(S.ended?"":`<small class="rp-hint">${R.actUsed?"Action jouée ce tour":"Action possible avant ta carte"} · fin de tour : pioche ton deck <b>ou</b> une Action</small>`);
+  $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),lk=R.locks[p]!==undefined,hd=`<div class="k">${FLET[p]}</div><div class="n">${PISTES[p]}</div>`;
+    if(!t)return `<div class="tk free">${hd}<div class="lib">Libre</div></div>`;
+    const o=S.players[t.owner],v=RV[t.id],now=plIsPlaying(t.seq),wait=!now&&plIsPending(t.seq)&&!S.ended,pts=t.sab?0:v[0]*(fin?2:1)*(R.projo[p]?2:1);
+    const tags=(lk?'<span class="tag lock">🔒</span>':"")+(R.projo[p]?'<span class="tag">🔦 ×2</span>':"")+(t.sab?'<span class="tag sab">🚫</span>':"");
+    if(wait)return `<div class="tk wait${lk?" lk":""}" data-seq="${t.seq}" style="${pcs(o.color)}">${hd}<div class="tags">${tags}</div><div class="st"><b>${plWait(t.seq)}</b><small>TEMPS</small></div><div class="o">${esc(colName(o))} ★${pts}</div></div>`;
+    return `<div class="tk own${now?" now":""}${lk?" lk":""}${LKN.has(p)?" lknew":""}${t.sab?" sab":""}" style="${pcs(o.color)}">${hd}${now?'<div class="eq"><i></i><i></i><i></i><i></i></div>':""}<div class="tags">${tags}</div><div class="st">★${pts}</div><div class="o">${esc(colName(o))}</div></div>`;}).join("");
+  wfTicker(R.log||"Scanne une carte.",S.ended?"":`${R.actUsed?"Action jouée ce tour":"Action possible avant ta carte"} · fin de tour : pioche ton deck <b>ou</b> une Action`);
   $("undoBtnR").disabled=!undoStack.length;
-  renderSim();$("latV").textContent=USERLAT+" ms";$("rpTitle").textContent=S.sim?"🧪 ESSAI":"🪢 LA CORDE";
+  renderSim();$("latV").textContent=USERLAT+" ms";
 }
+window.addEventListener("resize",()=>{if(S&&S.rope&&!$("rope").hidden)render();});
 function creak(lv){if(!ctx||!soundOn)return;const t=ctx.currentTime+.02,n=2+Math.round(lv*3);
   for(let j=0;j<n;j++){const s=ctx.createBufferSource();s.buffer=noiseBuf();const f=bq("bandpass",300+lv*500+Math.random()*200,18),g=ctx.createGain(),tt=t+j*(.07+Math.random()*.05);
     f.frequency.setValueAtTime(f.frequency.value,tt);f.frequency.exponentialRampToValueAtTime(f.frequency.value*(1.6+lv),tt+.09);
@@ -1196,9 +1137,8 @@ $("passR").onclick=()=>{if(!S||!S.rope||S.ended||pending||RWAIT)return;snap();S.
 /* ↶ : annule la dernière action (la partie revient à l'état d'avant) */
 $("undoBtnR").onclick=()=>{if(!S||!undoStack.length)return;S=JSON.parse(undoStack.pop());pending=null;$("layer").innerHTML="";render();toast("Dernière action annulée");};
 /* ✕ : demande confirmation, par-dessus l'écran en cours (rien n'est effacé si on continue) */
-$("quitR").onclick=()=>{if($("quitAsk"))return;const el=document.createElement("div");el.className="overlay";el.id="quitAsk";el.style.zIndex="60";
-  el.innerHTML=`<div class="sheet"><h2>Quitter la partie ?</h2><p class="note" style="margin:0">Les scores et la musique en cours seront effacés.</p>
-    <div class="row"><button class="btn" id="noNew">Continuer celle-ci</button><button class="btn main" id="yesNew">Quitter</button></div></div>`;
+$("quitR").onclick=()=>{if($("quitAsk"))return;const el=document.createElement("div");el.className="wf-ov";el.id="quitAsk";el.style.zIndex="60";
+  el.innerHTML=`<div class="wf-band" style="${pcs("#F4F4F6")}"><div><div class="bt" style="font-style:normal;font-size:34px">Quitter la partie ?</div><div class="bs">Les scores et la musique en cours seront effacés.</div></div></div><button class="wf-btn main" id="noNew">Continuer celle-ci</button><button class="wf-btn danger" id="yesNew">Quitter</button>`;
   document.body.appendChild(el);$("noNew").onclick=()=>el.remove();$("yesNew").onclick=()=>{el.remove();setup();};};
 
 /* ================= Cartes scannées ================= */
@@ -1420,17 +1360,38 @@ async function getFile(url){try{const r=await fetch(url,{cache:"no-cache"});retu
 let PRE=null,mp3Info="",SAMPINIT=null;
 /* liste des fichiers du dépôt GitHub qui héberge la page (une seule requête, sans compte) ; null si indisponible */
 async function listRepo(){
-  let cached=null;try{cached=JSON.parse(localStorage.getItem("ts-tree")||"null");}catch(e){}
+  let cached=null;try{cached=JSON.parse(localStorage.getItem("ts-tree2")||"null");}catch(e){}
   if(cached&&Date.now()-cached.t<20*60e3&&Array.isArray(cached.list))return cached.list;
   const fresh=await listRepoNet();
-  if(fresh){try{localStorage.setItem("ts-tree",JSON.stringify({t:Date.now(),list:fresh}));}catch(e){}return fresh;}
+  if(fresh){try{localStorage.setItem("ts-tree2",JSON.stringify({t:Date.now(),list:fresh}));}catch(e){}return fresh;}
   return cached&&Array.isArray(cached.list)?cached.list:null;}
 async function listRepoNet(){try{const h=location.hostname;if(!/\.github\.io$/i.test(h))return null;const owner=h.split(".")[0];
     const seg=location.pathname.split("/").filter(Boolean);const repo=seg.length&&!/\.html?$/i.test(seg[0])?seg[0]:owner+".github.io";
     for(const br of ["HEAD","main","master"]){const r=await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/git/trees/"+br+"?recursive=1");
       if(!r.ok)continue;const j=await r.json();if(!j.tree)continue;
-      return j.tree.filter(x=>x.type==="blob"&&/^sons\//.test(x.path)).map(x=>x.path);}
+      return j.tree.filter(x=>x.type==="blob"&&/^(sons|design)\//.test(x.path)).map(x=>x.path);}
   }catch(e){}return null;}
+/* ===== Fond de l'app : une image ou une vidéo du dossier « design » de ton dépôt GitHub =====
+   fond.mp4 ou fond.webm (vidéo en boucle, sans le son), sinon fond.webp, .jpg, .jpeg, .png ou .gif (image).
+   Le voile qui l'assombrit se règle dans theme.css (--wf-fond-voile). Sans fichier : le fond uni du thème. */
+const FONDS=["fond.mp4","fond.webm","fond.webp","fond.jpg","fond.jpeg","fond.png","fond.gif"];
+async function fondInit(){if(location.protocol==="file:")return;
+  let name=null;try{name=localStorage.getItem("ts-fond")||null;}catch(e){}
+  const list=await listRepo().catch(()=>null);
+  if(list){const low=list.map(x=>x.normalize("NFC").toLowerCase());name=FONDS.find(f=>low.includes("design/"+f))||null;}
+  else if(!name){/* pas de liste (pas sur GitHub, ou hors ligne) : on essaie les noms un par un */
+    for(const f of FONDS){try{const r=await fetch("design/"+f,{method:"HEAD",cache:"no-cache"});if(r.ok){name=f;break;}}catch(e){break;}}}
+  try{name?localStorage.setItem("ts-fond",name):localStorage.removeItem("ts-fond");}catch(e){}
+  const box=$("wfFond");if(!box)return;
+  if(!name){box.innerHTML="";document.body.classList.remove("a-fond");return;}
+  const url="design/"+name;
+  try{if(/\.(mp4|webm)$/i.test(name)){const r=await fetch(url);if(!r.ok)throw new Error("fond");const v=document.createElement("video");
+      v.muted=true;v.loop=true;v.autoplay=true;v.playsInline=true;v.setAttribute("playsinline","");v.setAttribute("muted","");v.src=URL.createObjectURL(await r.blob());
+      box.innerHTML="";box.appendChild(v);v.play().catch(()=>{});
+      document.addEventListener("visibilitychange",()=>{if(!document.hidden)v.play().catch(()=>{});});}
+    else await new Promise((ok,ko)=>{const im=new Image();im.onload=()=>{box.innerHTML="";box.appendChild(im);ok();};im.onerror=ko;im.src=url;});
+    document.body.classList.add("a-fond");}
+  catch(e){console.warn("fond",e);box.innerHTML="";document.body.classList.remove("a-fond");}}
 function preloadSons(){
   if(PRE)return PRE;
   if(location.protocol==="file:"){mp3Info="MP3 : ouvre la page depuis GitHub pour charger le dossier sons";return PRE=Promise.resolve({set:null,files:{},pools:{},one:{}});}
@@ -1589,19 +1550,15 @@ let curBeat=0;
 function showBeat(b){curBeat=b;
   if(S&&S.rope){const bp=$("rpBpm");if(bp)bp.textContent="♩ "+Math.round(curBpm)+" BPM";
     const rc=$("rpCycle");if(rc)rc.querySelectorAll("i").forEach((d,i)=>{d.className=(i===b?"now ":"")+(i<b?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":"");});
-    if(b>=12&&!S.ended&&!plIdle()){const last=b===15,k=$("rpKnot"),rg=$("rpRing");
-      if(pxReady())pxBeat(16-b,last);
-      if(k){k.classList.remove("beat","last");void k.getBoundingClientRect();k.classList.add("beat");if(last)k.classList.add("last");}
-      if(rg){rg.classList.remove("go");void rg.getBoundingClientRect();rg.classList.add("go");}
-      const kn=$("rpKnotN");if(kn){kn.textContent=16-b;kn.classList.remove("go");void kn.getBoundingClientRect();kn.classList.add("go");}}}
+    if(b>=12&&!S.ended&&!plIdle())wfBeat(16-b,b===15);
+    wfWaits();}
   countTick(b);}
 /* petite fenêtre animée : décompte des temps jusqu'au départ de la carte posée */
 let countId=null,countClose=null;
-function openCount(e){const D=DECKS[CARDS[e.id].deck];
+function openCount(e){const c=CARDS[e.id],o=S.players[e.owner];
   if(plIsPlaying(e.seq))return;countId=e.seq;clearTimeout(countClose);let el=$("countModal");
   if(!el){el=document.createElement("div");el.id="countModal";document.body.appendChild(el);}
-  el.style.setProperty("--dc",D.color);
-  el.innerHTML=`<div class="mc-box"><b class="mc-num" id="cmNum"></b><div class="mc-dots" id="cmDots">${"<i></i>".repeat(16)}</div></div>`;
+  el.innerHTML=`<div class="lab">${FLET[c.piste]} · ${PISTES[c.piste]} · ${esc(colName(o))} ★${RV[e.id][0]*(isFinal()?2:1)}</div><b class="mc-num" id="cmNum"></b><div class="sub">temps avant le départ de la boucle</div><div class="mc-dots" id="cmDots">${"<i></i>".repeat(16)}</div>`;
   el.className="mini show";document.body.classList.add("cd-on");countTick(curBeat);}
 function countTick(){
   if(!countId)return;const el=$("countModal");if(!el)return;const num=$("cmNum");
@@ -1685,7 +1642,9 @@ async function startCamera(){
   camState("on",camRes);
   scanning=true;fpsT=performance.now();nextFrame();
 }
-function camState(st,info){const c=$("camChip");c.className="cam "+st;c.textContent=st==="on"?"● Caméra":st==="off"?"● Caméra coupée":"● Caméra";c.title=info||"";}
+function camState(st,info){const c=$("camChip");c.className="cam "+st;c.textContent=st==="on"?"● Caméra":st==="off"?"● Caméra coupée":"● Caméra";c.title=info||"";
+  const rc=$("rpCam");if(rc)rc.classList.toggle("off",st==="off");
+  const ce=$("rpCamErr");if(ce){ce.hidden=st!=="off"||!!(S&&S.sim);if(st==="off")ce.innerHTML=`<b>◉ Caméra indisponible</b>${esc(info||"")}`;}}
 function camOff(t,sub,quiet){camState(quiet?"":"off",t+" · "+sub);if(!quiet)toast(t+" : "+sub,true);}
 /* la vidéo est invisible : on lit chaque nouvelle image avec requestAnimationFrame */
 let lastVT=-1;
@@ -1808,7 +1767,7 @@ function showOff(){const el=$("offStatus");if(!el)return;el.innerHTML=offHTML();
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;showOff();});
 addEventListener("appinstalled",()=>{installEvt=null;showOff();toast("App installée sur l'écran d'accueil");});
 /* liste des sons du dépôt (celle que l'app a récupérée au démarrage) */
-function treeSons(){try{const c=JSON.parse(localStorage.getItem("ts-tree")||"null");return c&&Array.isArray(c.list)?c.list:null;}catch(e){return null;}}
+function treeSons(){try{const c=JSON.parse(localStorage.getItem("ts-tree2")||"null");return c&&Array.isArray(c.list)?c.list.filter(x=>/^sons\//.test(x)):null;}catch(e){return null;}}
 const sonURL=p=>new URL(p.split("/").map(encodeURIComponent).join("/"),location.href).href;
 /* télécharge ce qui manque encore sur le téléphone (ex. la toute première ouverture, avant que sw.js soit actif) */
 let filling=false;
@@ -1842,8 +1801,7 @@ if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostnam
 showOff();
 
 $("verTag").textContent=VERSION;
-$("rpBpm").onclick=()=>{if(!PX.on)return toast("Visuels : ancien dessin (carte graphique indisponible)");PX.showFps=!PX.showFps;if(PX.fpsTx)PX.fpsTx.text=PX.showFps?"…":"";};
-pxBoot();statsFlush();
+statsFlush();fondInit();
 preloadSons().then(remplirHorsLigne);
 camOff("Caméra pas encore lancée","Elle démarre avec la partie.",true);setup();
 </script>

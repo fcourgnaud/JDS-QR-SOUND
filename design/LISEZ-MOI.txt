@@ -1,0 +1,11 @@
+Dossier « design » de Tribes Showdown
+
+Pour mettre un fond à l'app, dépose ici UN fichier nommé :
+  - fond.mp4 ou fond.webm  → vidéo (elle tourne en boucle, sans le son)
+  - ou fond.jpg, fond.jpeg, fond.png, fond.webp, fond.gif → image
+
+L'app le prend toute seule au lancement suivant (et le garde pour jouer hors ligne).
+Pour le retirer : supprime le fichier.
+Le voile qui assombrit le fond (pour garder le jeu lisible) se règle en haut de theme.css :
+  --wf-fond-voile:.55;   (0 = aucun voile, 1 = noir)
+Conseil : une vidéo courte et légère (quelques Mo, format portrait 9:16) se charge plus vite.

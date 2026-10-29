@@ -2,13 +2,15 @@
    La version vient de index.html (sw.js?v=…) : il n'y a RIEN à modifier ici quand tu publies.
    - index.html : réseau d'abord (3 s max), sinon la copie sur le téléphone → une nouvelle version arrive au lancement suivant, jamais en pleine partie
    - sons/ : copie sur le téléphone d'abord (démarrage instantané), puis vérification discrète en ligne ; un MP3 remplacé sur GitHub est mis à jour pour la partie suivante
-   - polices (Google Fonts), lecteur de QR (jsQR.js) et dessin de la corde (pixi.min.js) : gardés sur le téléphone
+   - theme.css (l'apparence) : réseau d'abord (3 s max), sinon la copie : une retouche du thème se voit au lancement suivant
+   - design/ (fond image ou vidéo) : copie sur le téléphone d'abord, puis vérification discrète en ligne
+   - polices (Google Fonts) et lecteur de QR (jsQR.js) : gardés sur le téléphone
    - les cartes viennent de ton Google Sheet (lues par la page elle-même, la dernière copie est gardée par la page) */
 const V = new URL(self.location).searchParams.get("v") || "dev";
-const APP = "ts-app-" + V, SONS = "ts-sons", EXT = "ts-ext";
-const SHELL = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png", "jsQR.js", "pixi.min.js"];
+const APP = "ts-app-" + V, SONS = "ts-sons", EXT = "ts-ext", DESIGN = "ts-design";
+const SHELL = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-32.png", "jsQR.js", "theme.css"];
 const EXT_URLS = [
-  "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Bungee&family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&display=swap"
+  "https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Bungee&family=Chakra+Petch:wght@500;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;700;800;900&display=swap"
 ];
 
 self.addEventListener("install", e => {
@@ -51,6 +53,39 @@ self.addEventListener("fetch", e => {
         if (r.ok) { await c.put(key, r.clone()); return r; }
       } catch (err) {}
       return (await c.match(key)) || (await c.match(req, { ignoreSearch: true })) || sansReseau();
+    })());
+    return;
+  }
+
+  /* l'apparence (theme.css) : en ligne d'abord, pour qu'une retouche se voie tout de suite */
+  if (url.origin === location.origin && /\/theme\.css$/.test(url.pathname)) {
+    e.respondWith((async () => {
+      const c = await caches.open(APP);
+      try {
+        const r = await timeout(fetch(url.origin + url.pathname, { cache: "no-cache" }), 3000);
+        if (r.ok) { await c.put("theme.css", r.clone()); return r; }
+      } catch (err) {}
+      return (await c.match("theme.css")) || (await c.match(req, { ignoreSearch: true })) || sansReseau();
+    })());
+    return;
+  }
+
+  /* le fond (dossier design) : copie d'abord, vérification en ligne derrière */
+  if (url.origin === location.origin && url.pathname.includes("/design/")) {
+    const fin = garder(e);
+    e.respondWith((async () => {
+      const c = await caches.open(DESIGN);
+      const key = url.origin + url.pathname;
+      const hit = await c.match(key);
+      const net = fetch(key, { cache: "no-cache" }).then(async r => {
+        const tag = x => x && (x.headers.get("etag") || x.headers.get("last-modified"));
+        if (r.ok) { if (!hit || !tag(r) || tag(r) !== tag(hit)) await c.put(key, r.clone()); }
+        else if (r.status === 404) await c.delete(key);
+        return r;
+      });
+      net.then(fin, fin);
+      if (hit) return hit;
+      try { return await net; } catch (err) { return sansReseau(); }
     })());
     return;
   }
