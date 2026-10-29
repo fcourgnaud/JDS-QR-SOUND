@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>World Tribal Music Showdown</title>
 <meta name="apple-mobile-web-app-title" content="Showdown">
 <!-- app installable et hors ligne (PWA) -->
@@ -393,6 +393,7 @@ details.outils{border:1px solid var(--line);border-radius:12px;padding:8px 12px;
 </style>
 <!-- apparence du jeu : couleurs, polices, fond et style des écrans (modifiable sans toucher au jeu) -->
 <link rel="stylesheet" href="theme.css">
+<style>html,body{touch-action:pan-x pan-y}button,a,input,select,label{touch-action:manipulation}input,select,textarea{font-size:max(16px,1em)}</style>
 
 <body>
 <div id="wfFond"></div>
@@ -445,7 +446,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v106";
+const VERSION="v108";
 /* Tribes Showdown — deux versions du jeu : 🪢 La Corde (on scanne les cartes) et 🧪 Essai (la même partie, decks à l'écran).
    Les valeurs des cartes et les règles chiffrées viennent de ton Google Sheet (voir « Cartes et règles » plus bas). */
 /* ================= Données ================= */
@@ -504,10 +505,11 @@ let SETUP=null;const OPEN={};
 function setup(view){let VIEW=view==="classic"?"classic":"home";stopEverything();document.body.classList.remove("cd-on");try{if(WAKE)WAKE.release();}catch(e){}S=null;RWAIT=null;setRope(false);   /* plus aucune partie en mémoire : rien ne rejoue en fond */
   const J=joueursLus();let n=J?J.n:2;const pls=J?J.pls:[{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"},{name:"Joueur 3",deck:"E"},{name:"Joueur 4",deck:"S"}];
   const save=()=>{for(let i=0;i<n;i++){const e=$("pn"+i);if(e)pls[i].name=e.value;}joueursGarder(n,pls);};
-  const drawHome=()=>{document.body.classList.add("home");const max=modeChoice==="corde"?4:3;if(n>max)n=max;const intro=!HOMEIN;HOMEIN=true;
-    const tiles=pls.slice(0,n).map((p,i)=>`<div class="hm-t" style="${pcs(DECKS[p.deck].color)}"><button class="c" data-i="${i}" title="Changer de collectif">${esc(DECKS[p.deck].name)} <span>⇄</span></button><label class="p"><input type="text" id="pn${i}" value="${esc(p.name)}" maxlength="18" aria-label="Prénom du joueur ${i+1}" autocomplete="off"><span>✎</span></label></div>`).join("")+(n<max?`<button class="hm-t add" id="hmAdd">+ Joueur</button>`:"");
+  const drawHome=()=>{document.body.classList.add("home");const max=4;if(n>max)n=max;   /* l'accueil lance toujours La Corde, de 2 à 4 joueurs (Essai : par la roue ⚙) */const intro=!HOMEIN;HOMEIN=true;
+    const roue=`conic-gradient(${Object.keys(DECKS).map((d,k)=>`${DECKS[d].color} ${k*25}% ${(k+1)*25}%`).join(",")})`;
+    const tiles=pls.slice(0,n).map((p,i)=>`<div class="hm-t" style="${pcs(DECKS[p.deck].color)}"><div class="c">${esc(DECKS[p.deck].name)}</div><button class="hm-wheel" data-i="${i}" style="background:${roue}" aria-label="Choisir la couleur du joueur ${i+1}"></button><label class="p"><input type="text" id="pn${i}" value="${esc(p.name)}" maxlength="18" aria-label="Prénom du joueur ${i+1}" autocomplete="off"><span>✎</span></label></div>`).join("")+(n<max?`<button class="hm-t add" id="hmAdd">+ Joueur</button>`:"");
     $("layer").innerHTML=`<div class="wf-home${intro?" intro":""}"><canvas id="homeWave"></canvas>
-      <div class="hm-top"><span class="wf-live"><i></i>Live · ${modeChoice==="mp3"?"Essai":"La Corde"}</span><button class="hm-gear" id="toClassic" title="Paramètres" aria-label="Paramètres">${GEAR}</button></div>
+      <div class="hm-top"><span class="wf-live"><i></i>Live · La Corde</span><button class="hm-gear" id="toClassic" title="Paramètres" aria-label="Paramètres">${GEAR}</button></div>
       <h1 class="hm-title"><span class="l1">World</span><span class="l2">Tribal</span><span class="l3">Music</span><span class="l4">Showdown</span></h1>
       <section class="hm-pl"><div class="hm-row"><span class="hm-lab">Joueurs</span>${[2,3,4].filter(k=>k<=max).map(k=>`<button class="hm-n${k===n?" on":""}" data-n="${k}">${k}</button>`).join("")}</div><div class="hm-grid">${tiles}</div></section>
       <section class="hm-ms"><span class="hm-lab">🎧 Décalage</span><button id="calM" aria-label="moins 10 ms">−</button><b id="calV">${(USERLAT>0?"+":"")+USERLAT}<small>ms</small></b><button id="calP" aria-label="plus 10 ms">+</button><button class="hm-test" id="calTest">▶ Tester</button><i id="calDot"></i></section>
@@ -516,18 +518,24 @@ function setup(view){let VIEW=view==="classic"?"classic":"home";stopEverything()
     homeFit();if(!HW.raf)HW.raf=requestAnimationFrame(homeWave);
     document.querySelectorAll(".hm-n").forEach(b=>b.onclick=()=>{save();n=+b.dataset.n;draw();});
     const ad=$("hmAdd");if(ad)ad.onclick=()=>{save();n=Math.min(max,n+1);draw();};
-    document.querySelectorAll(".hm-t .c").forEach(b=>b.onclick=()=>{save();const i=+b.dataset.i,ks=Object.keys(DECKS),d=ks[(ks.indexOf(pls[i].deck)+1)%ks.length],j=pls.findIndex(p=>p.deck===d);
-      if(j>=0&&j!==i)pls[j].deck=pls[i].deck;pls[i].deck=d;draw();});
+    /* petite roue de couleurs : elle ouvre la palette des 4 collectifs (la zone du prénom reste à part) */
+    const palClose=()=>{const q=$("hmPal");if(q)q.remove();};
+    document.querySelectorAll(".hm-wheel").forEach(b=>b.onclick=e=>{e.stopPropagation();save();const i=+b.dataset.i,was=$("hmPal");palClose();if(was&&was.dataset.i==i)return;
+      const r=b.getBoundingClientRect(),q=document.createElement("div");q.id="hmPal";q.className="hm-pal";q.dataset.i=i;
+      q.innerHTML=Object.keys(DECKS).map(d=>{const who=pls.findIndex((p,k)=>k<n&&p.deck===d);return `<button data-d="${d}" class="${pls[i].deck===d?"on":""}"><i style="background:${DECKS[d].color}"></i><span>${esc(DECKS[d].name)}</span>${who>=0&&who!==i?`<small>${esc(pls[who].name)}</small>`:""}</button>`;}).join("");
+      document.body.appendChild(q);const w=q.offsetWidth;q.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right-w))+"px";q.style.top=(r.bottom+6)+"px";
+      q.onclick=ev=>{const c=ev.target.closest("button[data-d]");if(!c)return;const d=c.dataset.d,j=pls.findIndex(p=>p.deck===d);if(j>=0&&j!==i)pls[j].deck=pls[i].deck;pls[i].deck=d;palClose();save();draw();};});
+    document.querySelector(".wf-home").addEventListener("click",e=>{if(!e.target.closest(".hm-pal,.hm-wheel"))palClose();});
     pls.slice(0,n).forEach((_,i)=>{const e=$("pn"+i);if(e)e.onchange=()=>save();});
     const setL=v=>{USERLAT=Math.max(-200,Math.min(700,Math.round(+v||0)));try{localStorage.setItem("ts-lat",USERLAT);}catch(e){}$("calV").innerHTML=(USERLAT>0?"+":"")+USERLAT+"<small>ms</small>";};
     $("calM").onclick=()=>setL(USERLAT-10);$("calP").onclick=()=>setL(USERLAT+10);
     $("calTest").onclick=()=>{if(CALT)calStop();else calStart();};
     $("toClassic").onclick=()=>{save();calStop();VIEW="classic";draw();};
     $("go").onclick=()=>{if(MICBUSY)return toast("Attends la fin de la mesure au micro");calStop();save();
-      startRope(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})),modeChoice==="mp3");};
+      $("hmPal")&&$("hmPal").remove();startRope(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})),false);};
     showOff();};
 
-  const draw=()=>{if(modeChoice!=="corde"&&n>3)n=3;if(VIEW==="home")return drawHome();document.body.classList.remove("home");
+  const draw=()=>{if(VIEW==="home")return drawHome();if(modeChoice!=="corde"&&n>3)n=3;document.body.classList.remove("home");
     $("layer").innerHTML=`<div class="overlay"><div class="sheet">
       <h2>Nouvelle partie <small class="ver">${VERSION}</small><button class="chip" id="toHome" style="float:right;font-size:14px">← Accueil</button></h2>
       <div><span class="label">Version du jeu</span><div class="mode"><button data-m="corde" class="${modeChoice==="corde"?"sel":""}">🪢 La Corde<small>tir à la corde musical, 2 à 4</small></button><button data-m="mp3" class="${modeChoice==="mp3"?"sel":""}">🧪 Essai<small>la partie, avec les decks à l'écran (sans scanner)</small></button></div></div>
@@ -1182,7 +1190,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],fin
   LKSEEN={S,k:new Set(PORDER.filter(p=>R.locks[p]!==undefined).map(p=>p+":"+R.round))};
   $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),lk=R.locks[p]!==undefined,hd=`<div class="k">${FLET[p]}</div><div class="n">${PISTES[p]}</div>`;
     if(!t)return `<div class="tk free">${hd}<div class="lib">Libre</div></div>`;
-    const o=S.players[t.owner],v=RV[t.id],now=plIsPlaying(t.seq),wait=!now&&plIsPending(t.seq)&&!S.ended,pts=t.sab?0:v[0]*(fin?2:1)*(R.projo[p]?2:1);
+    const o=S.players[t.owner],v=RV[t.id],now=plHeard(t.seq),wait=!now&&!S.ended&&plVisible().some(x=>x.t.seq===t.seq),pts=t.sab?0:v[0]*(fin?2:1)*(R.projo[p]?2:1);
     const tags=(R.projo[p]?'<span class="tag">🔦 ×2</span>':"")+(t.sab?'<span class="tag sab">🚫</span>':"");
     if(wait)return `<div class="tk wait${lk?" lk":""}" data-seq="${t.seq}" style="${pcs(o.color)}">${hd}<div class="tags">${tags}</div><div class="st"><b>${plWait(t.seq)}</b><small>TEMPS</small></div><div class="o">${esc(colName(o))} ★${pts}</div></div>`;
     return `<div class="tk own${now?" now":""}${lk?" lk":""}${LKN.has(p)?" lknew":""}${t.sab?" sab":""}" style="${pcs(o.color)}">${hd}${now?'<div class="eq"><i></i><i></i><i></i><i></i></div>':""}<div class="tags">${tags}</div><div class="st">★${pts}</div><div class="o">${esc(colName(o))}</div></div>`;}).join("");
@@ -1620,13 +1628,13 @@ function showBeat(b){curBeat=b;
 /* petite fenêtre animée : décompte des temps jusqu'au départ de la carte posée */
 let countId=null,countClose=null;
 function openCount(e){const c=CARDS[e.id],o=S.players[e.owner];
-  if(plIsPlaying(e.seq))return;countId=e.seq;clearTimeout(countClose);let el=$("countModal");
+  if(plHeard(e.seq))return;countId=e.seq;clearTimeout(countClose);let el=$("countModal");
   if(!el){el=document.createElement("div");el.id="countModal";document.body.appendChild(el);}
   el.innerHTML=`<div class="lab">${FLET[c.piste]} · ${PISTES[c.piste]} · ${esc(colName(o))} ★${RV[e.id][0]*(isFinal()?2:1)}</div><b class="mc-num" id="cmNum"></b><div class="sub">temps avant le départ de la boucle</div><div class="mc-dots" id="cmDots">${"<i></i>".repeat(16)}</div>`;
   el.className="mini show";document.body.classList.add("cd-on");countTick(curBeat);}
 function countTick(){
   if(!countId)return;const el=$("countModal");if(!el)return;const num=$("cmNum");
-  if(plIsPlaying(countId)||!plIsPending(countId)){countId=null;el.classList.add("out");document.body.classList.remove("cd-on");countClose=setTimeout(()=>{el.className="mini";},350);return;}
+  if(plHeard(countId)||!plVisible().some(v=>v.t.seq===countId)){countId=null;el.classList.add("out");document.body.classList.remove("cd-on");countClose=setTimeout(()=>{el.className="mini";},350);return;}
   const left=plWait(countId);el.classList.add("show");document.body.classList.add("cd-on");
   num.textContent=left;num.classList.toggle("gold",left<=4);num.classList.remove("pop");void num.offsetWidth;num.classList.add("pop");
   const b0=curBeat%16;$("cmDots").querySelectorAll("i").forEach((d,i)=>d.className=(i===b0?"now ":"")+(i<b0?"done ":"")+(i%4===0?"bar ":"")+(i>=12?"last":""));}
@@ -1644,7 +1652,15 @@ const plIdle=()=>PORDER.every(p=>!PL.tr[p]);
 const plIsPlaying=seq=>PORDER.some(p=>PL.tr[p]&&PL.tr[p].seq===seq);
 const plIsPending=seq=>!plIsPlaying(seq)&&plVisible().some(v=>v.t.seq===seq);
 /* nombre de temps avant que la carte n° seq ne commence */
-function plWait(seq){if(plIdle())return (4-curBeat%4)%4||4;return (16-curBeat%16)%16||16;}
+/* temps avant que la carte n° seq ne soit entendue. Le son est programmé à l'avance (marge du programmateur, latence du
+   téléphone et de l'enceinte, décalage réglé) : on part donc du prochain départ PROGRAMMÉ, pas du temps affiché,
+   sinon une carte posée dans les derniers temps du cycle annonçait « 1 temps » et partait en réalité 16 temps plus tard. */
+const plTr=seq=>PORDER.map(p=>PL.tr[p]).find(c=>c&&c.seq===seq);
+const plHeard=seq=>{const c=plTr(seq);return !!c&&(!ctx||heardNow()>=c.t0-.02);};
+function plNextStart(){if(!ctx||!schedTimer)return null;const per=plIdle()?16:LOOP;return nextT+((per-step%per)%per)*SPB;}
+function plWait(seq){const bd=4*SPB,c=plTr(seq);if(!c&&PL.late&&PORDER.some(p=>PL.late[p]===seq))return 1;const t=c?c.t0:plNextStart();
+  if(t===null)return plIdle()?((4-curBeat%4)%4||4):((16-curBeat%16)%16||16);
+  return Math.max(1,Math.ceil((t-heardNow())/bd-.08));}
 function plStopTrack(p,t){const c=PL.tr[p];PL.tr[p]=null;if(!c||!c.ref||!SMP[c.ref])return;const s=SMP[c.ref];
   if(PORDER.some(q=>PL.tr[q]&&PL.tr[q].ref===c.ref))return;
   (s.srcs||[]).forEach(x=>{try{x.stop(t+.003);}catch(e){}});s.src=null;s.playing=false;}
@@ -1661,6 +1677,9 @@ function plTick(st,t){
       /* carte annulée (Coupure, retour arrière) : la carte d'en dessous reprend tout de suite, calée sur le cycle */
       const v=plVisible().find(x=>x.p===p);if(v){const r=sndOf(v.t);if(!SMP[r]||SMP[r].ready)plStartTrack(p,v,t,st/4);}}}
   const want={};plVisible().forEach(v=>want[v.p]=v);
+  /* carte dont le son finissait de se charger au début du cycle : elle entre dès qu'il est prêt, au bon endroit de la boucle */
+  if(!plIdle())for(const p of PORDER){const w=want[p],c=PL.tr[p];if(w&&PL.late&&PL.late[p]===w.t.seq&&(!c||c.seq!==w.t.seq)){const r=sndOf(w.t);
+    if(SMP[r]&&SMP[r].ready&&st){plStartTrack(p,w,t,st/4);PL.late[p]=null;visAt(t,()=>{if(S)render();});}}}
   const idle=plIdle(),any=Object.keys(want).length;
   let start=false;
   if(idle){if(any&&st%16===0)start=true;else return st;}
@@ -1668,7 +1687,7 @@ function plTick(st,t){
   if(!start)return st;
   for(const p of PORDER){const w=want[p],c=PL.tr[p];
     if(!w){if(c)plStopTrack(p,t);continue;}
-    if(!c||c.seq!==w.t.seq||c.id!==sndOf(w.t)){const r=sndOf(w.t);if(SMP[r]&&!SMP[r].ready){ensureSample(r);continue;}plStartTrack(p,w,t);}}
+    if(!c||c.seq!==w.t.seq||c.id!==sndOf(w.t)){const r=sndOf(w.t);if(SMP[r]&&!SMP[r].ready){ensureSample(r);(PL.late=PL.late||{})[p]=w.t.seq;continue;}plStartTrack(p,w,t);}}
   visAt(t,()=>{if(S)render();});
   return 0;
 }
@@ -1870,5 +1889,8 @@ preloadSons().then(remplirHorsLigne);
 camOff("Caméra pas encore lancée","Elle démarre avec la partie.",true);setup();
 </script>
 
+<script>/* iPhone : Safari ignore « user-scalable=no », on bloque aussi le geste de pincement */
+["gesturestart","gesturechange","gestureend"].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+document.addEventListener("touchmove",e=>{if(e.touches.length>1)e.preventDefault();},{passive:false});</script>
 </body>
 </html>
