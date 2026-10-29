@@ -375,3 +375,17 @@ body.home:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0
 @keyframes hmin{0%{transform:translateX(-110%)}100%{transform:none}}
 @keyframes hmup{0%{opacity:0;transform:translateY(24px)}100%{opacity:1;transform:none}}
 @media (max-height:700px){.hm-t{height:58px}.hm-go{height:56px;font-size:21px}.wf-home{gap:9px}}
+
+/* gain de la manche en cours (si elle finissait maintenant) : petite pastille discrète.
+   2 joueurs : en exposant à côté du score. 3-4 joueurs : dans le coin haut, côté intérieur (le nom du collectif se resserre, le prénom garde sa place). */
+.wf-duo .h .s{position:relative}
+.wf-duo .h .g{position:absolute;right:100%;top:2px;margin-right:6px;padding:3px 7px;font-size:15px}
+.wf-duo .h.r .g{right:auto;left:100%;margin:0 0 0 6px}
+.wf-tile .g{position:absolute;top:7px;right:22px;padding:2px 5px;font-size:12px}
+.wf-tile.R .g,.wf-tile.RB .g{right:auto;left:22px}
+.wf-tile .c{margin-right:34px}.wf-tile.R .c,.wf-tile.RB .c{margin-right:0;margin-left:34px}
+.wf-tile.sm .g{top:5px;font-size:11px}
+.wf-tile .g,.wf-duo .h .g{font-weight:800;font-family:var(--wf-texte);line-height:1;letter-spacing:-.01em;background:rgba(0,0,0,.22);border-radius:20px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.wf-tile .g.z,.wf-duo .h .g.z{opacity:.45;background:transparent}
+.wf-tile .g.bump,.wf-duo .h .g.bump{animation:wfgain .45s ease-out}
+@keyframes wfgain{0%{transform:scale(1.5)}100%{transform:none}}

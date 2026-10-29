@@ -446,7 +446,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v108";
+const VERSION="v109";
 /* Tribes Showdown — deux versions du jeu : 🪢 La Corde (on scanne les cartes) et 🧪 Essai (la même partie, decks à l'écran).
    Les valeurs des cartes et les règles chiffrées viennent de ton Google Sheet (voir « Cartes et règles » plus bas). */
 /* ================= Données ================= */
@@ -1103,6 +1103,12 @@ function waveFrame(now){SPRAF=0;
    La place se calcule sur la taille réelle de l'écran : la corde et ses ronds +3 ne touchent jamais les blocs des joueurs. */
 let WG=null,WKEY="",WPREV=null,WCD=null;
 const WFSIDE={2:[-1,1],3:[1,1,-1],4:[-1,1,-1,1]};
+/* gains de la manche en cours (même calcul que ropeRound, sans rien modifier) */
+function ropeGainsNow(){const R=S.rope,fin=isFinal(),k=fin?2:1,g=S.players.map(()=>0),tops={};
+  PORDER.forEach(p=>{const t=topOf(p);tops[p]=t?t.owner:null;if(t&&!t.sab&&RV[t.id])g[t.owner]+=RV[t.id][0]*k*(R.projo[p]?2:1);});
+  const camp=rCamp();if(camp!==null)g[camp]+=fin?ROPE.BONUS_FINAL:ROPE.BONUS;
+  S.players.forEach((_,i)=>{if(PORDER.filter(q=>tops[q]===i).length>=ROPE.CHOIR_MIN)g[i]+=ROPE.CHOIR;});
+  return g;}
 function wfGeo(n,W,H){const th=H<420?60:72,tw=Math.max(96,Math.min(124,Math.round((W-32)*.36))),gap=H<420?8:12,K=n===2?1.45:n===3?1.1:1,rr=n===2?20:17,sc=W/390;
   let cx=W/2,cy,A,L,tiles=[],marks=[],duo=n===2;
   if(n===2){const top=96+8+16;A=Math.max(60,Math.min(145*sc,W/2-12-2*rr));L=A+rr+4;cy=top+(H-top)/2;}
@@ -1117,14 +1123,17 @@ function wfArena(){const R=S.rope,n=S.players.length,gz=$("rpGauge"),W=gz.client
   const fin=isFinal(),camp=rCamp();
   WG=wfGeo(n,W,H);
   /* blocs des collectifs (redessinés à chaque fois : scores, joueur actif) */
-  const sc=S.players.map(p=>p.score),prev=WPREV&&WPREV.S===S?WPREV.sc:sc;WPREV={S,sc};
+  const sc=S.players.map(p=>p.score),prev=WPREV&&WPREV.S===S?WPREV.sc:sc;
+  /* points que chaque collectif marquerait si la manche s'arrêtait maintenant */
+  const gn=ropeGainsNow(),gp=WPREV&&WPREV.S===S&&WPREV.gn?WPREV.gn:gn;WPREV={S,sc,gn};
+  const gain=i=>`<span class="g${gn[i]?"":" z"}${gn[i]!==gp[i]?" bump":""}" title="Points de la manche si elle finissait maintenant">+${gn[i]}</span>`;
   const L=leaderOf(),lead=n>2&&L.who.length===1&&L.mx>0?S.players.indexOf(L.who[0]):-1;
   let h="";
-  if(n===2){const side=(i,cl)=>{const p=S.players[i];return `<div class="h ${cl}${sc[i]>prev[i]?" pop":""}" style="${pcs(p.color)}"><div class="c fit" data-max="26">${esc(colName(p))}</div><div class="row"><span class="p">${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><span class="s">${p.score}</span></div></div>`;};
+  if(n===2){const side=(i,cl)=>{const p=S.players[i];return `<div class="h ${cl}${sc[i]>prev[i]?" pop":""}" style="${pcs(p.color)}"><div class="c fit" data-max="26">${esc(colName(p))}</div><div class="row"><span class="p">${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><span class="s">${p.score}${gain(i)}</span></div></div>`;};
     h+=`<div class="wf-duo">${side(0,"l")}<div class="vs">VS</div>${side(1,"r")}</div>`;
     if(!S.ended)h+=`<div class="wf-mark" style="${S.turn===0?"left:16px":"right:16px"};width:${Math.round(W*.38)}px;top:104px"></div>`;}
   else WG.tiles.forEach((t,i)=>{const p=S.players[i];
-    h+=`<div class="wf-tile ${t.c}${sc[i]>prev[i]?" pop":""}${WG.th<72?" sm":""}" style="${pcs(p.color)};--tw:${WG.tw}px;height:${WG.th}px;left:${t.x}px;top:${t.y}px"><div class="c fit" data-max="20">${esc(colName(p))}</div><div class="row"><span class="p">${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><span class="s">${p.score}</span></div></div>`;
+    h+=`<div class="wf-tile ${t.c}${sc[i]>prev[i]?" pop":""}${WG.th<72?" sm":""}" style="${pcs(p.color)};--tw:${WG.tw}px;height:${WG.th}px;left:${t.x}px;top:${t.y}px">${gain(i)}<div class="c fit" data-max="20">${esc(colName(p))}</div><div class="row"><span class="p">${esc(p.name)}${R.objOn&&R.obj[i]?" 🎯":""}</span><span class="s">${p.score}</span></div></div>`;
     if(i===S.turn&&!S.ended)h+=`<div class="wf-mark" style="left:${t.x+8}px;width:${WG.tw-24}px;top:${t.y===0?WG.th+6:t.y-10}px"></div>`;
     if(i===lead){const bottom=t.y>0,right=t.c==="R"||t.c==="RB";
       h+=`<div class="wf-lead" style="${right?`right:${W-t.x+6}px`:`left:${t.x+WG.tw+6}px`};top:${bottom?t.y+46:t.y+4}px">№1 · en tête</div>`;}});
