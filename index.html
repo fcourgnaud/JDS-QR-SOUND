@@ -444,7 +444,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v102";
+const VERSION="v105";
 /* Tribes Showdown — deux versions du jeu : 🪢 La Corde (on scanne les cartes) et 🧪 Essai (la même partie, decks à l'écran).
    Les valeurs des cartes et les règles chiffrées viennent de ton Google Sheet (voir « Cartes et règles » plus bas). */
 /* ================= Données ================= */
@@ -564,7 +564,7 @@ function reglesHTML(){const R=ROPE,cnt={};for(const q in RACT_IDS)cnt[RACT_IDS[q
     <li><b>Deck Action</b> (${nA} cartes communes : ${Object.keys(cnt).map(k=>A(k)+" ×"+cnt[k]).join(", ")}). À la fin de ton tour, pioche dans ton deck <b>ou</b> une carte Action. Une carte recouverte reste sur sa piste, sous la nouvelle. Quand ton deck est vide, remélange ta défausse.</li>
     <li>Pendant ton tour, <b>avant ta carte</b>, tu peux jouer une Action (une seule, +1 point) : ${["ELAN","REINS","CADENAS","PROJO"].filter(k=>cnt[k]).map(k=>`<b>${A(k)}</b> (${D(k)})`).join(" ; ")}</li>
     <li><b>Réactions</b>, jouées par un adversaire juste après la pose d'une carte : ${["COUPURE","SABOT"].filter(k=>cnt[k]).map(k=>`<b>${A(k)}</b> (${D(k)})`).join(" ; ")} À 3 ou 4 joueurs, si le ${A("SABOT")} fait repasser la corde par le centre, elle part vers le saboteur. Après la dernière carte d'une manche, il reste ${Math.round(ROPE_REACT_MS/1000)} secondes pour réagir.</li>
-    <li><b>Fin de manche</b> : chacun marque ses cartes visibles ; +${R.BONUS} pour le camp de la corde ; <b>Chœur</b> : +${R.CHOIR} si tu tiens au moins ${R.CHOIR_MIN} pistes. La corde recule vers le centre (elle garde ${Math.round(R.PENTE*100)} % de sa distance) et les verrous sautent.</li>
+    <li><b>Fin de manche</b> : chacun marque ses cartes visibles ; +${R.BONUS} pour le camp de la corde ; <b>Chœur</b> : +${R.CHOIR} si tu tiens au moins ${R.CHOIR_MIN} pistes. La corde recule vers le centre : elle garde ${Math.round(R.PENTE*100)} % de sa distance, arrondi au cran entier vers le centre, et les verrous sautent.</li>
     <li><b>Ordre</b> : à la manche suivante, le joueur en tête au score joue en premier, le dernier au score en dernier.</li>
     <li><b>Dernière manche</b> (${R.ROUNDS}e) : cartes ×2, corde +${R.BONUS_FINAL}. Puis le meilleur score gagne ; égalité : celui qui tient le plus de pistes.</li>
     <li><b>Objectifs secrets</b> (option) : avant la partie, chacun pioche une carte Objectif et scanne son QR. Révélés et comptés à la fin.</li>
@@ -895,7 +895,7 @@ function ropeRound(){if(!S||!S.rope||S.ended)return;if($("sabWho"))return setTim
   if(fin){R.finalCamp=camp;R.endTops=tops;const mx=Math.max(...gains);R.lastBest=gains.filter(g=>g===mx).length===1?gains.indexOf(mx):null;return ropeFinal(gains,notes);}
   /* la pente : la corde recule de moitié ; nouvel ordre ; verrous levés */
   R.projo={};R.projoNext=null;R.lastPlace=null;R.actUsed=false;
-  R.order=ropeOrder();R.d=+(R.d*ROPE.PENTE).toFixed(3);rSync();R.locks={};R.played=[];R.round++;S.turn=R.order[0];
+  R.order=ropeOrder();R.d=Math.max(0,Math.floor(R.d*ROPE.PENTE+1e-9));rSync();R.locks={};R.played=[];R.round++;S.turn=R.order[0];
   R.log=`Manche ${R.round} : ${esc(S.players[S.turn].name)} commence (en tête au score)`;render();cheer();
   const L=leaderOf(),lead=L.who.length>1?null:L.who[0],rk=S.players.slice().sort((a,b)=>b.score-a.score);
   const head=lead?`<div class="wf-band" style="${pcs(lead.color)}"><div class="row"><div style="min-width:0;flex:1"><div class="bt fit" data-max="40">👑 ${esc(colName(lead))}</div><div class="bk" style="margin-top:4px">${esc(lead.name)}</div></div><div style="font-weight:900;font-size:56px;letter-spacing:-.05em;line-height:.9;flex:none">${lead.score}<small style="font-size:14px;letter-spacing:.1em;margin-left:4px">PTS</small></div></div></div>`
@@ -928,7 +928,7 @@ function ropeFinal(gains,notes){const R=S.rope;S.ended=true;
   const fx=document.createElement("div");fx.className="confetti";fx.innerHTML=[...Array(36)].map((_,j)=>`<i style="left:${Math.random()*100}%;background:${S.players[j%S.players.length].color};animation-delay:${(Math.random()*1.2).toFixed(2)}s;animation-duration:${(2.4+Math.random()*1.6).toFixed(2)}s"></i>`).join("");
   $("layer").querySelector(".fin-ov").appendChild(fx);}
 /* modale de manche : volume à 20 %, ouverte 5 secondes, on ne joue pas pendant ce temps */
-function ropeModal(html,ms,after,noDuck){const el=$("ropeAnn");el.innerHTML=html;el.hidden=false;fitNames(el);pending={modal:true};
+function ropeModal(html,ms,after,noDuck){const el=$("ropeAnn");el.innerHTML=html;el.classList.toggle("fin",html.includes('class="wf-next fin"'));el.hidden=false;fitNames(el);pending={modal:true};
   const done=()=>{clearTimeout(ropeModal.t);el.onclick=null;if(el.hidden)return;el.hidden=true;if(pending&&pending.modal)pending=null;render();if(after)after();};
   clearTimeout(ropeModal.t);ropeModal.t=setTimeout(done,ms);
   setTimeout(()=>{el.onclick=done;},350);}   /* un clic sur l'écran le ferme (après un court instant, pour éviter un double clic) */
@@ -1066,11 +1066,11 @@ function wfArena(){const R=S.rope,n=S.players.length,gz=$("rpGauge"),W=gz.client
 function wfRopeSVG(fin,camp){const G=WG,R=ROPE.R,CP=Math.max(0,Math.min(R,ROPE.CAMP)),U=G.U,K=G.K,rr=G.rr,side=WFSIDE[G.n];let g="";
   const bon="+"+(fin?ROPE.BONUS_FINAL:ROPE.BONUS),stp=R>14?5:2;
   S.rope.corners.forEach((q,i)=>{const dx=q.x/ROPE.R,dy=q.y/ROPE.R,nx=-dy,ny=dx,col=S.players[i].color,P=u=>[G.cx+dx*u*U,G.cy+dy*u*U];
-    const [x0,y0]=P(0),[x1,y1]=P(R),[xc,yc]=P(R-CP);
+    const [x0,y0]=P(0),[x1,y1]=P(R),[xc,yc]=P(CP);   /* camp : à partir de « camp » crans du centre (règle rCamp) jusqu'au bout */
     g+=`<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" style="stroke:var(--wf-rail)" stroke-width="${12*K}"/>`;
     if(CP>0){g+=`<line x1="${xc}" y1="${yc}" x2="${x1}" y2="${y1}" stroke="${col}" stroke-opacity=".38" stroke-width="${26*K}"/>`;
       g+=`<line x1="${xc-nx*13*K}" y1="${yc-ny*13*K}" x2="${xc+nx*13*K}" y2="${yc+ny*13*K}" stroke="${col}" stroke-width="2"/>`;}
-    for(let u=stp;u<R-CP;u+=stp){const [x,y]=P(u),Lh=8*K,s=side[i]*21*K;
+    for(let u=stp;u<R;u+=stp){const [x,y]=P(u),Lh=8*K,s=side[i]*21*K;
       g+=`<line x1="${x-nx*Lh}" y1="${y-ny*Lh}" x2="${x+nx*Lh}" y2="${y+ny*Lh}" stroke="#3a3a46" stroke-width="2"/>`;
       g+=`<text x="${x+nx*s}" y="${y+ny*s+5}" text-anchor="middle" class="wf-num">${u}</text>`;}
     /* bonus du camp : petit rond de la couleur du collectif, au bout de la piste */
@@ -1087,16 +1087,17 @@ function wfKnot(){const k=$("wfKnot");if(!k||!WG||!S||!S.rope)return;const V=rop
   const col=br!==null&&br!==undefined&&d>0?S.players[br].color:null;
   k.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)})`);
   const pl=$("wfPull");pl.setAttribute("x2",x.toFixed(1));pl.setAttribute("y2",y.toFixed(1));pl.setAttribute("stroke",col||"transparent");
-  const kc=$("wfKnotC");kc.setAttribute("stroke",col||"transparent");
+  /* le rond prend la couleur du bras de corde où il se trouve (blanc au centre) */
+  const kc=$("wfKnotC");kc.setAttribute("fill",col||"#fff");kc.setAttribute("stroke",col?"#fff":"transparent");
   let ch="";if(col){const q=S.rope.corners[br],dx=q.x/ROPE.R,dy=q.y/ROPE.R,deg=Math.atan2(dy,dx)*180/Math.PI;
     for(let j=0;j<2;j++){const u=d-1.3-j;if(u<.6)break;ch+=`<g transform="translate(${(G.cx+dx*u*U).toFixed(1)} ${(G.cy+dy*u*U).toFixed(1)}) rotate(${deg.toFixed(1)}) scale(${G.K})"><polygon points="-6,-9 5,0 -6,9 -11,9 -1,0 -11,-9" fill="#060608" opacity="${.85-j*.35}"/></g>`;}}
   $("wfChev").innerHTML=ch;
-  const tn=$("wfKnotN");tn.textContent=WCD?WCD.n:fmtD(d);tn.classList.toggle("cd",!!WCD);}
-/* décompte des 4 derniers temps du cycle sur le nœud (appelé à l'instant où le temps est entendu) */
+  const tn=$("wfKnotN");tn.textContent=fmtD(d);tn.setAttribute("fill",col?fgOf(col):"#060608");}
+/* 4 derniers temps du cycle : le nœud bat la mesure (sans chiffre) ; appelé à l'instant où le temps est entendu */
 function wfBeat(left,last){const s=$("wfKnotS"),rg=$("wfRing");if(!s)return;
   s.classList.remove("beat","last");void s.getBoundingClientRect();s.classList.add("beat");if(last)s.classList.add("last");
   if(rg){rg.classList.remove("go");void rg.getBoundingClientRect();rg.classList.add("go");}
-  WCD={n:left};wfKnot();clearTimeout(wfBeat.t);wfBeat.t=setTimeout(()=>{WCD=null;wfKnot();},420);}
+}
 /* bandeau du bas : ce qui vient de se passer ; il défile quand le texte est trop long */
 function wfTicker(a,b){const el=$("rpLog"),html=`<div class="in"><span>${a}</span>${b?`<i></i><span>${b}</span>`:""}</div>`;
   if(el.dataset.h===html)return;el.dataset.h=html;el.innerHTML=html;
@@ -1105,7 +1106,7 @@ function wfTicker(a,b){const el=$("rpLog"),html=`<div class="in"><span>${a}</spa
 /* pistes en attente : nombre de temps avant le départ de la boucle (mis à jour à chaque temps) */
 function wfWaits(){document.querySelectorAll("#rpTracks .tk.wait[data-seq]").forEach(el=>{const b=el.querySelector(".st b");if(b)b.textContent=plWait(+el.dataset.seq);});}
 function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],fin=isFinal();
-  const rp=$("rope");rp.classList.toggle("sim",!!S.sim);rp.style.setProperty("--ah",n===2?"250px":"430px");
+  const rp=$("rope");rp.classList.toggle("sim",!!S.sim);document.body.style.setProperty("--wf-actif",S.ended?"transparent":pl.color);rp.style.setProperty("--ah",n===2?"250px":"430px");
   $("rpTitle").textContent=S.sim?"Essai":"Live";$("rpLive").classList.toggle("essai",!!S.sim);$("rpMode").textContent="";$("rpCam").hidden=!!S.sim;
   if(S.sim)$("rpCamErr").hidden=true;
   $("rpRound").innerHTML=`<b>${fin?"🔥 Dernière manche":"Manche "+R.round+"/"+ROPE.ROUNDS}</b><div class="wf-pips">${[...Array(ROPE.ROUNDS)].map((_,k)=>{const r=k+1,done=r<R.round||S.ended,now=r===R.round&&!S.ended;
@@ -1119,7 +1120,7 @@ function renderRope(){const R=S.rope,n=S.players.length,pl=S.players[S.turn],fin
   $("rpTracks").innerHTML=PORDER.map(p=>{const t=topOf(p),lk=R.locks[p]!==undefined,hd=`<div class="k">${FLET[p]}</div><div class="n">${PISTES[p]}</div>`;
     if(!t)return `<div class="tk free">${hd}<div class="lib">Libre</div></div>`;
     const o=S.players[t.owner],v=RV[t.id],now=plIsPlaying(t.seq),wait=!now&&plIsPending(t.seq)&&!S.ended,pts=t.sab?0:v[0]*(fin?2:1)*(R.projo[p]?2:1);
-    const tags=(lk?'<span class="tag lock">🔒</span>':"")+(R.projo[p]?'<span class="tag">🔦 ×2</span>':"")+(t.sab?'<span class="tag sab">🚫</span>':"");
+    const tags=(R.projo[p]?'<span class="tag">🔦 ×2</span>':"")+(t.sab?'<span class="tag sab">🚫</span>':"");
     if(wait)return `<div class="tk wait${lk?" lk":""}" data-seq="${t.seq}" style="${pcs(o.color)}">${hd}<div class="tags">${tags}</div><div class="st"><b>${plWait(t.seq)}</b><small>TEMPS</small></div><div class="o">${esc(colName(o))} ★${pts}</div></div>`;
     return `<div class="tk own${now?" now":""}${lk?" lk":""}${LKN.has(p)?" lknew":""}${t.sab?" sab":""}" style="${pcs(o.color)}">${hd}${now?'<div class="eq"><i></i><i></i><i></i><i></i></div>':""}<div class="tags">${tags}</div><div class="st">★${pts}</div><div class="o">${esc(colName(o))}</div></div>`;}).join("");
   wfTicker(R.log||"Scanne une carte.",S.ended?"":`${R.actUsed?"Action jouée ce tour":"Action possible avant ta carte"} · fin de tour : pioche ton deck <b>ou</b> une Action`);
