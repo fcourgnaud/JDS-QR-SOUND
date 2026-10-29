@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Tribes Showdown</title>
+<title>World Tribal Music Showdown</title>
+<meta name="apple-mobile-web-app-title" content="Showdown">
 <!-- app installable et hors ligne (PWA) -->
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0e1022">
+<meta name="theme-color" content="#060608">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -398,7 +399,7 @@ details.outils{border:1px solid var(--line);border-radius:12px;padding:8px 12px;
 
 <div class="wrap">
   <div class="top">
-    <div class="brand"><h1>Tribes <span>Showdown</span></h1><span class="cam" id="camChip" title="">● Caméra</span><span class="ver" id="verTag"></span></div>
+    <div class="brand"><h1>World Tribal <span>Music Showdown</span></h1><span class="cam" id="camChip" title="">● Caméra</span><span class="ver" id="verTag"></span></div>
   </div>
 </div>
 
@@ -444,7 +445,7 @@ class Micro extends AudioWorkletProcessor {
 registerProcessor("ts-micro", Micro);
 </script>
 <script>
-const VERSION="v105";
+const VERSION="v106";
 /* Tribes Showdown — deux versions du jeu : 🪢 La Corde (on scanne les cartes) et 🧪 Essai (la même partie, decks à l'écran).
    Les valeurs des cartes et les règles chiffrées viennent de ton Google Sheet (voir « Cartes et règles » plus bas). */
 /* ================= Données ================= */
@@ -500,12 +501,35 @@ function wakeOn(){try{if(navigator.wakeLock&&!WAKE)navigator.wakeLock.request("s
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S&&S.rope&&!S.ended)wakeOn();});
 /* écran de mise en place ; SETUP permet de le redessiner quand le sheet change les noms ou couleurs des tribus */
 let SETUP=null;const OPEN={};
-function setup(){stopEverything();document.body.classList.remove("cd-on");try{if(WAKE)WAKE.release();}catch(e){}S=null;RWAIT=null;setRope(false);   /* plus aucune partie en mémoire : rien ne rejoue en fond */
-  let n=2;const pls=[{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"},{name:"Joueur 3",deck:"E"},{name:"Joueur 4",deck:"S"}];
-  const save=()=>{for(let i=0;i<n;i++){const e=$("pn"+i);if(e)pls[i].name=e.value;}};
-  const draw=()=>{if(modeChoice!=="corde"&&n>3)n=3;
+function setup(view){let VIEW=view==="classic"?"classic":"home";stopEverything();document.body.classList.remove("cd-on");try{if(WAKE)WAKE.release();}catch(e){}S=null;RWAIT=null;setRope(false);   /* plus aucune partie en mémoire : rien ne rejoue en fond */
+  const J=joueursLus();let n=J?J.n:2;const pls=J?J.pls:[{name:"Joueur 1",deck:"F"},{name:"Joueur 2",deck:"N"},{name:"Joueur 3",deck:"E"},{name:"Joueur 4",deck:"S"}];
+  const save=()=>{for(let i=0;i<n;i++){const e=$("pn"+i);if(e)pls[i].name=e.value;}joueursGarder(n,pls);};
+  const drawHome=()=>{document.body.classList.add("home");const max=modeChoice==="corde"?4:3;if(n>max)n=max;const intro=!HOMEIN;HOMEIN=true;
+    const tiles=pls.slice(0,n).map((p,i)=>`<div class="hm-t" style="${pcs(DECKS[p.deck].color)}"><button class="c" data-i="${i}" title="Changer de collectif">${esc(DECKS[p.deck].name)} <span>⇄</span></button><label class="p"><input type="text" id="pn${i}" value="${esc(p.name)}" maxlength="18" aria-label="Prénom du joueur ${i+1}" autocomplete="off"><span>✎</span></label></div>`).join("")+(n<max?`<button class="hm-t add" id="hmAdd">+ Joueur</button>`:"");
+    $("layer").innerHTML=`<div class="wf-home${intro?" intro":""}"><canvas id="homeWave"></canvas>
+      <div class="hm-top"><span class="wf-live"><i></i>Live · ${modeChoice==="mp3"?"Essai":"La Corde"}</span><button class="hm-gear" id="toClassic" title="Paramètres" aria-label="Paramètres">${GEAR}</button></div>
+      <h1 class="hm-title"><span class="l1">World</span><span class="l2">Tribal</span><span class="l3">Music</span><span class="l4">Showdown</span></h1>
+      <section class="hm-pl"><div class="hm-row"><span class="hm-lab">Joueurs</span>${[2,3,4].filter(k=>k<=max).map(k=>`<button class="hm-n${k===n?" on":""}" data-n="${k}">${k}</button>`).join("")}</div><div class="hm-grid">${tiles}</div></section>
+      <section class="hm-ms"><span class="hm-lab">🎧 Décalage</span><button id="calM" aria-label="moins 10 ms">−</button><b id="calV">${(USERLAT>0?"+":"")+USERLAT}<small>ms</small></b><button id="calP" aria-label="plus 10 ms">+</button><button class="hm-test" id="calTest">▶ Tester</button><i id="calDot"></i></section>
+      <button class="hm-go" id="go">▶ Lancer la partie</button>
+      <div class="hm-foot"><span>${VERSION}</span><span id="offStatus">${offHTML()}</span></div></div>`;
+    homeFit();if(!HW.raf)HW.raf=requestAnimationFrame(homeWave);
+    document.querySelectorAll(".hm-n").forEach(b=>b.onclick=()=>{save();n=+b.dataset.n;draw();});
+    const ad=$("hmAdd");if(ad)ad.onclick=()=>{save();n=Math.min(max,n+1);draw();};
+    document.querySelectorAll(".hm-t .c").forEach(b=>b.onclick=()=>{save();const i=+b.dataset.i,ks=Object.keys(DECKS),d=ks[(ks.indexOf(pls[i].deck)+1)%ks.length],j=pls.findIndex(p=>p.deck===d);
+      if(j>=0&&j!==i)pls[j].deck=pls[i].deck;pls[i].deck=d;draw();});
+    pls.slice(0,n).forEach((_,i)=>{const e=$("pn"+i);if(e)e.onchange=()=>save();});
+    const setL=v=>{USERLAT=Math.max(-200,Math.min(700,Math.round(+v||0)));try{localStorage.setItem("ts-lat",USERLAT);}catch(e){}$("calV").innerHTML=(USERLAT>0?"+":"")+USERLAT+"<small>ms</small>";};
+    $("calM").onclick=()=>setL(USERLAT-10);$("calP").onclick=()=>setL(USERLAT+10);
+    $("calTest").onclick=()=>{if(CALT)calStop();else calStart();};
+    $("toClassic").onclick=()=>{save();calStop();VIEW="classic";draw();};
+    $("go").onclick=()=>{if(MICBUSY)return toast("Attends la fin de la mesure au micro");calStop();save();
+      startRope(pls.slice(0,n).map((p,i)=>({name:p.name.trim()||"Joueur "+(i+1),deck:p.deck})),modeChoice==="mp3");};
+    showOff();};
+
+  const draw=()=>{if(modeChoice!=="corde"&&n>3)n=3;if(VIEW==="home")return drawHome();document.body.classList.remove("home");
     $("layer").innerHTML=`<div class="overlay"><div class="sheet">
-      <h2>Nouvelle partie <small class="ver">${VERSION}</small></h2>
+      <h2>Nouvelle partie <small class="ver">${VERSION}</small><button class="chip" id="toHome" style="float:right;font-size:14px">← Accueil</button></h2>
       <div><span class="label">Version du jeu</span><div class="mode"><button data-m="corde" class="${modeChoice==="corde"?"sel":""}">🪢 La Corde<small>tir à la corde musical, 2 à 4</small></button><button data-m="mp3" class="${modeChoice==="mp3"?"sel":""}">🧪 Essai<small>la partie, avec les decks à l'écran (sans scanner)</small></button></div></div>
       <div><span class="label">Nombre de musiciens</span><div class="count">${(modeChoice==="corde"?[2,3,4]:[2,3]).map(k=>`<button data-n="${k}" class="${k===n?"sel":""}">${k}</button>`).join("")}</div></div>
       <label class="objopt"><input type="checkbox" id="objOpt" ${ropeObjOpt?"checked":""}> 🎯 Objectifs secrets <small>tour de table avant la partie : chaque joueur scanne une carte Objectif</small></label>
@@ -528,6 +552,7 @@ function setup(){stopEverything();document.body.classList.remove("cd-on");try{if
       </details>
       <details class="outils" id="dRegles" ${OPEN.dRegles?"open":""}><summary>📖 Règles de La Corde</summary>${reglesHTML()}</details>
       <button class="btn main" id="go">${modeChoice==="mp3"?"Lancer l'essai":"Lancer le concert"}</button></div></div>`;
+    $("toHome").onclick=()=>{save();calStop();VIEW="home";draw();};
     document.querySelectorAll(".count button").forEach(b=>b.onclick=()=>{save();n=+b.dataset.n;draw();});
     document.querySelectorAll(".mode button").forEach(b=>b.onclick=()=>{save();modeChoice=b.dataset.m;try{localStorage.setItem("ts-mode",modeChoice);}catch(e){}draw();});
     document.querySelectorAll(".decks button").forEach(b=>b.onclick=()=>{save();const i=+b.dataset.i,d=b.dataset.d,j=pls.findIndex(p=>p.deck===d);
@@ -552,6 +577,44 @@ function setup(){stopEverything();document.body.classList.remove("cd-on");try{if
   };
   SETUP={redraw(){save();draw();}};chargerCartes();draw();
 }
+/* ============ Écran d'accueil (thème World Finals) ============
+   Titre géant, choix des joueurs, décalage du son et bouton Lancer. La roue ⚙ ouvre l'écran classique (mode, objectifs, sheet, règles…).
+   Les joueurs (nombre, prénoms, collectifs) sont gardés sur le téléphone d'une partie à l'autre. */
+const GEAR='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="4.5" stroke-dasharray="3.2 3.08"/><circle cx="12" cy="12" r="5.6" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>';
+let HOMEIN=false;
+const JST="ts-joueurs";
+function joueursLus(){try{const j=JSON.parse(localStorage.getItem(JST)||"null");if(j&&Array.isArray(j.pls)&&j.pls.length===4&&j.pls.every(p=>p&&DECKS[p.deck]))return j;}catch(e){}return null;}
+function joueursGarder(n,pls){try{localStorage.setItem(JST,JSON.stringify({n,pls}));}catch(e){}}
+/* titre : chaque ligne prend toute la largeur */
+function homeFit(){const t=document.querySelector(".hm-title");if(!t)return;const W=t.clientWidth;
+  t.querySelectorAll("span").forEach(el=>{el.style.fontSize="100px";const w=el.getBoundingClientRect().width||1;el.style.fontSize=Math.floor(100*W/w*.995)+"px";});
+  /* écran bas (iPhone SE…) : le titre ne prend pas plus de 40 % de la hauteur, pour que tout tienne sans défiler */
+  const hmax=innerHeight*.4,h=t.getBoundingClientRect().height;
+  if(h>hmax)t.querySelectorAll("span").forEach(el=>{el.style.fontSize=Math.floor(parseFloat(el.style.fontSize)*hmax/h)+"px";});}
+/* onde derrière le titre : même calcul que l'onde du jeu (calme tant que la musique ne joue pas ; « Tester » la fait réagir) */
+const HW={raf:0,last:0,bass:0,avg:0,en:0,t:0,F:null,T:null};
+function homeWave(now){HW.raf=0;const cv=$("homeWave"),ti=document.querySelector(".hm-title");if(!cv||!ti)return;
+  HW.raf=requestAnimationFrame(homeWave);if(document.hidden)return;
+  const dt=Math.min(.1,(now-(HW.last||now))/1000);HW.last=now;
+  const r=ti.getBoundingClientRect(),W=r.width+32,H=Math.max(120,r.height*.7),dpr=Math.min(1.5,window.devicePixelRatio||1);
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.width=W+"px";cv.style.height=H+"px";}
+  cv.style.top=(ti.offsetTop+r.height/2-H/2)+"px";
+  const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);
+  let bass=0,mid=0,T=null;const A=window.__ana;
+  if(A&&ctx&&ctx.state==="running"){const F=HW.F&&HW.F.length===A.frequencyBinCount?HW.F:(HW.F=new Uint8Array(A.frequencyBinCount));A.getByteFrequencyData(F);for(let k=1;k<6;k++)bass+=F[k];bass/=5*255;for(let k=6;k<60;k++)mid+=F[k];mid/=54*255;
+    T=HW.T&&HW.T.length===A.fftSize?HW.T:(HW.T=new Uint8Array(A.fftSize));A.getByteTimeDomainData(T);}
+  HW.avg+=(bass-HW.avg)*.03;const kick=Math.max(0,Math.min(1,(bass-HW.avg)*6));HW.bass+=(kick-HW.bass)*(kick>HW.bass?.6:.08);HW.en+=((bass+mid)/2-HW.en)*.05;
+  HW.t+=dt*(.35+HW.en*.6);
+  const col=getComputedStyle(document.documentElement).getPropertyValue("--wf-acid").trim()||"#C8FF00",P=40,pts=[];
+  for(let i=0;i<=P;i++){let v=0;if(T){const a=Math.floor(i/P*(T.length-1)),w=10;let s2=0,n2=0;for(let k=-w;k<=w;k++){const q=a+k;if(q>=0&&q<T.length){s2+=T[q];n2++;}}v=(s2/n2-128)/128;}pts.push(v);}
+  c.globalCompositeOperation="lighter";
+  for(const [off,lw,al,sp] of [[0,2,.6,1],[.18,6,.16,.8],[-.22,14,.07,.6]]){let LX=0,LY=0;c.beginPath();
+    for(let i=0;i<=P;i++){const u=i/P,env=Math.sin(Math.PI*u);
+      const y=H*(.5+off*.25)+(pts[i]*H*.42*(.6+HW.en)+Math.sin(u*9+HW.t*3*sp+off*5)*H*.09*(.4+HW.bass))*env,x=u*W;
+      if(!i)c.moveTo(x,y);else c.quadraticCurveTo(LX,LY,(LX+x)/2,(LY+y)/2);LX=x;LY=y;}
+    c.lineTo(LX,LY);c.strokeStyle=col;c.globalAlpha=Math.min(1,al*(.9+HW.en*.5+HW.bass*.5));c.lineWidth=lw*(1+HW.bass*.5);c.lineJoin="round";c.lineCap="round";c.stroke();}
+  c.globalAlpha=1;c.globalCompositeOperation="source-over";}
+window.addEventListener("resize",()=>homeFit());
 /* règles de La Corde, avec les valeurs du moment (celles du sheet) */
 function reglesHTML(){const R=ROPE,cnt={};for(const q in RACT_IDS)cnt[RACT_IDS[q]]=(cnt[RACT_IDS[q]]||0)+1;
   const A=k=>esc(RACT[k].n),D=k=>esc(RACT[k].d.replace(/^Réaction\s*:\s*/i,"")),nA=Object.keys(RACT_IDS).length;
@@ -738,7 +801,7 @@ function statsRecord(gains,obj){const R=S.rope;if(!R)return;
 window.addEventListener("online",statsFlush);
 
 function topOwnerEnd(R,p){return R.endTops?R.endTops[p]:null;}
-function setRope(on){document.body.classList.toggle("rope",!!on);$("rope").hidden=!on;if(!on)duck(false);}
+function setRope(on){document.body.classList.toggle("rope",!!on);if(on)document.body.classList.remove("home");$("rope").hidden=!on;if(!on)duck(false);}
 function ropeCorners(n){if(n===2)return[{x:-ROPE.R,y:0},{x:ROPE.R,y:0}];
   const a0=n===3?-90:-135;return [...Array(n)].map((_,i)=>{const a=(a0+i*360/n)*Math.PI/180;return{x:+(ROPE.R*Math.cos(a)).toFixed(3),y:+(ROPE.R*Math.sin(a)).toFixed(3)};});}
 let ropeObjOpt=false;try{ropeObjOpt=localStorage.getItem("ts-obj")==="1";}catch(e){}
